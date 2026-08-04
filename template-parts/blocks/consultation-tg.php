@@ -66,10 +66,7 @@ $blog_inline = (bool) get_query_var( 'tolstenko_block_blog_inline', false );
 			<?php if ( $btn_url !== '' && $btn_text !== '' ) : ?>
 				<a class="tg-block__btn default-btn default-btn--tg" href="<?php echo esc_url( $btn_url ); ?>" target="_blank" rel="noopener noreferrer">
 					<?php
-					if ( is_readable( $tg_icon ) ) {
-						// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- theme SVG asset.
-						echo file_get_contents( $tg_icon );
-					}
+					tolstenko_render_inline_svg( $tg_icon );
 					?>
 					<?php echo esc_html( $btn_text ); ?>
 				</a>
@@ -101,10 +98,7 @@ $blog_inline = (bool) get_query_var( 'tolstenko_block_blog_inline', false );
 					<?php if ( $btn_url !== '' && $btn_text !== '' ) : ?>
 						<a class="tg-block__btn default-btn default-btn--tg" href="<?php echo esc_url( $btn_url ); ?>" target="_blank" rel="noopener noreferrer">
 							<?php
-							if ( is_readable( $tg_icon ) ) {
-								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- theme SVG asset.
-								echo file_get_contents( $tg_icon );
-							}
+							tolstenko_render_inline_svg( $tg_icon );
 							?>
 							<?php echo esc_html( $btn_text ); ?>
 						</a>

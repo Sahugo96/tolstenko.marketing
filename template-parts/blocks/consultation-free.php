@@ -114,10 +114,7 @@ $wa_icon    = $theme_dir . '/assets/img/whatsapp-ion.svg';
 						<?php if ( $phone !== '' ) : ?>
 							<a class="consultation-free__btn consultation-free__btn--tel default-btn line-caps-bold-13-15" href="tel:<?php echo esc_attr( $phone_href ); ?>">
 								<?php
-								if ( is_readable( $phone_icon ) ) {
-									// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- theme SVG asset.
-									echo file_get_contents( $phone_icon );
-								}
+								tolstenko_render_inline_svg( $phone_icon );
 								?>
 								<span><?php echo esc_html( $phone ); ?></span>
 							</a>
@@ -126,10 +123,7 @@ $wa_icon    = $theme_dir . '/assets/img/whatsapp-ion.svg';
 						<?php if ( $telegram_url !== '' ) : ?>
 							<a class="consultation-free__btn default-btn line-caps-bold-13-15" href="<?php echo esc_url( $telegram_url ); ?>" target="_blank" rel="noopener noreferrer" aria-label="Telegram">
 								<?php
-								if ( is_readable( $tg_icon ) ) {
-									// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- theme SVG asset.
-									echo file_get_contents( $tg_icon );
-								}
+								tolstenko_render_inline_svg( $tg_icon );
 								?>
 							</a>
 						<?php endif; ?>
@@ -137,10 +131,7 @@ $wa_icon    = $theme_dir . '/assets/img/whatsapp-ion.svg';
 						<?php if ( $vk_url !== '' ) : ?>
 							<a class="consultation-free__btn default-btn line-caps-bold-13-15" href="<?php echo esc_url( $vk_url ); ?>" target="_blank" rel="noopener noreferrer" aria-label="VK">
 								<?php
-								if ( is_readable( $vk_icon ) ) {
-									// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- theme SVG asset.
-									echo file_get_contents( $vk_icon );
-								}
+								tolstenko_render_inline_svg( $vk_icon );
 								?>
 							</a>
 						<?php endif; ?>
@@ -148,10 +139,7 @@ $wa_icon    = $theme_dir . '/assets/img/whatsapp-ion.svg';
 						<?php if ( $whatsapp_url !== '' ) : ?>
 							<a class="consultation-free__btn default-btn line-caps-bold-13-15" href="<?php echo esc_url( $whatsapp_url ); ?>" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
 								<?php
-								if ( is_readable( $wa_icon ) ) {
-									// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- theme SVG asset.
-									echo file_get_contents( $wa_icon );
-								}
+								tolstenko_render_inline_svg( $wa_icon );
 								?>
 							</a>
 						<?php endif; ?>

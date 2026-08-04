@@ -93,10 +93,7 @@ if ( $title === '' && $text === '' && empty( $items ) ) {
 							<?php echo esc_html( $tg_text ); ?>
 							<?php
 							$tg_icon = $theme_dir . '/assets/img/telegram-icon.svg';
-							if ( is_readable( $tg_icon ) ) {
-								// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- theme SVG asset.
-								echo file_get_contents( $tg_icon ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							}
+							tolstenko_render_inline_svg( $tg_icon );
 							?>
 						</a>
 					<?php endif; ?>

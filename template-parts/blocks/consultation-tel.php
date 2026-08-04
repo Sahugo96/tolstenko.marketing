@@ -111,10 +111,7 @@ $tg_icon    = $theme_dir . '/assets/img/telegram-icon-white.svg';
 					<?php if ( $phone_href !== '' && $btn_tel_text !== '' ) : ?>
 						<a class="consultation-tel__btn consultation-tel__btn--tel default-btn line-caps-bold-13-15" href="tel:<?php echo esc_attr( $phone_href ); ?>">
 							<?php
-							if ( is_readable( $phone_icon ) ) {
-								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- theme SVG asset.
-								echo file_get_contents( $phone_icon );
-							}
+							tolstenko_render_inline_svg( $phone_icon );
 							?>
 							<span><?php echo esc_html( $btn_tel_text ); ?></span>
 						</a>
@@ -128,10 +125,7 @@ $tg_icon    = $theme_dir . '/assets/img/telegram-icon-white.svg';
 							style="--color-btn: <?php echo esc_attr( $color ); ?>; --color-hover-btn: <?php echo esc_attr( $color_hover ); ?>;"
 						>
 							<?php
-							if ( is_readable( $tg_icon ) ) {
-								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- theme SVG asset.
-								echo file_get_contents( $tg_icon );
-							}
+							tolstenko_render_inline_svg( $tg_icon );
 							?>
 							<span><?php echo esc_html( $btn_messenger_text ); ?></span>
 						</a>
