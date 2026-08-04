@@ -92,6 +92,7 @@ function tolstenko_filter_allowed_blocks_by_post_type( $allowed, $editor_context
         'tolstenko/free-audit', 'tolstenko/solution', 'tolstenko/one-team', 'tolstenko/author', 'tolstenko/different-experiences', 'tolstenko/partners',
         'tolstenko/strategy', 'tolstenko/team-cards', 'tolstenko/tg-channel',
         'tolstenko/three-steps', 'tolstenko/faq',
+        'tolstenko/seo-section',
     );
 
     if ( $post_type === 'service' ) {
@@ -208,6 +209,7 @@ function tolstenko_enqueue_editor_blocks() {
                 'tg_channel'            => tolstenko_get_block_defaults( 'tg_channel' ),
                 'three_steps'           => tolstenko_get_block_defaults( 'three_steps' ),
                 'faq'                   => tolstenko_get_block_defaults( 'faq' ),
+                'seo_section'           => tolstenko_get_block_defaults( 'seo_section' ),
                 'we_can'                => tolstenko_get_block_defaults( 'we_can' ),
                 'recomendation'         => tolstenko_get_block_defaults( 'recomendation' ),
                 'referal'               => tolstenko_get_block_defaults( 'referal' ),
@@ -263,6 +265,13 @@ function tolstenko_get_theme_block_attributes() {
             'block_contacts_maps_title'     => array( 'type' => 'string', 'default' => '' ),
             'block_contacts_maps_title_tag' => array( 'type' => 'string', 'default' => 'h2' ),
             'block_contacts_maps_items'     => array( 'type' => 'array', 'default' => array() ),
+        ),
+        'seo-section' => array(
+            'block_seo_section_title'     => array( 'type' => 'string', 'default' => '' ),
+            'block_seo_section_title_tag' => array( 'type' => 'string', 'default' => 'h2' ),
+            'block_seo_section_subtitle'  => array( 'type' => 'string', 'default' => '' ),
+            'block_seo_section_more_text' => array( 'type' => 'string', 'default' => '' ),
+            'block_seo_section_blocks'    => array( 'type' => 'array', 'default' => array() ),
         ),
         'callback-modal' => array( 'block_callback_modal_cf7_id' => array( 'type' => 'string', 'default' => '' ) ),
         'header-footer' => array(
@@ -742,6 +751,7 @@ function tolstenko_register_theme_blocks() {
         array( 'name' => 'tg-channel', 'title' => __( 'Telegram-канал', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'three-steps', 'title' => __( 'Три шага', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'faq', 'title' => __( 'FAQ', 'tolstenko-theme' ), 'category' => $cat_new ),
+        array( 'name' => 'seo-section', 'title' => __( 'SEO продвижение', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'we-can', 'title' => __( 'Мы можем', 'tolstenko-theme' ), 'category' => $cat_partner ),
         array( 'name' => 'recomendation', 'title' => __( 'Рекомендации', 'tolstenko-theme' ), 'category' => $cat_partner ),
         array( 'name' => 'referal', 'title' => __( 'Рефералка', 'tolstenko-theme' ), 'category' => $cat_partner ),

@@ -2019,6 +2019,376 @@
         save: function () { return null; }
     });
 
+    // SEO продвижение: гибкое содержимое из раскладок + сворачивание тела секции.
+    var seoSectionLayouts = [
+        { label: 'Фото + текст', value: 'image_text' },
+        { label: 'Текст + фото', value: 'text_image' },
+        { label: 'Две колонки', value: 'two_columns' },
+        { label: 'Галерея', value: 'gallery' },
+        { label: 'Текст', value: 'text' },
+        { label: 'Редактор (HTML)', value: 'redactor' }
+    ];
+
+    function makeSeoSectionRow(layout) {
+        return {
+            layout: layout || 'image_text',
+            title: '',
+            title_center: false,
+            image: 0,
+            text: '',
+            btn_text: '',
+            btn_url: '',
+            btn_wide: false,
+            columns: ['', ''],
+            items: [],
+            gallery: [],
+            redactor: ''
+        };
+    }
+
+    function normalizeSeoSectionRow(raw) {
+        var row = makeSeoSectionRow((raw && (raw.layout || raw.acf_fc_layout)) || 'image_text');
+        if (!raw || typeof raw !== 'object') return row;
+        row.title = raw.title || '';
+        row.title_center = !!raw.title_center;
+        row.image = parseInt(raw.image || 0, 10) || 0;
+        row.text = raw.text || '';
+        row.btn_text = raw.btn_text || '';
+        row.btn_url = raw.btn_url || '';
+        row.btn_wide = !!raw.btn_wide;
+        row.redactor = raw.redactor || '';
+        row.columns = Array.isArray(raw.columns)
+            ? raw.columns.map(function (c) { return (c && typeof c === 'object') ? (c.text || '') : (c || ''); })
+            : ['', ''];
+        while (row.columns.length < 2) row.columns.push('');
+        row.items = Array.isArray(raw.items)
+            ? raw.items.map(function (it) {
+                if (!it || typeof it !== 'object') return { title: '', text: String(it || '') };
+                return { title: it.title || '', text: it.text || '' };
+            })
+            : [];
+        row.gallery = Array.isArray(raw.gallery)
+            ? raw.gallery.map(function (g) {
+                return parseInt((g && typeof g === 'object') ? (g.ID || g.id || 0) : g, 10) || 0;
+            }).filter(function (id) { return id > 0; })
+            : [];
+        return row;
+    }
+
+    wp.blocks.registerBlockType('tolstenko/seo-section', {
+        title: 'SEO продвижение',
+        category: 'tolstenko-blocks-new',
+        icon: 'search',
+        edit: function (props) {
+            var attrs = props.attributes || {};
+            var set = props.setAttributes;
+            var blockProps = useBlockProps ? useBlockProps() : {};
+
+            var rows = Array.isArray(attrs.block_seo_section_blocks) ? attrs.block_seo_section_blocks : [];
+            if (!rows.length) {
+                var defRows = getDefault('seo_section.blocks', []);
+                rows = Array.isArray(defRows) ? defRows : [];
+            }
+            rows = rows.map(normalizeSeoSectionRow);
+
+            function setRows(next) { set({ block_seo_section_blocks: next }); }
+            function updateRow(index, patch) {
+                var next = rows.slice();
+                next[index] = Object.assign({}, next[index], patch);
+                setRows(next);
+            }
+            function addRow() { setRows(rows.concat([makeSeoSectionRow('image_text')])); }
+            function removeRow(index) {
+                setRows(rows.filter(function (_, i) { return i !== index; }));
+            }
+            function moveRow(index, delta) {
+                var target = index + delta;
+                if (target < 0 || target >= rows.length) return;
+                var next = rows.slice();
+                var moved = next.splice(index, 1)[0];
+                next.splice(target, 0, moved);
+                setRows(next);
+            }
+
+            function renderRowFields(row, index) {
+                var layout = row.layout;
+                var fields = [];
+
+                if (TextControl) {
+                    fields.push(el(TextControl, {
+                        key: 'title',
+                        label: 'Заголовок блока',
+                        value: row.title,
+                        onChange: function (v) { updateRow(index, { title: v }); }
+                    }));
+                }
+                if (ToggleControl) {
+                    fields.push(el(ToggleControl, {
+                        key: 'title-center',
+                        label: 'Заголовок по центру',
+                        checked: row.title_center,
+                        onChange: function (v) { updateRow(index, { title_center: !!v }); }
+                    }));
+                }
+
+                if (layout === 'image_text' || layout === 'text_image') {
+                    fields.push(el('div', { key: 'img', style: { margin: '8px 0' } }, [
+                        MediaUpload && MediaUploadCheck ? el(MediaUploadCheck, { key: 'muc' },
+                            el(MediaUpload, {
+                                allowedTypes: ['image'],
+                                value: row.image || undefined,
+                                onSelect: function (m) { updateRow(index, { image: (m && m.id) ? m.id : 0 }); },
+                                render: function (obj) {
+                                    return el(Button, { isSecondary: true, isSmall: true, onClick: obj.open }, row.image ? 'Сменить изображение' : 'Выбрать изображение');
+                                }
+                            })
+                        ) : null,
+                        (row.image && Button) ? el(Button, {
+                            key: 'clear',
+                            isDestructive: true,
+                            isSmall: true,
+                            style: { marginLeft: '8px' },
+                            onClick: function () { updateRow(index, { image: 0 }); }
+                        }, 'Удалить изображение') : null
+                    ]));
+                    if (TextareaControl) {
+                        fields.push(el(TextareaControl, {
+                            key: 'text',
+                            label: 'Текст',
+                            rows: 4,
+                            value: row.text,
+                            onChange: function (v) { updateRow(index, { text: v }); }
+                        }));
+                    }
+                    if (TextControl) {
+                        fields.push(el(TextControl, {
+                            key: 'btn-text',
+                            label: 'Текст кнопки',
+                            value: row.btn_text,
+                            onChange: function (v) { updateRow(index, { btn_text: v }); }
+                        }));
+                        fields.push(el(TextControl, {
+                            key: 'btn-url',
+                            label: 'Ссылка кнопки',
+                            help: 'Пусто = модалка заявки',
+                            value: row.btn_url,
+                            onChange: function (v) { updateRow(index, { btn_url: v }); }
+                        }));
+                    }
+                    if (ToggleControl) {
+                        fields.push(el(ToggleControl, {
+                            key: 'btn-wide',
+                            label: 'Широкая кнопка',
+                            checked: row.btn_wide,
+                            onChange: function (v) { updateRow(index, { btn_wide: !!v }); }
+                        }));
+                    }
+                } else if (layout === 'two_columns') {
+                    if (TextareaControl) {
+                        fields.push(el(TextareaControl, {
+                            key: 'col-1',
+                            label: 'Левая колонка',
+                            rows: 4,
+                            value: row.columns[0] || '',
+                            onChange: function (v) {
+                                var columns = row.columns.slice();
+                                columns[0] = v;
+                                updateRow(index, { columns: columns });
+                            }
+                        }));
+                        fields.push(el(TextareaControl, {
+                            key: 'col-2',
+                            label: 'Правая колонка',
+                            rows: 4,
+                            value: row.columns[1] || '',
+                            onChange: function (v) {
+                                var columns = row.columns.slice();
+                                columns[1] = v;
+                                updateRow(index, { columns: columns });
+                            }
+                        }));
+                    }
+                    fields.push(el('p', {
+                        key: 'items-l',
+                        style: { margin: '10px 0 4px', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase' }
+                    }, 'Пункты под колонками'));
+                    fields.push(el('div', { key: 'items' }, row.items.map(function (item, itemIndex) {
+                        return el('div', {
+                            key: 'item-' + itemIndex,
+                            style: { border: '1px dashed #ccc', borderRadius: '4px', padding: '6px', marginBottom: '6px' }
+                        }, [
+                            TextControl ? el(TextControl, {
+                                key: 'it',
+                                label: 'Заголовок пункта ' + (itemIndex + 1),
+                                value: item.title,
+                                onChange: function (v) {
+                                    var items = row.items.slice();
+                                    items[itemIndex] = Object.assign({}, items[itemIndex], { title: v });
+                                    updateRow(index, { items: items });
+                                }
+                            }) : null,
+                            TextareaControl ? el(TextareaControl, {
+                                key: 'ix',
+                                label: 'Текст пункта',
+                                rows: 2,
+                                value: item.text,
+                                onChange: function (v) {
+                                    var items = row.items.slice();
+                                    items[itemIndex] = Object.assign({}, items[itemIndex], { text: v });
+                                    updateRow(index, { items: items });
+                                }
+                            }) : null,
+                            Button ? el(Button, {
+                                key: 'rm',
+                                isDestructive: true,
+                                isSmall: true,
+                                onClick: function () {
+                                    updateRow(index, {
+                                        items: row.items.filter(function (_, i) { return i !== itemIndex; })
+                                    });
+                                }
+                            }, 'Удалить пункт') : null
+                        ]);
+                    })));
+                    if (Button) {
+                        fields.push(el(Button, {
+                            key: 'add-item',
+                            isSecondary: true,
+                            isSmall: true,
+                            onClick: function () { updateRow(index, { items: row.items.concat([{ title: '', text: '' }]) }); }
+                        }, 'Добавить пункт'));
+                    }
+                } else if (layout === 'gallery') {
+                    fields.push(el('div', { key: 'gallery', style: { margin: '8px 0' } }, [
+                        MediaUpload && MediaUploadCheck ? el(MediaUploadCheck, { key: 'muc' },
+                            el(MediaUpload, {
+                                allowedTypes: ['image'],
+                                multiple: true,
+                                gallery: true,
+                                value: row.gallery,
+                                onSelect: function (media) {
+                                    var ids = (media || []).map(function (m) { return (m && m.id) ? m.id : 0; })
+                                        .filter(function (id) { return id > 0; });
+                                    updateRow(index, { gallery: ids });
+                                },
+                                render: function (obj) {
+                                    return el(Button, { isSecondary: true, isSmall: true, onClick: obj.open },
+                                        row.gallery.length ? ('Изменить галерею (' + row.gallery.length + ')') : 'Выбрать изображения');
+                                }
+                            })
+                        ) : null,
+                        (row.gallery.length && Button) ? el(Button, {
+                            key: 'clear',
+                            isDestructive: true,
+                            isSmall: true,
+                            style: { marginLeft: '8px' },
+                            onClick: function () { updateRow(index, { gallery: [] }); }
+                        }, 'Очистить') : null
+                    ]));
+                } else if (layout === 'text') {
+                    if (TextareaControl) {
+                        fields.push(el(TextareaControl, {
+                            key: 'text',
+                            label: 'Текст',
+                            rows: 5,
+                            value: row.text,
+                            onChange: function (v) { updateRow(index, { text: v }); }
+                        }));
+                    }
+                } else if (layout === 'redactor') {
+                    fields.push(el('p', {
+                        key: 'red-l',
+                        style: { margin: '8px 0 4px', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase' }
+                    }, 'Содержимое'));
+                    fields.push(RichText ? el(RichText, {
+                        key: 'red',
+                        tagName: 'div',
+                        className: 'tolstenko-seo-redactor-editor',
+                        placeholder: 'Текст…',
+                        value: row.redactor,
+                        onChange: function (v) { updateRow(index, { redactor: v }); },
+                        allowedFormats: ['core/bold', 'core/italic', 'core/link', 'core/list', 'core/strikethrough']
+                    }) : (TextareaControl ? el(TextareaControl, {
+                        key: 'red',
+                        label: 'Содержимое',
+                        rows: 6,
+                        value: row.redactor,
+                        onChange: function (v) { updateRow(index, { redactor: v }); }
+                    }) : null));
+                }
+
+                return fields;
+            }
+
+            return wrapBlock(blockProps, [
+                el('p', { key: 'l', style: { marginBottom: '8px', fontWeight: '600' } }, 'SEO продвижение'),
+                el('p', { key: 'hint', style: { marginTop: 0, marginBottom: '8px', fontSize: '12px', color: '#757575' } }, 'Пустые поля подставятся из «Настройки сайта → Дефолты блоков». Тело секции на фронте свёрнуто, раскрывает кнопка «Читать далее».'),
+                TextControl ? el(TextControl, {
+                    key: 'title',
+                    label: 'Заголовок',
+                    value: attrs.block_seo_section_title || '',
+                    placeholder: getDefault('seo_section.title', ''),
+                    onChange: function (v) { set({ block_seo_section_title: v }); }
+                }) : null,
+                renderHeadingTagSelect(attrs, set, 'block_seo_section_title_tag', 'Тег заголовка', 'h2'),
+                TextareaControl ? el(TextareaControl, {
+                    key: 'subtitle',
+                    label: 'Подзаголовок',
+                    value: attrs.block_seo_section_subtitle || '',
+                    placeholder: getDefault('seo_section.subtitle', ''),
+                    onChange: function (v) { set({ block_seo_section_subtitle: v }); }
+                }) : null,
+                TextControl ? el(TextControl, {
+                    key: 'more',
+                    label: 'Текст кнопки раскрытия',
+                    value: attrs.block_seo_section_more_text || '',
+                    placeholder: getDefault('seo_section.more_text', 'Читать далее'),
+                    onChange: function (v) { set({ block_seo_section_more_text: v }); }
+                }) : null,
+                el('p', { key: 'rows-l', style: { margin: '12px 0 6px', fontWeight: '600' } }, 'Блоки содержимого'),
+                el('div', { key: 'rows' }, rows.map(function (row, index) {
+                    return el('div', {
+                        key: 'seo-row-' + index,
+                        style: { marginBottom: '10px', border: '1px solid #ddd', borderRadius: '4px', padding: '8px', background: '#fafafa' }
+                    }, [
+                        SelectControl ? el(SelectControl, {
+                            key: 'layout',
+                            label: 'Раскладка ' + (index + 1),
+                            value: row.layout,
+                            options: seoSectionLayouts,
+                            onChange: function (v) { updateRow(index, { layout: v }); }
+                        }) : null,
+                        el('div', { key: 'fields' }, renderRowFields(row, index)),
+                        el('div', { key: 'row-actions', style: { display: 'flex', gap: '8px', marginTop: '8px' } }, [
+                            Button ? el(Button, {
+                                key: 'up',
+                                isSecondary: true,
+                                isSmall: true,
+                                disabled: index === 0,
+                                onClick: function () { moveRow(index, -1); }
+                            }, 'Вверх') : null,
+                            Button ? el(Button, {
+                                key: 'down',
+                                isSecondary: true,
+                                isSmall: true,
+                                disabled: index === rows.length - 1,
+                                onClick: function () { moveRow(index, 1); }
+                            }, 'Вниз') : null,
+                            Button ? el(Button, {
+                                key: 'rm',
+                                isDestructive: true,
+                                isSmall: true,
+                                onClick: function () { removeRow(index); }
+                            }, 'Удалить блок') : null
+                        ])
+                    ]);
+                })),
+                Button ? el(Button, { key: 'add', isSecondary: true, isSmall: true, onClick: addRow }, 'Добавить блок') : null
+            ]);
+        },
+        save: function () { return null; }
+    });
+
     // Партнёры: «Мы можем»
     wp.blocks.registerBlockType('tolstenko/we-can', {
         title: 'Мы можем',

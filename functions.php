@@ -2132,6 +2132,11 @@ require_once get_template_directory() . '/inc/review-metabox.php';
 require_once get_template_directory() . '/inc/reviews-helpers.php';
 
 /**
+ * Блок «SEO продвижение»: раскладки гибкого содержимого + хелперы шаблонов.
+ */
+require_once get_template_directory() . '/inc/seo-section-helpers.php';
+
+/**
  * Дефолты блоков темы: админка + helper для шаблонов.
  */
 require_once get_template_directory() . '/inc/block-defaults-admin.php';
