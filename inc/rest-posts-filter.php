@@ -479,12 +479,18 @@ function tolstenko_render_filtered_posts_payload( $args ) {
 	}
 
 	if ( $post_type === '' || ! post_type_exists( $post_type ) ) {
+		tolstenko_log_error( 'tolstenko_render_filtered_posts_payload', 'Неизвестный тип записи', $post_type );
 		return $empty;
 	}
 
 	$renderers = tolstenko_get_posts_filter_card_renderers();
 	if ( $card === '' || empty( $renderers[ $card ] ) || ! is_callable( $renderers[ $card ] ) ) {
+		tolstenko_log_error( 'tolstenko_render_filtered_posts_payload', 'Нет рендерера карточки', $card );
 		return $empty;
+	}
+
+	if ( $taxonomy !== '' && ! taxonomy_exists( $taxonomy ) ) {
+		tolstenko_log_error( 'tolstenko_render_filtered_posts_payload', 'Неизвестная таксономия', $taxonomy );
 	}
 
 	// Архивная плитка: 1-я карточка + сайдбар + сетка (как blog-archive в marketing).
@@ -658,16 +664,25 @@ function tolstenko_rest_filter_posts( $request ) {
 		return new WP_Error( 'tolstenko_filter_forbidden_type', __( 'Недопустимый тип записи.', 'tolstenko-theme' ), array( 'status' => 400 ) );
 	}
 
+	if ( ! post_type_exists( $post_type ) ) {
+		return new WP_Error( 'tolstenko_filter_unknown_type', __( 'Тип записи не зарегистрирован.', 'tolstenko-theme' ), array( 'status' => 400 ) );
+	}
+
 	$renderers = tolstenko_get_posts_filter_card_renderers();
-	if ( empty( $renderers[ $card ] ) ) {
+	if ( empty( $renderers[ $card ] ) || ! is_callable( $renderers[ $card ] ) ) {
 		return new WP_Error( 'tolstenko_filter_unknown_card', __( 'Неизвестный тип карточки.', 'tolstenko-theme' ), array( 'status' => 400 ) );
+	}
+
+	$taxonomy = (string) $request->get_param( 'taxonomy' );
+	if ( $taxonomy !== '' && ! taxonomy_exists( $taxonomy ) ) {
+		return new WP_Error( 'tolstenko_filter_unknown_taxonomy', __( 'Таксономия не зарегистрирована.', 'tolstenko-theme' ), array( 'status' => 400 ) );
 	}
 
 	$paginate = (bool) $request->get_param( 'paginate' );
 	$result   = tolstenko_render_filtered_posts_payload(
 		array(
 			'post_type'      => $post_type,
-			'taxonomy'       => (string) $request->get_param( 'taxonomy' ),
+			'taxonomy'       => $taxonomy,
 			'term'           => (string) $request->get_param( 'term' ),
 			'posts_per_page' => (int) $request->get_param( 'posts_per_page' ),
 			'card'           => $card,

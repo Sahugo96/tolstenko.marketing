@@ -406,6 +406,41 @@ document.addEventListener('DOMContentLoaded', () => {
         var triggers = document.querySelectorAll('.reviews__list-preview--embed[data-video-src]');
         if (!triggers.length) return;
 
+        function logPosterIssue(reason, detail) {
+            if (window.console && typeof console.warn === 'function') {
+                console.warn('Tolstenko reviews poster: ' + reason, detail || '');
+            }
+        }
+
+        function loadPosterFromServer(poster, videoSrc) {
+            if (typeof tolstenkoAjax === 'undefined' || !tolstenkoAjax.ajaxUrl) {
+                logPosterIssue('ajaxUrl недоступен', videoSrc);
+                return;
+            }
+            fetch(tolstenkoAjax.ajaxUrl + '?action=tolstenko_video_poster&src=' + encodeURIComponent(videoSrc))
+                .then(function(response) {
+                    return response.json().then(function(payload) {
+                        if (!response.ok || !payload || !payload.success) {
+                            var message = payload && payload.data && payload.data.message
+                                ? payload.data.message
+                                : 'HTTP ' + response.status;
+                            throw new Error(message);
+                        }
+                        return payload.data;
+                    });
+                })
+                .then(function(data) {
+                    if (data && data.poster) {
+                        poster.src = data.poster;
+                    } else {
+                        logPosterIssue('сервер вернул пустой постер', videoSrc);
+                    }
+                })
+                .catch(function(error) {
+                    logPosterIssue(error && error.message ? error.message : 'запрос не удался', videoSrc);
+                });
+        }
+
         function loadPoster(trigger) {
             var poster = trigger.querySelector('.reviews__list-poster');
             if (!poster || poster.getAttribute('src')) return;
@@ -416,25 +451,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (rutubeId) {
                 fetch('https://rutube.ru/api/video/' + encodeURIComponent(rutubeId) + '/')
-                    .then(function(r) { return r.ok ? r.json() : null; })
+                    .then(function(response) {
+                        if (!response.ok) {
+                            throw new Error('Rutube API HTTP ' + response.status);
+                        }
+                        return response.json();
+                    })
                     .then(function(data) {
                         if (data && data.thumbnail_url) {
                             poster.src = data.thumbnail_url;
+                            return;
                         }
+                        throw new Error('в ответе Rutube API нет thumbnail_url');
                     })
-                    .catch(function() {});
+                    .catch(function(error) {
+                        // Прямой запрос к Rutube мог быть заблокирован — пробуем через сервер.
+                        logPosterIssue(error && error.message ? error.message : 'Rutube API недоступен', videoSrc);
+                        loadPosterFromServer(poster, videoSrc);
+                    });
                 return;
             }
 
-            if (typeof tolstenkoAjax === 'undefined' || !tolstenkoAjax.ajaxUrl) return;
-            fetch(tolstenkoAjax.ajaxUrl + '?action=tolstenko_video_poster&src=' + encodeURIComponent(videoSrc))
-                .then(function(r) { return r.ok ? r.json() : null; })
-                .then(function(data) {
-                    if (data && data.success && data.data && data.data.poster) {
-                        poster.src = data.data.poster;
-                    }
-                })
-                .catch(function() {});
+            loadPosterFromServer(poster, videoSrc);
         }
 
         triggers.forEach(loadPoster);
@@ -1165,10 +1203,30 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        function showFilterError(section, container) {
+            var message = (cfg.errorText || 'Не удалось загрузить список. Попробуйте обновить страницу.');
+            var existing = section.querySelector('[data-tolstenko-filter-error]');
+            if (!existing) {
+                existing = document.createElement('p');
+                existing.setAttribute('data-tolstenko-filter-error', '');
+                existing.setAttribute('role', 'alert');
+                existing.className = 'tolstenko-filter-error';
+                container.parentNode.insertBefore(existing, container);
+            }
+            existing.textContent = message;
+            existing.hidden = false;
+        }
+
+        function hideFilterError(section) {
+            var existing = section.querySelector('[data-tolstenko-filter-error]');
+            if (existing) existing.hidden = true;
+        }
+
         function loadFilter(section, term, page) {
             var container = getFilterContainer(section);
             if (!container) return;
 
+            hideFilterError(section);
             container.classList.add('loading');
             fetch(buildUrl(section, term, page), {
                 method: 'GET',
@@ -1179,16 +1237,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 credentials: 'same-origin'
             })
                 .then(function(response) {
-                    if (!response.ok) {
-                        throw new Error('Filter request failed');
-                    }
-                    return response.json();
+                    return response.json().then(function(payload) {
+                        if (!response.ok) {
+                            throw new Error(
+                                payload && payload.message ? payload.message : 'HTTP ' + response.status
+                            );
+                        }
+                        return payload;
+                    });
                 })
                 .then(function(data) {
                     applyFilterResult(section, container, data);
                 })
                 .catch(function(error) {
                     console.error('Tolstenko filter error:', error);
+                    showFilterError(section, container);
                 })
                 .finally(function() {
                     container.classList.remove('loading');

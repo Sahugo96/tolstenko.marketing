@@ -59,10 +59,13 @@ function tolstenko_maybe_migrate_contacts_page_option() {
 				'items' => $flat['maps_items'],
 			);
 		}
-		update_option( 'tolstenko_block_defaults', $saved, false );
+		if ( ! tolstenko_update_option_checked( 'tolstenko_block_defaults', $saved, false ) ) {
+			tolstenko_log_error( 'tolstenko_maybe_migrate_contacts_page_option', 'Миграция дефолтов не сохранена, повтор при следующем запросе' );
+			return;
+		}
 	}
 
-	update_option( TOLSTENKO_CONTACTS_PAGE_MIGRATED_OPTION, true, false );
+	tolstenko_update_option_checked( TOLSTENKO_CONTACTS_PAGE_MIGRATED_OPTION, true, false );
 }
 
 /**
@@ -425,10 +428,13 @@ function tolstenko_sanitize_contacts_defaults_from_raw( $raw ) {
 
 /**
  * Merge-save contacts defaults into tolstenko_block_defaults.
+ *
+ * @return bool true, если данные записаны в БД.
  */
 function tolstenko_save_contacts_defaults_keys_from_request() {
 	if ( ! current_user_can( 'manage_options' ) ) {
-		return;
+		tolstenko_log_error( 'tolstenko_save_contacts_defaults_keys_from_request', 'Попытка сохранения без прав manage_options' );
+		return false;
 	}
 	$raw   = isset( $_POST['tolstenko_block_defaults'] ) ? wp_unslash( $_POST['tolstenko_block_defaults'] ) : array(); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 	$patch = tolstenko_sanitize_contacts_defaults_from_raw( is_array( $raw ) ? $raw : array() );
@@ -444,7 +450,8 @@ function tolstenko_save_contacts_defaults_keys_from_request() {
 		$saved = array();
 	}
 	$saved = array_merge( $saved, $out );
-	update_option( 'tolstenko_block_defaults', $saved, false );
+
+	return tolstenko_update_option_checked( 'tolstenko_block_defaults', $saved, false );
 }
 
 /**
@@ -514,17 +521,16 @@ function tolstenko_handle_save_contacts_page() {
 	}
 	check_admin_referer( 'tolstenko_contacts_page_save', 'tolstenko_contacts_page_nonce' );
 
-	tolstenko_save_contacts_defaults_keys_from_request();
+	$saved = tolstenko_save_contacts_defaults_keys_from_request();
 
-	wp_safe_redirect(
-		add_query_arg(
-			array(
-				'page'    => 'tolstenko-contacts-page',
-				'updated' => '1',
-			),
-			admin_url( 'admin.php' )
-		)
-	);
+	$args = array( 'page' => 'tolstenko-contacts-page' );
+	if ( $saved ) {
+		$args['updated'] = '1';
+	} else {
+		$args['tolstenko-error'] = 'save';
+	}
+
+	wp_safe_redirect( add_query_arg( $args, admin_url( 'admin.php' ) ) );
 	exit;
 }
 
@@ -547,7 +553,7 @@ function tolstenko_contacts_page_icon_preview( $icon ) {
 
 function tolstenko_render_contacts_page_admin() {
 	if ( ! current_user_can( 'manage_options' ) ) {
-		return;
+		wp_die( esc_html__( 'Недостаточно прав для редактирования страницы контактов.', 'tolstenko-theme' ), 403 );
 	}
 
 	tolstenko_maybe_migrate_contacts_page_option();
@@ -560,7 +566,8 @@ function tolstenko_render_contacts_page_admin() {
 	$cd = $all['contacts_details'] ?? array();
 	$cm = $all['contacts_maps'] ?? array();
 
-	$updated = isset( $_GET['updated'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	$updated    = isset( $_GET['updated'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	$save_error = isset( $_GET['tolstenko-error'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 	$legacy_items = ! empty( $cp['items'] ) && is_array( $cp['items'] ) ? $cp['items'] : array();
 	$empty_item   = array(
@@ -600,9 +607,13 @@ function tolstenko_render_contacts_page_admin() {
 	?>
 	<div class="wrap">
 		<h1><?php esc_html_e( 'Страница контактов', 'tolstenko-theme' ); ?></h1>
-		<?php if ( $updated ) : ?>
-			<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Сохранено.', 'tolstenko-theme' ); ?></p></div>
-		<?php endif; ?>
+		<?php
+		if ( $save_error ) {
+			tolstenko_admin_notice_save_failed();
+		} elseif ( $updated ) {
+			tolstenko_admin_notice( __( 'Сохранено.', 'tolstenko-theme' ), 'success' );
+		}
+		?>
 		<p class="description">
 			<?php esc_html_e( 'Дефолты блоков «Контакты», «Реквизиты» и «Карты». Сохраняются в общие настройки сайта и не затирают остальные дефолты.', 'tolstenko-theme' ); ?>
 		</p>

@@ -58,13 +58,17 @@ function tolstenko_blog_authors_admin_assets( $hook ) {
 
 function tolstenko_render_blog_authors_admin_page() {
 	if ( ! current_user_can( 'manage_options' ) ) {
-		return;
+		wp_die( esc_html__( 'Недостаточно прав для редактирования авторов статей.', 'tolstenko-theme' ), 403 );
 	}
 
+	$posted = ! empty( $_POST );
 	if (
-		isset( $_POST['tolstenko_blog_authors_nonce'] )
-		&& wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['tolstenko_blog_authors_nonce'] ) ), 'tolstenko_blog_authors_save' )
+		$posted
+		&& ( ! isset( $_POST['tolstenko_blog_authors_nonce'] )
+			|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['tolstenko_blog_authors_nonce'] ) ), 'tolstenko_blog_authors_save' ) )
 	) {
+		tolstenko_admin_notice_nonce_failed();
+	} elseif ( $posted ) {
 		$raw  = isset( $_POST['tolstenko_blog_authors'] ) && is_array( $_POST['tolstenko_blog_authors'] )
 			? wp_unslash( $_POST['tolstenko_blog_authors'] ) // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			: array();
@@ -89,8 +93,11 @@ function tolstenko_render_blog_authors_admin_page() {
 				'description' => $desc,
 			);
 		}
-		update_option( TOLSTENKO_BLOG_AUTHORS_OPTION, $save, false );
-		echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Авторы сохранены.', 'tolstenko-theme' ) . '</p></div>';
+		if ( tolstenko_update_option_checked( TOLSTENKO_BLOG_AUTHORS_OPTION, $save, false ) ) {
+			tolstenko_admin_notice( __( 'Авторы сохранены.', 'tolstenko-theme' ), 'success' );
+		} else {
+			tolstenko_admin_notice_save_failed();
+		}
 	}
 
 	$authors = tolstenko_get_blog_authors_list();

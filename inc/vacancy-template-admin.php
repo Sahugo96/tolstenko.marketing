@@ -70,14 +70,21 @@ function tolstenko_vacancy_template_admin_assets( $hook ) {
 
 function tolstenko_render_vacancy_template_admin_page() {
 	if ( ! current_user_can( 'manage_options' ) ) {
-		return;
+		wp_die( esc_html__( 'Недостаточно прав для редактирования шаблона вакансии.', 'tolstenko-theme' ), 403 );
 	}
 
-	if ( isset( $_POST['tolstenko_vacancy_template_nonce'] )
-		&& wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['tolstenko_vacancy_template_nonce'] ) ), 'tolstenko_vacancy_template_save' )
+	$posted = ! empty( $_POST );
+	if ( $posted
+		&& ( ! isset( $_POST['tolstenko_vacancy_template_nonce'] )
+			|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['tolstenko_vacancy_template_nonce'] ) ), 'tolstenko_vacancy_template_save' ) )
 	) {
-		tolstenko_save_vacancy_template_from_request();
-		echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Шаблон вакансии сохранён.', 'tolstenko-theme' ) . '</p></div>';
+		tolstenko_admin_notice_nonce_failed();
+	} elseif ( $posted ) {
+		if ( tolstenko_save_vacancy_template_from_request() ) {
+			tolstenko_admin_notice( __( 'Шаблон вакансии сохранён.', 'tolstenko-theme' ), 'success' );
+		} else {
+			tolstenko_admin_notice_save_failed();
+		}
 	}
 
 	$schema = tolstenko_vacancy_template_schema();
@@ -255,7 +262,9 @@ function tolstenko_render_vacancy_template_admin_page() {
 			ed.hidden = false;
 			try {
 				ed.theme && ed.theme.resizeTo && ed.theme.resizeTo('100%', 280);
-			} catch (e) {}
+			} catch (e) {
+				if (window.console) console.warn('tolstenko: не удалось изменить размер редактора', e);
+			}
 			var iframe = ed.getContentAreaContainer() && ed.getContentAreaContainer().querySelector('iframe');
 			if (iframe) {
 				iframe.style.height = '280px';
@@ -337,6 +346,9 @@ function tolstenko_render_vacancy_template_admin_page() {
 	<?php
 }
 
+/**
+ * @return bool true, если данные записаны в БД.
+ */
 function tolstenko_save_vacancy_template_from_request() {
 	$raw = isset( $_POST['tolstenko_vacancy_template'] ) ? wp_unslash( $_POST['tolstenko_vacancy_template'] ) : array();
 	if ( ! is_array( $raw ) ) {
@@ -409,7 +421,8 @@ function tolstenko_save_vacancy_template_from_request() {
 		$saved = array();
 	}
 	$saved = array_merge( $saved, $patch );
-	update_option( 'tolstenko_block_defaults', $saved, false );
+
+	return tolstenko_update_option_checked( 'tolstenko_block_defaults', $saved, false );
 }
 
 /**

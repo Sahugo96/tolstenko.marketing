@@ -764,11 +764,20 @@ function tolstenko_faq_answer_editor( $content, $idx ) {
 
 function tolstenko_render_block_defaults_admin_page() {
 	if ( ! current_user_can( 'manage_options' ) ) {
-		return;
+		wp_die( esc_html__( 'Недостаточно прав для редактирования дефолтов блоков.', 'tolstenko-theme' ), 403 );
 	}
-	if ( isset( $_POST['tolstenko_block_defaults_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['tolstenko_block_defaults_nonce'] ) ), 'tolstenko_block_defaults_save' ) ) {
-		tolstenko_save_block_defaults_from_request();
-		echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Дефолты блоков сохранены.', 'tolstenko-theme' ) . '</p></div>';
+	$posted = ! empty( $_POST );
+	if ( $posted
+		&& ( ! isset( $_POST['tolstenko_block_defaults_nonce'] )
+			|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['tolstenko_block_defaults_nonce'] ) ), 'tolstenko_block_defaults_save' ) )
+	) {
+		tolstenko_admin_notice_nonce_failed();
+	} elseif ( $posted ) {
+		if ( tolstenko_save_block_defaults_from_request() ) {
+			tolstenko_admin_notice( __( 'Дефолты блоков сохранены.', 'tolstenko-theme' ), 'success' );
+		} else {
+			tolstenko_admin_notice_save_failed();
+		}
 	}
 
 	$all = tolstenko_block_defaults_schema();
@@ -1807,7 +1816,9 @@ function tolstenko_render_block_defaults_admin_page() {
 						if (ed.theme && typeof ed.theme.resizeTo === 'function') {
 							ed.theme.resizeTo('100%', 180);
 						}
-					} catch (err) {}
+					} catch (err) {
+						if (window.console) console.warn('tolstenko: не удалось обновить редактор FAQ', err);
+					}
 				}
 			}, 60);
 		}
@@ -1862,7 +1873,11 @@ function tolstenko_render_block_defaults_admin_page() {
 				if (!item) return;
 				var area = item.querySelector('textarea.wp-editor-area');
 				if (area && area.id && window.wp && wp.editor && typeof wp.editor.remove === 'function') {
-					try { wp.editor.remove(area.id); } catch (err) {}
+					try {
+						wp.editor.remove(area.id);
+					} catch (err) {
+						if (window.console) console.warn('tolstenko: не удалось снять редактор с элемента', err);
+					}
 				}
 				item.remove();
 				return;
@@ -1996,13 +2011,23 @@ function tolstenko_render_block_defaults_admin_page() {
 	<?php
 }
 
+/**
+ * @return bool true, если данные записаны в БД.
+ */
 function tolstenko_save_block_defaults_from_request() {
 	if ( ! current_user_can( 'manage_options' ) ) {
-		return;
+		tolstenko_log_error( 'tolstenko_save_block_defaults_from_request', 'Попытка сохранения без прав manage_options' );
+		return false;
 	}
 	if ( isset( $_POST['tolstenko_defaults_reset_all'] ) ) {
-		delete_option( 'tolstenko_block_defaults' );
-		return;
+		if ( get_option( 'tolstenko_block_defaults', null ) === null ) {
+			return true;
+		}
+		$deleted = delete_option( 'tolstenko_block_defaults' );
+		if ( ! $deleted ) {
+			tolstenko_log_error( 'tolstenko_save_block_defaults_from_request', 'Не удалось сбросить дефолты блоков' );
+		}
+		return $deleted;
 	}
 	$raw = isset( $_POST['tolstenko_block_defaults'] ) ? wp_unslash( $_POST['tolstenko_block_defaults'] ) : array();
 	$out = array();
@@ -2569,6 +2594,6 @@ function tolstenko_save_block_defaults_from_request() {
 		}
 	}
 
-	update_option( 'tolstenko_block_defaults', $out, false );
+	return tolstenko_update_option_checked( 'tolstenko_block_defaults', $out, false );
 }
 
