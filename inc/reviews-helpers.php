@@ -107,6 +107,39 @@ function tolstenko_parse_video_embed_src( $raw ) {
 	return '';
 }
 
+/**
+ * Получить JSON-ответ удалённого API с проверкой всех этапов запроса.
+ *
+ * @param string $url  URL.
+ * @param array  $args Аргументы wp_remote_get().
+ * @return array|WP_Error Декодированный ответ или ошибка.
+ */
+function tolstenko_fetch_remote_json( $url, $args = array() ) {
+	$response = wp_remote_get( $url, $args );
+	if ( is_wp_error( $response ) ) {
+		return $response;
+	}
+
+	$code = (int) wp_remote_retrieve_response_code( $response );
+	if ( $code < 200 || $code >= 300 ) {
+		return new WP_Error(
+			'tolstenko_remote_http_error',
+			sprintf( 'HTTP %d от %s', $code, $url ),
+			array( 'status' => $code )
+		);
+	}
+
+	$data = json_decode( wp_remote_retrieve_body( $response ), true );
+	if ( json_last_error() !== JSON_ERROR_NONE ) {
+		return new WP_Error( 'tolstenko_remote_json_error', json_last_error_msg() );
+	}
+	if ( ! is_array( $data ) ) {
+		return new WP_Error( 'tolstenko_remote_json_shape', 'Ожидался JSON-объект.' );
+	}
+
+	return $data;
+}
+
 function tolstenko_get_video_embed_poster( $embed_url ) {
 	$embed_url = (string) $embed_url;
 	if ( $embed_url === '' ) {
@@ -128,15 +161,20 @@ function tolstenko_get_video_embed_poster( $embed_url ) {
 		if ( is_string( $cached ) && $cached !== '' ) {
 			return $cached;
 		}
+		if ( get_transient( $cache_key . '_failed' ) ) {
+			return '';
+		}
 
-		$response = wp_remote_get( 'https://rutube.ru/api/video/' . $rutube_id . '/', $request_args );
-		if ( ! is_wp_error( $response ) ) {
-			$data   = json_decode( wp_remote_retrieve_body( $response ), true );
-			$poster = is_array( $data ) ? (string) ( $data['thumbnail_url'] ?? '' ) : '';
+		$data = tolstenko_fetch_remote_json( 'https://rutube.ru/api/video/' . $rutube_id . '/', $request_args );
+		if ( is_wp_error( $data ) ) {
+			tolstenko_log_error( 'tolstenko_get_video_embed_poster', 'Rutube API недоступен', $data );
+		} else {
+			$poster = (string) ( $data['thumbnail_url'] ?? '' );
 			if ( $poster !== '' ) {
 				set_transient( $cache_key, $poster, WEEK_IN_SECONDS );
 				return $poster;
 			}
+			tolstenko_log_error( 'tolstenko_get_video_embed_poster', 'В ответе Rutube API нет thumbnail_url', $rutube_id );
 		}
 
 		$oembed_url = add_query_arg(
@@ -144,15 +182,20 @@ function tolstenko_get_video_embed_poster( $embed_url ) {
 			'https://rutube.ru/video/' . $rutube_id . '/',
 			'https://rutube.ru/api/oembed/'
 		);
-		$oembed_response = wp_remote_get( $oembed_url, $request_args );
-		if ( ! is_wp_error( $oembed_response ) ) {
-			$oembed_data = json_decode( wp_remote_retrieve_body( $oembed_response ), true );
-			$poster      = is_array( $oembed_data ) ? (string) ( $oembed_data['thumbnail_url'] ?? '' ) : '';
+		$oembed_data = tolstenko_fetch_remote_json( $oembed_url, $request_args );
+		if ( is_wp_error( $oembed_data ) ) {
+			tolstenko_log_error( 'tolstenko_get_video_embed_poster', 'Rutube oEmbed недоступен', $oembed_data );
+		} else {
+			$poster = (string) ( $oembed_data['thumbnail_url'] ?? '' );
 			if ( $poster !== '' ) {
 				set_transient( $cache_key, $poster, WEEK_IN_SECONDS );
 				return $poster;
 			}
+			tolstenko_log_error( 'tolstenko_get_video_embed_poster', 'В ответе Rutube oEmbed нет thumbnail_url', $rutube_id );
 		}
+
+		// Негативное кеширование: не дёргать недоступный API на каждый просмотр страницы.
+		set_transient( $cache_key . '_failed', 1, 10 * MINUTE_IN_SECONDS );
 	}
 
 	if ( preg_match( '#(?:youtube\.com/embed/|youtu\.be/)([a-zA-Z0-9_-]+)#', $embed_url, $matches ) ) {
@@ -164,11 +207,22 @@ function tolstenko_get_video_embed_poster( $embed_url ) {
 
 function tolstenko_ajax_video_poster() {
 	$src = isset( $_GET['src'] ) ? esc_url_raw( wp_unslash( $_GET['src'] ) ) : '';
-	wp_send_json_success(
-		array(
-			'poster' => tolstenko_get_video_embed_poster( $src ),
-		)
-	);
+	if ( $src === '' || ! wp_http_validate_url( $src ) ) {
+		wp_send_json_error(
+			array( 'message' => __( 'Некорректный адрес видео.', 'tolstenko-theme' ) ),
+			400
+		);
+	}
+
+	$poster = tolstenko_get_video_embed_poster( $src );
+	if ( $poster === '' ) {
+		wp_send_json_error(
+			array( 'message' => __( 'Не удалось получить постер видео.', 'tolstenko-theme' ) ),
+			502
+		);
+	}
+
+	wp_send_json_success( array( 'poster' => $poster ) );
 }
 add_action( 'wp_ajax_tolstenko_video_poster', 'tolstenko_ajax_video_poster' );
 add_action( 'wp_ajax_nopriv_tolstenko_video_poster', 'tolstenko_ajax_video_poster' );

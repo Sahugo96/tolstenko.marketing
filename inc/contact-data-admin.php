@@ -268,17 +268,16 @@ function tolstenko_handle_save_contact_data() {
 		? wp_unslash( $_POST['tolstenko_contact_data'] )
 		: array();
 
-	update_option( TOLSTENKO_CONTACT_DATA_OPTION, tolstenko_sanitize_contact_data( $raw ), false );
+	$saved = tolstenko_update_option_checked( TOLSTENKO_CONTACT_DATA_OPTION, tolstenko_sanitize_contact_data( $raw ), false );
 
-	wp_safe_redirect(
-		add_query_arg(
-			array(
-				'page'    => 'tolstenko-contact-data',
-				'updated' => '1',
-			),
-			admin_url( 'admin.php' )
-		)
-	);
+	$args = array( 'page' => 'tolstenko-contact-data' );
+	if ( $saved ) {
+		$args['updated'] = '1';
+	} else {
+		$args['tolstenko-error'] = 'save';
+	}
+
+	wp_safe_redirect( add_query_arg( $args, admin_url( 'admin.php' ) ) );
 	exit;
 }
 
@@ -377,7 +376,7 @@ function tolstenko_render_contact_social_group( $group, $title, $hint, $rows ) {
 
 function tolstenko_render_contact_data_admin_page() {
 	if ( ! current_user_can( 'manage_options' ) ) {
-		return;
+		wp_die( esc_html__( 'Недостаточно прав для редактирования контактных данных.', 'tolstenko-theme' ), 403 );
 	}
 
 	$saved = get_option( TOLSTENKO_CONTACT_DATA_OPTION, null );
@@ -402,13 +401,18 @@ function tolstenko_render_contact_data_admin_page() {
 		}
 	}
 
-	$updated = isset( $_GET['updated'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	$updated    = isset( $_GET['updated'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	$save_error = isset( $_GET['tolstenko-error'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	?>
 	<div class="wrap tolstenko-cd">
 		<h1><?php esc_html_e( 'Контактные данные', 'tolstenko-theme' ); ?></h1>
-		<?php if ( $updated ) : ?>
-			<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Сохранено.', 'tolstenko-theme' ); ?></p></div>
-		<?php endif; ?>
+		<?php
+		if ( $save_error ) {
+			tolstenko_admin_notice_save_failed();
+		} elseif ( $updated ) {
+			tolstenko_admin_notice( __( 'Сохранено.', 'tolstenko-theme' ), 'success' );
+		}
+		?>
 		<p class="description">
 			<?php esc_html_e( 'Телефон, почта, реквизиты и низ футера. Меню «Услуги» и «О нас» — в Внешний вид → Меню (области footer_menu_1 / footer_menu_2).', 'tolstenko-theme' ); ?>
 		</p>

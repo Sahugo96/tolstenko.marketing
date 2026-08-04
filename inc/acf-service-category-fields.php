@@ -529,10 +529,19 @@ function tolstenko_save_service_category_custom_blocks_fields( $term_id ) {
 	}
 	update_term_meta( $term_id, '_tolstenko_sc_text_reviews', $text_reviews_out );
 
-	$article_out = array();
+	$article_out  = array();
+	$save_article = true;
 	if ( isset( $_POST['tolstenko_sc_article_sections_json'] ) ) {
 		$decoded = json_decode( wp_unslash( (string) $_POST['tolstenko_sc_article_sections_json'] ), true );
-		if ( is_array( $decoded ) && function_exists( 'tolstenko_sc_sanitize_article_sections' ) ) {
+		if ( json_last_error() !== JSON_ERROR_NONE || ! is_array( $decoded ) ) {
+			// Повреждённый JSON: не затирать сохранённые секции пустым значением.
+			$save_article = false;
+			tolstenko_log_error(
+				'tolstenko_save_service_category_custom_blocks_fields',
+				'Некорректный JSON секций статьи, секции не перезаписаны',
+				json_last_error_msg()
+			);
+		} elseif ( function_exists( 'tolstenko_sc_sanitize_article_sections' ) ) {
 			$article_out = tolstenko_sc_sanitize_article_sections( $decoded );
 		}
 	} elseif ( isset( $_POST['tolstenko_sc_article_sections'] ) && is_array( $_POST['tolstenko_sc_article_sections'] ) ) {
@@ -540,6 +549,8 @@ function tolstenko_save_service_category_custom_blocks_fields( $term_id ) {
 			? tolstenko_sc_sanitize_article_sections( wp_unslash( $_POST['tolstenko_sc_article_sections'] ) )
 			: array();
 	}
-	update_term_meta( $term_id, '_tolstenko_sc_article_sections', $article_out );
+	if ( $save_article ) {
+		update_term_meta( $term_id, '_tolstenko_sc_article_sections', $article_out );
+	}
 	delete_term_meta( $term_id, '_tolstenko_sc_banner_reverse' );
 }

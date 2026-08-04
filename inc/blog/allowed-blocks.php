@@ -278,15 +278,21 @@ function tolstenko_blog_content_defaults_image_field( $name, $id, $label ) {
 
 function tolstenko_render_blog_content_defaults_admin_page() {
 	if ( ! current_user_can( 'manage_options' ) ) {
-		return;
+		wp_die( esc_html__( 'Недостаточно прав для редактирования дефолтов блоков статьи.', 'tolstenko-theme' ), 403 );
 	}
 
-	if (
-		isset( $_POST['tolstenko_blog_blocks_nonce'] )
-		&& wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['tolstenko_blog_blocks_nonce'] ) ), 'tolstenko_blog_content_defaults_save' )
+	$posted = ! empty( $_POST );
+	if ( $posted
+		&& ( ! isset( $_POST['tolstenko_blog_blocks_nonce'] )
+			|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['tolstenko_blog_blocks_nonce'] ) ), 'tolstenko_blog_content_defaults_save' ) )
 	) {
-		tolstenko_save_blog_content_defaults_from_request();
-		echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Дефолты блоков тела статьи сохранены.', 'tolstenko-theme' ) . '</p></div>';
+		tolstenko_admin_notice_nonce_failed();
+	} elseif ( $posted ) {
+		if ( tolstenko_save_blog_content_defaults_from_request() ) {
+			tolstenko_admin_notice( __( 'Дефолты блоков тела статьи сохранены.', 'tolstenko-theme' ), 'success' );
+		} else {
+			tolstenko_admin_notice_save_failed();
+		}
 	}
 
 	$schema = tolstenko_blog_content_defaults_schema();
@@ -549,6 +555,8 @@ function tolstenko_render_blog_content_defaults_admin_page() {
 
 /**
  * Сохранить дефолты тела статьи в tolstenko_block_defaults.
+ *
+ * @return bool true, если данные записаны в БД.
  */
 function tolstenko_save_blog_content_defaults_from_request() {
 	$raw_all = isset( $_POST['tolstenko_block_defaults'] ) && is_array( $_POST['tolstenko_block_defaults'] )
@@ -649,5 +657,5 @@ function tolstenko_save_blog_content_defaults_from_request() {
 		'rows'       => $body_rows,
 	);
 
-	update_option( 'tolstenko_block_defaults', $saved, false );
+	return tolstenko_update_option_checked( 'tolstenko_block_defaults', $saved, false );
 }

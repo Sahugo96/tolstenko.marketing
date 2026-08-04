@@ -164,8 +164,9 @@ function tolstenko_theme_scripts() {
         'tolstenkoFilter',
         array(
             // Относительный URL — без http/https mismatch на локалке.
-            'restUrl' => esc_url_raw( wp_make_link_relative( rest_url( 'tolstenko/v1/filter-posts' ) ) ),
-            'nonce'   => wp_create_nonce( 'wp_rest' ),
+            'restUrl'   => esc_url_raw( wp_make_link_relative( rest_url( 'tolstenko/v1/filter-posts' ) ) ),
+            'nonce'     => wp_create_nonce( 'wp_rest' ),
+            'errorText' => __( 'Не удалось загрузить список. Попробуйте ещё раз.', 'tolstenko-theme' ),
         )
     );
 
@@ -2076,6 +2077,11 @@ function tolstenko_get_cpt_listing_breadcrumb( $post_type ) {
 		'label' => $page_title !== '' ? $page_title : ( $label !== '' ? $label : $post_type ),
 	);
 }
+
+/**
+ * Логирование ошибок и проверяемое сохранение опций.
+ */
+require_once get_template_directory() . '/inc/error-handling.php';
 
 /**
  * Contact Form 7: плейсхолдеры ссылок и иконки в разметке форм.
