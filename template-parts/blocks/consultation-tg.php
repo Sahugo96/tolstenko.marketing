@@ -8,16 +8,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 $theme_dir   = get_template_directory();
-$block_attrs = get_query_var( 'tolstenko_block_attributes', array() );
-if ( ! is_array( $block_attrs ) ) {
-	$block_attrs = array();
-}
-$defaults = function_exists( 'tolstenko_get_block_defaults' ) ? tolstenko_get_block_defaults( 'consultation_tg' ) : array();
-if ( ! is_array( $defaults ) ) {
-	$defaults = array();
-}
+$block_attrs = tolstenko_block_attributes();
+$defaults = tolstenko_block_defaults( 'consultation_tg' );
 
-$site = function_exists( 'tolstenko_get_site_header_footer_data' ) ? tolstenko_get_site_header_footer_data() : array();
+$site = tolstenko_site_data();
 
 $title = ! empty( $block_attrs['block_consultation_tg_title'] )
 	? (string) $block_attrs['block_consultation_tg_title']
@@ -43,9 +37,7 @@ $img_id = ! empty( $block_attrs['block_consultation_tg_image'] )
 	: (int) ( $defaults['image'] ?? 0 );
 $img_src = $img_id > 0 ? (string) wp_get_attachment_image_url( $img_id, 'medium' ) : '';
 $img_alt = $img_id ? (string) get_post_meta( $img_id, '_wp_attachment_image_alt', true ) : '';
-$title_tag = function_exists( 'tolstenko_normalize_heading_tag' )
-	? tolstenko_normalize_heading_tag( $block_attrs['block_consultation_tg_title_tag'] ?? 'h2', 'h2' )
-	: 'h2';
+$title_tag = tolstenko_block_heading_tag( $block_attrs, 'block_consultation_tg_title_tag', 'h2' );
 
 if ( $title === '' && $text === '' && $btn_url === '' ) {
 	return;

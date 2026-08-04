@@ -9,14 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 $post_id = get_the_ID();
-$block_attrs = get_query_var( 'tolstenko_block_attributes', array() );
-if ( ! is_array( $block_attrs ) ) {
-	$block_attrs = array();
-}
-$defaults = function_exists( 'tolstenko_get_block_defaults' ) ? tolstenko_get_block_defaults( 'vacancy_content' ) : array();
-if ( ! is_array( $defaults ) ) {
-	$defaults = array();
-}
+$block_attrs = tolstenko_block_attributes();
+$defaults = tolstenko_block_defaults( 'vacancy_content' );
 
 $title = '';
 if ( ! empty( $block_attrs['block_vacancy_content_title'] ) ) {
@@ -27,9 +21,7 @@ if ( ! empty( $block_attrs['block_vacancy_content_title'] ) ) {
 	$title = (string) get_the_title( $post_id );
 }
 
-$title_tag = function_exists( 'tolstenko_normalize_heading_tag' )
-	? tolstenko_normalize_heading_tag( $block_attrs['block_vacancy_content_title_tag'] ?? 'h2', 'h2' )
-	: 'h2';
+$title_tag = tolstenko_block_heading_tag( $block_attrs, 'block_vacancy_content_title_tag', 'h2' );
 
 $content = isset( $block_attrs['block_vacancy_content_html'] ) && trim( (string) $block_attrs['block_vacancy_content_html'] ) !== ''
 	? (string) $block_attrs['block_vacancy_content_html']

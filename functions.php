@@ -2099,6 +2099,11 @@ function tolstenko_query_vars( $vars ) {
 add_filter( 'query_vars', 'tolstenko_query_vars' );
 
 /**
+ * Общие помощники шаблонов блоков (атрибуты, дефолты, теги заголовков)
+ */
+require_once get_template_directory() . '/inc/block-helpers.php';
+
+/**
  * ACF Block Types для Gutenberg (блоки темы в редакторе)
  */
 require_once get_template_directory() . '/inc/acf-blocks.php';

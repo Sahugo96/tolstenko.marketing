@@ -7,15 +7,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$block_attrs = get_query_var( 'tolstenko_block_attributes', array() );
-if ( ! is_array( $block_attrs ) ) {
-	$block_attrs = array();
-}
+$block_attrs = tolstenko_block_attributes();
 
-$defaults = function_exists( 'tolstenko_get_block_defaults' ) ? tolstenko_get_block_defaults( 'city' ) : array();
-if ( ! is_array( $defaults ) ) {
-	$defaults = array();
-}
+$defaults = tolstenko_block_defaults( 'city' );
 
 $title = '';
 if ( ! empty( $block_attrs['block_city_title'] ) ) {
@@ -31,9 +25,7 @@ if ( isset( $block_attrs['block_city_text'] ) && trim( (string) $block_attrs['bl
 	$text = (string) $defaults['text'];
 }
 
-$title_tag = function_exists( 'tolstenko_normalize_heading_tag' )
-	? tolstenko_normalize_heading_tag( $block_attrs['block_city_title_tag'] ?? 'h2', 'h2' )
-	: 'h2';
+$title_tag = tolstenko_block_heading_tag( $block_attrs, 'block_city_title_tag', 'h2' );
 
 $query = new WP_Query(
 	array(

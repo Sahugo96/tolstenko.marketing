@@ -7,15 +7,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$block_attrs = get_query_var( 'tolstenko_block_attributes', array() );
-if ( ! is_array( $block_attrs ) ) {
-	$block_attrs = array();
-}
+$block_attrs = tolstenko_block_attributes();
 
-$defaults = function_exists( 'tolstenko_get_block_defaults' ) ? tolstenko_get_block_defaults( 'actions' ) : array();
-if ( ! is_array( $defaults ) ) {
-	$defaults = array();
-}
+$defaults = tolstenko_block_defaults( 'actions' );
 
 $title = '';
 if ( ! empty( $block_attrs['block_actions_title'] ) ) {
@@ -24,9 +18,7 @@ if ( ! empty( $block_attrs['block_actions_title'] ) ) {
 	$title = (string) $defaults['title'];
 }
 
-$title_tag = function_exists( 'tolstenko_normalize_heading_tag' )
-	? tolstenko_normalize_heading_tag( $block_attrs['block_actions_title_tag'] ?? 'h2', 'h2' )
-	: 'h2';
+$title_tag = tolstenko_block_heading_tag( $block_attrs, 'block_actions_title_tag', 'h2' );
 
 $raw_items = array();
 if ( ! empty( $block_attrs['block_actions_items'] ) && is_array( $block_attrs['block_actions_items'] ) ) {

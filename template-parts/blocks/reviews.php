@@ -7,14 +7,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$block_attrs = get_query_var( 'tolstenko_block_attributes', array() );
-if ( ! is_array( $block_attrs ) ) {
-	$block_attrs = array();
-}
-$defaults = function_exists( 'tolstenko_get_block_defaults' ) ? tolstenko_get_block_defaults( 'reviews' ) : array();
-if ( ! is_array( $defaults ) ) {
-	$defaults = array();
-}
+$block_attrs = tolstenko_block_attributes();
+$defaults = tolstenko_block_defaults( 'reviews' );
 
 $block_title = '';
 if ( ! empty( $block_attrs['block_reviews_title'] ) ) {
@@ -33,9 +27,7 @@ if ( isset( $block_attrs['block_reviews_text'] ) && trim( (string) $block_attrs[
 	$block_text = (string) $defaults['text'];
 }
 
-$title_tag = function_exists( 'tolstenko_normalize_heading_tag' )
-	? tolstenko_normalize_heading_tag( $block_attrs['block_reviews_title_tag'] ?? 'h2', 'h2' )
-	: 'h2';
+$title_tag = tolstenko_block_heading_tag( $block_attrs, 'block_reviews_title_tag', 'h2' );
 
 $show_items = true;
 if ( array_key_exists( 'block_reviews_show_items', $block_attrs ) ) {

@@ -7,14 +7,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$block_attrs = get_query_var( 'tolstenko_block_attributes', array() );
-if ( ! is_array( $block_attrs ) ) {
-	$block_attrs = array();
-}
-$defaults = function_exists( 'tolstenko_get_block_defaults' ) ? tolstenko_get_block_defaults( 'author' ) : array();
-if ( ! is_array( $defaults ) ) {
-	$defaults = array();
-}
+$block_attrs = tolstenko_block_attributes();
+$defaults = tolstenko_block_defaults( 'author' );
 
 $str = static function ( $attr_key, $def_key, $block_attrs, $defaults ) {
 	if ( isset( $block_attrs[ $attr_key ] ) && trim( (string) $block_attrs[ $attr_key ] ) !== '' ) {
@@ -31,9 +25,7 @@ $int = static function ( $attr_key, $def_key, $block_attrs, $defaults ) {
 };
 
 $name = $str( 'block_author_name', 'name', $block_attrs, $defaults );
-$name_tag = function_exists( 'tolstenko_normalize_heading_tag' )
-	? tolstenko_normalize_heading_tag( $block_attrs['block_author_name_tag'] ?? 'h2', 'h2' )
-	: 'h2';
+$name_tag = tolstenko_block_heading_tag( $block_attrs, 'block_author_name_tag', 'h2' );
 
 $photo_id  = $int( 'block_author_photo', 'photo', $block_attrs, $defaults );
 $photo_url = $photo_id ? (string) wp_get_attachment_image_url( $photo_id, 'large' ) : '';

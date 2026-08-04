@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 $theme_uri = get_template_directory_uri();
-$site_hf   = function_exists( 'tolstenko_get_site_header_footer_data' ) ? tolstenko_get_site_header_footer_data() : array();
+$site_hf   = tolstenko_site_data();
 $contact   = function_exists( 'tolstenko_get_contact_data' ) ? tolstenko_get_contact_data( true ) : array();
 
 $phone = '';

@@ -6,13 +6,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$attrs = get_query_var( 'tolstenko_block_attributes', array() );
-if ( ! is_array( $attrs ) ) {
-	$attrs = array();
-}
-$defaults = function_exists( 'tolstenko_get_blog_content_defaults' )
-	? tolstenko_get_blog_content_defaults( 'blog_video' )
-	: array();
+$attrs = tolstenko_block_attributes();
+$defaults = tolstenko_blog_content_block_defaults( 'blog_video' );
 
 $preview_id = isset( $attrs['block_blog_video_preview'] ) ? (int) $attrs['block_blog_video_preview'] : 0;
 $video_url  = isset( $attrs['block_blog_video_url'] ) ? trim( (string) $attrs['block_blog_video_url'] ) : '';
