@@ -8,23 +8,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 $theme_dir   = get_template_directory();
-$block_attrs = get_query_var( 'tolstenko_block_attributes', array() );
-if ( ! is_array( $block_attrs ) ) {
-	$block_attrs = array();
-}
-$defaults = function_exists( 'tolstenko_get_block_defaults' ) ? tolstenko_get_block_defaults( 'tg_channel' ) : array();
-if ( ! is_array( $defaults ) ) {
-	$defaults = array();
-}
-$site = function_exists( 'tolstenko_get_site_header_footer_data' ) ? tolstenko_get_site_header_footer_data() : array();
+$block_attrs = tolstenko_block_attributes();
+$defaults = tolstenko_block_defaults( 'tg_channel' );
+$site = tolstenko_site_data();
 
 $title = ! empty( $block_attrs['block_tg_channel_title'] ) ? (string) $block_attrs['block_tg_channel_title'] : (string) ( $defaults['title'] ?? '' );
 $text  = isset( $block_attrs['block_tg_channel_text'] ) && trim( (string) $block_attrs['block_tg_channel_text'] ) !== ''
 	? (string) $block_attrs['block_tg_channel_text']
 	: (string) ( $defaults['text'] ?? '' );
-$title_tag = function_exists( 'tolstenko_normalize_heading_tag' )
-	? tolstenko_normalize_heading_tag( $block_attrs['block_tg_channel_title_tag'] ?? 'h2', 'h2' )
-	: 'h2';
+$title_tag = tolstenko_block_heading_tag( $block_attrs, 'block_tg_channel_title_tag', 'h2' );
 
 $items     = array();
 $raw_items = ! empty( $block_attrs['block_tg_channel_items'] ) && is_array( $block_attrs['block_tg_channel_items'] )

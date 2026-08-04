@@ -7,15 +7,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$block_attrs = get_query_var( 'tolstenko_block_attributes', array() );
-if ( ! is_array( $block_attrs ) ) {
-	$block_attrs = array();
-}
+$block_attrs = tolstenko_block_attributes();
 
-$defaults = function_exists( 'tolstenko_get_block_defaults' ) ? tolstenko_get_block_defaults( 'service_section' ) : array();
-if ( ! is_array( $defaults ) ) {
-	$defaults = array();
-}
+$defaults = tolstenko_block_defaults( 'service_section' );
 
 $title = '';
 if ( ! empty( $block_attrs['block_service_section_title'] ) ) {
@@ -31,9 +25,7 @@ if ( isset( $block_attrs['block_service_section_text'] ) && trim( (string) $bloc
 	$text = (string) $defaults['text'];
 }
 
-$title_tag = function_exists( 'tolstenko_normalize_heading_tag' )
-	? tolstenko_normalize_heading_tag( $block_attrs['block_service_section_title_tag'] ?? 'h2', 'h2' )
-	: 'h2';
+$title_tag = tolstenko_block_heading_tag( $block_attrs, 'block_service_section_title_tag', 'h2' );
 
 $posts_per_page = isset( $block_attrs['block_service_section_posts_per_page'] )
 	? (int) $block_attrs['block_service_section_posts_per_page']

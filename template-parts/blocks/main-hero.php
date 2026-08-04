@@ -7,10 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$block_attrs = get_query_var( 'tolstenko_block_attributes', array() );
-if ( ! is_array( $block_attrs ) ) {
-	$block_attrs = array();
-}
+$block_attrs = tolstenko_block_attributes();
 
 $category_term = get_query_var( 'tolstenko_service_category_term' );
 if ( $category_term instanceof WP_Term && function_exists( 'tolstenko_sc_resolve_category_block_attributes' ) ) {
@@ -20,10 +17,7 @@ if ( $category_term instanceof WP_Term && function_exists( 'tolstenko_sc_resolve
 	);
 }
 
-$defaults = function_exists( 'tolstenko_get_block_defaults' ) ? tolstenko_get_block_defaults( 'main_hero' ) : array();
-if ( ! is_array( $defaults ) ) {
-	$defaults = array();
-}
+$defaults = tolstenko_block_defaults( 'main_hero' );
 
 $title = '';
 if ( ! empty( $block_attrs['block_main_hero_title'] ) ) {
@@ -39,9 +33,7 @@ if ( isset( $block_attrs['block_main_hero_text'] ) && trim( (string) $block_attr
 	$text = (string) $defaults['text'];
 }
 
-$title_tag = function_exists( 'tolstenko_normalize_heading_tag' )
-	? tolstenko_normalize_heading_tag( $block_attrs['block_main_hero_title_tag'] ?? 'h1', 'h1' )
-	: 'h1';
+$title_tag = tolstenko_block_heading_tag( $block_attrs, 'block_main_hero_title_tag', 'h1' );
 
 $btn_text = '';
 if ( ! empty( $block_attrs['block_main_hero_btn_text'] ) ) {

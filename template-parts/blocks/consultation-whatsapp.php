@@ -8,16 +8,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 $theme_dir   = get_template_directory();
-$block_attrs = get_query_var( 'tolstenko_block_attributes', array() );
-if ( ! is_array( $block_attrs ) ) {
-	$block_attrs = array();
-}
-$defaults = function_exists( 'tolstenko_get_block_defaults' ) ? tolstenko_get_block_defaults( 'consultation_whatsapp' ) : array();
-if ( ! is_array( $defaults ) ) {
-	$defaults = array();
-}
+$block_attrs = tolstenko_block_attributes();
+$defaults = tolstenko_block_defaults( 'consultation_whatsapp' );
 
-$site = function_exists( 'tolstenko_get_site_header_footer_data' ) ? tolstenko_get_site_header_footer_data() : array();
+$site = tolstenko_site_data();
 
 $title = ! empty( $block_attrs['block_consultation_whatsapp_title'] )
 	? (string) $block_attrs['block_consultation_whatsapp_title']
@@ -40,9 +34,7 @@ $color = ! empty( $block_attrs['block_consultation_whatsapp_color'] )
 $color_hover = ! empty( $block_attrs['block_consultation_whatsapp_color_hover'] )
 	? (string) $block_attrs['block_consultation_whatsapp_color_hover']
 	: (string) ( $defaults['color_hover'] ?? '#1EBE57' );
-$title_tag = function_exists( 'tolstenko_normalize_heading_tag' )
-	? tolstenko_normalize_heading_tag( $block_attrs['block_consultation_whatsapp_title_tag'] ?? 'h2', 'h2' )
-	: 'h2';
+$title_tag = tolstenko_block_heading_tag( $block_attrs, 'block_consultation_whatsapp_title_tag', 'h2' );
 
 if ( $title === '' && $text === '' && $btn_url === '' ) {
 	return;

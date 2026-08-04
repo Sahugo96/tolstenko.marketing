@@ -6,14 +6,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$block_attrs = get_query_var( 'tolstenko_block_attributes', array() );
-if ( ! is_array( $block_attrs ) ) {
-	$block_attrs = array();
-}
-$defaults = function_exists( 'tolstenko_get_block_defaults' ) ? tolstenko_get_block_defaults( 'free_audit' ) : array();
-if ( ! is_array( $defaults ) ) {
-	$defaults = array();
-}
+$block_attrs = tolstenko_block_attributes();
+$defaults = tolstenko_block_defaults( 'free_audit' );
 
 $items     = array();
 $raw_items = array();

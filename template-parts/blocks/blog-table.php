@@ -6,13 +6,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$attrs = get_query_var( 'tolstenko_block_attributes', array() );
-if ( ! is_array( $attrs ) ) {
-	$attrs = array();
-}
-$defaults = function_exists( 'tolstenko_get_blog_content_defaults' )
-	? tolstenko_get_blog_content_defaults( 'blog_table' )
-	: array();
+$attrs = tolstenko_block_attributes();
+$defaults = tolstenko_blog_content_block_defaults( 'blog_table' );
 
 $use_header = array_key_exists( 'block_blog_table_use_header', $attrs )
 	? ! empty( $attrs['block_blog_table_use_header'] )

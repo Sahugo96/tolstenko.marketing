@@ -6,13 +6,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$attrs = get_query_var( 'tolstenko_block_attributes', array() );
-if ( ! is_array( $attrs ) ) {
-	$attrs = array();
-}
-$defaults = function_exists( 'tolstenko_get_blog_content_defaults' )
-	? tolstenko_get_blog_content_defaults( 'blog_imgs' )
-	: array();
+$attrs = tolstenko_block_attributes();
+$defaults = tolstenko_blog_content_block_defaults( 'blog_imgs' );
 
 $left_id  = isset( $attrs['block_blog_imgs_left'] ) ? (int) $attrs['block_blog_imgs_left'] : 0;
 $right_id = isset( $attrs['block_blog_imgs_right'] ) ? (int) $attrs['block_blog_imgs_right'] : 0;
