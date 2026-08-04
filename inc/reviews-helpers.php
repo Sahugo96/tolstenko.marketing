@@ -107,9 +107,29 @@ function tolstenko_parse_video_embed_src( $raw ) {
 	return '';
 }
 
+/**
+ * Хост URL входит в список поддерживаемых видеоплатформ.
+ *
+ * @param string $url URL.
+ * @return bool
+ */
+function tolstenko_is_supported_video_host( $url ) {
+	$host = (string) wp_parse_url( (string) $url, PHP_URL_HOST );
+	if ( $host === '' ) {
+		return false;
+	}
+	$host = strtolower( $host );
+	foreach ( array( 'rutube.ru', 'youtube.com', 'youtube-nocookie.com', 'youtu.be' ) as $allowed ) {
+		if ( $host === $allowed || substr( $host, -strlen( '.' . $allowed ) ) === '.' . $allowed ) {
+			return true;
+		}
+	}
+	return false;
+}
+
 function tolstenko_get_video_embed_poster( $embed_url ) {
 	$embed_url = (string) $embed_url;
-	if ( $embed_url === '' ) {
+	if ( $embed_url === '' || ! tolstenko_is_supported_video_host( $embed_url ) ) {
 		return '';
 	}
 

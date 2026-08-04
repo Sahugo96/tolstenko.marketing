@@ -62,10 +62,7 @@ if ( ! $clean ) {
  */
 $render_icon = static function ( $type, $icon ) {
 	if ( $type === 'custom' && $icon > 0 ) {
-		$path = get_attached_file( $icon );
-		if ( $path && is_readable( $path ) && preg_match( '/\.svg$/i', $path ) ) {
-			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- theme/media SVG.
-			echo file_get_contents( $path );
+		if ( tolstenko_render_attachment_inline_svg( $icon ) ) {
 			return;
 		}
 		$url = wp_get_attachment_image_url( $icon, 'thumbnail' );

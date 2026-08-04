@@ -567,6 +567,13 @@ function tolstenko_render_filtered_posts_payload( $args ) {
 	);
 }
 
+/**
+ * Верхний предел выборки для публичного REST-эндпоинта.
+ */
+if ( ! defined( 'TOLSTENKO_FILTER_MAX_POSTS_PER_PAGE' ) ) {
+	define( 'TOLSTENKO_FILTER_MAX_POSTS_PER_PAGE', 100 );
+}
+
 add_action( 'rest_api_init', 'tolstenko_register_posts_filter_rest_route' );
 
 function tolstenko_register_posts_filter_rest_route() {
@@ -604,9 +611,13 @@ function tolstenko_register_posts_filter_rest_route() {
 				'posts_per_page' => array(
 					'type'              => 'integer',
 					'required'          => false,
-					'default'           => -1,
+					'default'           => TOLSTENKO_FILTER_MAX_POSTS_PER_PAGE,
 					'sanitize_callback' => static function ( $value ) {
-						return (int) $value;
+						$value = (int) $value;
+						if ( $value < 1 ) {
+							return TOLSTENKO_FILTER_MAX_POSTS_PER_PAGE;
+						}
+						return min( $value, TOLSTENKO_FILTER_MAX_POSTS_PER_PAGE );
 					},
 				),
 				'card'           => array(

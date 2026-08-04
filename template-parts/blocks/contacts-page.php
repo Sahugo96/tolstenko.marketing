@@ -275,10 +275,7 @@ $render_info_items = static function ( $contact_items ) {
 												<a class="contacts__action contacts__action--tel default-btn line-caps-bold-13-15" href="tel:<?php echo esc_attr( $phone_href ); ?>">
 													<?php
 													$phone_svg = $theme_dir . '/assets/img/phone-icon.svg';
-													if ( is_readable( $phone_svg ) ) {
-														// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-														echo file_get_contents( $phone_svg );
-													}
+													tolstenko_render_inline_svg( $phone_svg );
 													?>
 													<span><?php esc_html_e( 'Позвонить сейчас', 'tolstenko-theme' ); ?></span>
 												</a>
@@ -287,10 +284,7 @@ $render_info_items = static function ( $contact_items ) {
 												<a class="contacts__action contacts__action--tg default-btn default-btn--tg line-caps-bold-13-15" href="<?php echo esc_url( $telegram ); ?>" target="_blank" rel="noopener noreferrer">
 													<?php
 													$tg_svg = $theme_dir . '/assets/img/telegram-icon.svg';
-													if ( is_readable( $tg_svg ) ) {
-														// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-														echo file_get_contents( $tg_svg );
-													}
+													tolstenko_render_inline_svg( $tg_svg );
 													?>
 													<span><?php esc_html_e( 'Написать в Telegram', 'tolstenko-theme' ); ?></span>
 												</a>

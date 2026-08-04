@@ -12,6 +12,72 @@ define( 'TOLSTENKO_CONTACTS_PAGE_OPTION', 'tolstenko_contacts_page' );
 define( 'TOLSTENKO_CONTACTS_PAGE_MIGRATED_OPTION', 'tolstenko_contacts_page_migrated' );
 
 /**
+ * Хосты, с которых разрешены встраиваемые скрипты карт.
+ *
+ * @return string[]
+ */
+function tolstenko_map_embed_allowed_script_hosts() {
+	return apply_filters(
+		'tolstenko_map_embed_allowed_script_hosts',
+		array(
+			'api-maps.yandex.ru',
+			'api-maps.yandex.com',
+			'yandex.ru',
+			'yandex.com',
+			'maps.googleapis.com',
+			'maps.google.com',
+		)
+	);
+}
+
+/**
+ * Очистка встраиваемого кода карты: iframe/div и только скрипты карт по allowlist.
+ *
+ * @param string $html Raw embed markup.
+ * @return string
+ */
+function tolstenko_sanitize_map_embed( $html ) {
+	$html = wp_kses(
+		(string) $html,
+		array(
+			'iframe' => array(
+				'src'             => true,
+				'width'           => true,
+				'height'          => true,
+				'style'           => true,
+				'frameborder'     => true,
+				'allowfullscreen' => true,
+				'loading'         => true,
+				'referrerpolicy'  => true,
+				'title'           => true,
+				'class'           => true,
+			),
+			'div'    => array( 'class' => true, 'style' => true, 'id' => true ),
+			'script' => array( 'type' => true, 'src' => true, 'async' => true, 'defer' => true, 'charset' => true ),
+		)
+	);
+
+	$allowed_hosts = tolstenko_map_embed_allowed_script_hosts();
+
+	// Скрипты без src (inline) и с чужого хоста — удаляем.
+	return (string) preg_replace_callback(
+		'#<script\b[^>]*>.*?</script>|<script\b[^>]*/?>#is',
+		static function ( $matches ) use ( $allowed_hosts ) {
+			if ( ! preg_match( '/\ssrc\s*=\s*("([^"]*)"|\'([^\']*)\')/i', $matches[0], $src_match ) ) {
+				return '';
+			}
+			$src  = $src_match[2] !== '' ? $src_match[2] : ( $src_match[3] ?? '' );
+			$host = strtolower( (string) wp_parse_url( html_entity_decode( $src, ENT_QUOTES, 'UTF-8' ), PHP_URL_HOST ) );
+			if ( $host === '' || ! in_array( $host, $allowed_hosts, true ) ) {
+				return '';
+			}
+			return $matches[0];
+		},
+		$html
+	);
+}
+
+/**
  * Ключи дефолтов страницы контактов.
  *
  * @return string[]
@@ -232,25 +298,7 @@ function tolstenko_sanitize_contacts_page_flat_data( $raw ) {
 				continue;
 			}
 			$address = sanitize_text_field( (string) ( $row['address'] ?? '' ) );
-			$map     = wp_kses(
-				(string) ( $row['map'] ?? '' ),
-				array(
-					'iframe' => array(
-						'src'             => true,
-						'width'           => true,
-						'height'          => true,
-						'style'           => true,
-						'frameborder'     => true,
-						'allowfullscreen' => true,
-						'loading'         => true,
-						'referrerpolicy'  => true,
-						'title'           => true,
-						'class'           => true,
-					),
-					'div'    => array( 'class' => true, 'style' => true, 'id' => true ),
-					'script' => array( 'type' => true, 'src' => true, 'async' => true, 'defer' => true, 'charset' => true ),
-				)
-			);
+			$map     = tolstenko_sanitize_map_embed( (string) ( $row['map'] ?? '' ) );
 			if ( $address === '' && trim( $map ) === '' ) {
 				continue;
 			}
@@ -390,25 +438,7 @@ function tolstenko_sanitize_contacts_defaults_from_raw( $raw ) {
 				continue;
 			}
 			$address = sanitize_text_field( (string) ( $row['address'] ?? '' ) );
-			$map     = wp_kses(
-				(string) ( $row['map'] ?? '' ),
-				array(
-					'iframe' => array(
-						'src'             => true,
-						'width'           => true,
-						'height'          => true,
-						'style'           => true,
-						'frameborder'     => true,
-						'allowfullscreen' => true,
-						'loading'         => true,
-						'referrerpolicy'  => true,
-						'title'           => true,
-						'class'           => true,
-					),
-					'div'    => array( 'class' => true, 'style' => true, 'id' => true ),
-					'script' => array( 'type' => true, 'src' => true, 'async' => true, 'defer' => true, 'charset' => true ),
-				)
-			);
+			$map     = tolstenko_sanitize_map_embed( (string) ( $row['map'] ?? '' ) );
 			if ( $address === '' && trim( $map ) === '' ) {
 				continue;
 			}

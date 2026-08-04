@@ -90,12 +90,8 @@ if ( ! empty( $contact['socials'] ) && is_array( $contact['socials'] ) ) {
 	$quick_socials = $site_hf['socials_footer_1'];
 }
 
-$echo_theme_svg = static function ( $file ) use ( $theme_dir ) {
-	$path = $theme_dir . '/assets/img/' . ltrim( (string) $file, '/' );
-	if ( is_readable( $path ) ) {
-		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-		echo file_get_contents( $path );
-	}
+$echo_theme_svg = static function ( $file ) {
+	tolstenko_render_theme_inline_svg( 'assets/img/' . ltrim( (string) $file, '/' ) );
 };
 
 $render_quick_social = static function ( $social ) {
@@ -110,10 +106,8 @@ $render_quick_social = static function ( $social ) {
 	?>
 	<a class="footer__right-link default-btn line-caps-bold-13-15" href="<?php echo esc_url( $link ); ?>" target="_blank" rel="noopener noreferrer"<?php echo $text !== '' ? ' title="' . esc_attr( $text ) . '"' : ''; ?>>
 		<?php
-		if ( $svg_path !== '' ) {
-			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			echo file_get_contents( $svg_path );
-		} elseif ( $icon_url !== '' ) {
+		$svg_rendered = $svg_path !== '' && tolstenko_render_inline_svg( $svg_path );
+		if ( ! $svg_rendered && $icon_url !== '' ) {
 			?>
 			<img src="<?php echo esc_url( $icon_url ); ?>" alt="<?php echo esc_attr( $text !== '' ? $text : 'Social' ); ?>">
 			<?php

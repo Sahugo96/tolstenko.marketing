@@ -131,10 +131,7 @@ if ( $title === '' && empty( $items ) && $text === '' ) {
 						<?php if ( $telegram_url !== '' ) : ?>
 							<a class="strategy__btn default-btn line-caps-bold-13-15" href="<?php echo esc_url( $telegram_url ); ?>" target="_blank" rel="noopener noreferrer">
 								<?php
-								if ( is_readable( $tg_icon ) ) {
-									// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- theme SVG asset.
-									echo file_get_contents( $tg_icon );
-								}
+								tolstenko_render_inline_svg( $tg_icon );
 								?>
 								<span><?php echo esc_html( $telegram_text !== '' ? $telegram_text : __( 'Позвонить в TG', 'tolstenko-theme' ) ); ?></span>
 							</a>
@@ -142,10 +139,7 @@ if ( $title === '' && empty( $items ) && $text === '' ) {
 						<?php if ( $phone !== '' ) : ?>
 							<a class="strategy__btn default-btn line-caps-bold-13-15" href="tel:<?php echo esc_attr( $phone_href ); ?>">
 								<?php
-								if ( is_readable( $phone_icon ) ) {
-									// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- theme SVG asset.
-									echo file_get_contents( $phone_icon );
-								}
+								tolstenko_render_inline_svg( $phone_icon );
 								?>
 								<span><?php echo esc_html( $phone ); ?></span>
 							</a>

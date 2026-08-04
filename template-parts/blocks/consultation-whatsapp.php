@@ -63,10 +63,7 @@ if ( $btn_url !== '' && $btn_text !== '' ) {
 		style="--color-btn: <?php echo esc_attr( $color ); ?>; --color-hover-btn: <?php echo esc_attr( $color_hover ); ?>;"
 	>
 		<?php
-		if ( is_readable( $wa_icon ) ) {
-			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- theme SVG asset.
-			echo file_get_contents( $wa_icon );
-		}
+		tolstenko_render_inline_svg( $wa_icon );
 		?>
 		<span><?php echo esc_html( $btn_text ); ?></span>
 	</a>

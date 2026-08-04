@@ -185,15 +185,8 @@ $render_icon = static function ( $attachment_id ) {
 	if ( $id <= 0 ) {
 		return;
 	}
-	$path = get_attached_file( $id );
-	if ( $path && is_readable( $path ) && preg_match( '/\.svg$/i', $path ) ) {
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- admin-uploaded SVG icon.
-		$svg = file_get_contents( $path );
-		if ( is_string( $svg ) && $svg !== '' ) {
-			$svg = preg_replace( '/<script\b[^>]*>.*?<\/script>/is', '', $svg );
-			echo $svg; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- trusted SVG from media library.
-			return;
-		}
+	if ( tolstenko_render_attachment_inline_svg( $id ) ) {
+		return;
 	}
 	$url = wp_get_attachment_image_url( $id, 'thumbnail' );
 	if ( $url ) {

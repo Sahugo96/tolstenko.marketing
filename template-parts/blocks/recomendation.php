@@ -89,14 +89,8 @@ $render_ico = static function ( $attachment_id ) {
 	if ( $attachment_id <= 0 ) {
 		return;
 	}
-	$path = get_attached_file( $attachment_id );
-	if ( $path && is_readable( $path ) && preg_match( '/\.svg$/i', $path ) ) {
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- theme SVG from media library.
-		$svg = file_get_contents( $path );
-		if ( $svg ) {
-			echo $svg; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- trusted SVG from media.
-			return;
-		}
+	if ( tolstenko_render_attachment_inline_svg( $attachment_id ) ) {
+		return;
 	}
 	$url = wp_get_attachment_image_url( $attachment_id, 'thumbnail' );
 	if ( $url ) {

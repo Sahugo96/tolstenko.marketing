@@ -59,9 +59,12 @@ function tolstenko_output_favicon() {
 add_action( 'wp_head', 'tolstenko_output_favicon', 1 );
 
 /**
- * Разрешаем загрузку SVG в медиатеку.
+ * Разрешаем загрузку SVG в медиатеку — только доверенным ролям.
  */
 function tolstenko_allow_svg_upload( $mimes ) {
+    if ( ! current_user_can( 'unfiltered_html' ) ) {
+        return $mimes;
+    }
     $mimes['svg']  = 'image/svg+xml';
     $mimes['svgz'] = 'image/svg+xml';
     return $mimes;
@@ -72,14 +75,168 @@ add_filter( 'upload_mimes', 'tolstenko_allow_svg_upload' );
  * Корректно определяем mime/type для SVG в момент проверки файла.
  */
 function tolstenko_fix_svg_filetype( $data, $file, $filename, $mimes ) {
+    if ( ! current_user_can( 'unfiltered_html' ) ) {
+        return $data;
+    }
     $ext = isset( $data['ext'] ) ? strtolower( (string) $data['ext'] ) : '';
+    if ( $ext === '' && preg_match( '/\.svgz?$/i', (string) $filename ) ) {
+        $ext = 'svg';
+    }
     if ( $ext === 'svg' || $ext === 'svgz' ) {
+        if ( ! tolstenko_svg_file_is_safe( (string) $file ) ) {
+            return array(
+                'ext'             => '',
+                'type'            => '',
+                'proper_filename' => $data['proper_filename'] ?? false,
+            );
+        }
         $data['ext']  = 'svg';
         $data['type'] = 'image/svg+xml';
     }
     return $data;
 }
 add_filter( 'wp_check_filetype_and_ext', 'tolstenko_fix_svg_filetype', 10, 4 );
+
+/**
+ * Проверка загружаемого SVG на активное содержимое.
+ *
+ * @param string $file Absolute path.
+ * @return bool
+ */
+function tolstenko_svg_file_is_safe( $file ) {
+    if ( $file === '' || ! is_readable( $file ) ) {
+        return false;
+    }
+    // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- локальный файл загрузки.
+    $svg = (string) file_get_contents( $file );
+    if ( $svg === '' ) {
+        return false;
+    }
+    if ( stripos( $svg, '<svg' ) === false ) {
+        return false;
+    }
+    $patterns = array(
+        '/<\s*script/i',
+        '/<\s*foreignObject/i',
+        '/<\s*(iframe|embed|object|handler|set|animate)/i',
+        '/<!ENTITY/i',
+        '/<!DOCTYPE[^>]+ENTITY/is',
+        '/\son[a-z]+\s*=/i',
+        '/(?:href|xlink:href|src|from|to|values|style)\s*=\s*["\']?\s*(?:javascript|data|vbscript)\s*:/i',
+    );
+    foreach ( $patterns as $pattern ) {
+        if ( preg_match( $pattern, $svg ) ) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/**
+ * Удалить активное содержимое из SVG-разметки перед inline-выводом.
+ *
+ * @param string $svg SVG markup.
+ * @return string
+ */
+function tolstenko_sanitize_inline_svg( $svg ) {
+    $svg = (string) $svg;
+    if ( $svg === '' ) {
+        return '';
+    }
+    $svg = preg_replace( '/<!DOCTYPE.*?>/is', '', $svg );
+    $svg = preg_replace( '/<\?xml.*?\?>/is', '', $svg );
+    $svg = preg_replace( '#<\s*(script|foreignObject|iframe|embed|object|handler|set|animate)\b[^>]*>.*?<\s*/\s*\1\s*>#is', '', $svg );
+    $svg = preg_replace( '#<\s*(script|foreignObject|iframe|embed|object|handler|set|animate)\b[^>]*/?>#is', '', $svg );
+    $svg = preg_replace( '/\son[a-z]+\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)/i', '', $svg );
+    $svg = preg_replace( '/\s(?:href|xlink:href|src)\s*=\s*("\s*(?:javascript|data|vbscript):[^"]*"|\'\s*(?:javascript|data|vbscript):[^\']*\')/i', '', $svg );
+
+    $start = stripos( $svg, '<svg' );
+    if ( $start === false ) {
+        return '';
+    }
+
+    return trim( substr( $svg, $start ) );
+}
+
+/**
+ * Абсолютный путь для inline-SVG: только внутри темы или каталога загрузок.
+ *
+ * @param string $path Absolute path.
+ * @return string Валидный путь или ''.
+ */
+function tolstenko_validate_inline_svg_path( $path ) {
+    $path = (string) $path;
+    if ( $path === '' || ! preg_match( '/\.svgz?$/i', $path ) ) {
+        return '';
+    }
+
+    $real = realpath( $path );
+    if ( $real === false || ! is_readable( $real ) || ! is_file( $real ) ) {
+        return '';
+    }
+
+    $roots  = array( realpath( get_template_directory() ), realpath( get_stylesheet_directory() ) );
+    $uploads = wp_get_upload_dir();
+    if ( empty( $uploads['error'] ) && ! empty( $uploads['basedir'] ) ) {
+        $roots[] = realpath( $uploads['basedir'] );
+    }
+
+    foreach ( $roots as $root ) {
+        if ( $root && strpos( $real, $root . DIRECTORY_SEPARATOR ) === 0 ) {
+            return $real;
+        }
+    }
+
+    return '';
+}
+
+/**
+ * Inline-вывод SVG из локального файла (тема или медиатека) с очисткой.
+ *
+ * @param string $path Absolute path.
+ * @return bool Был ли вывод.
+ */
+function tolstenko_render_inline_svg( $path ) {
+    $path = tolstenko_validate_inline_svg_path( $path );
+    if ( $path === '' ) {
+        return false;
+    }
+
+    // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- локальный SVG-файл.
+    $svg = tolstenko_sanitize_inline_svg( (string) file_get_contents( $path ) );
+    if ( $svg === '' ) {
+        return false;
+    }
+
+    echo $svg; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- очищено в tolstenko_sanitize_inline_svg().
+
+    return true;
+}
+
+/**
+ * Inline-вывод SVG-ассета темы.
+ *
+ * @param string $relative_path Путь относительно каталога темы.
+ * @return bool
+ */
+function tolstenko_render_theme_inline_svg( $relative_path ) {
+    return tolstenko_render_inline_svg( get_template_directory() . '/' . ltrim( (string) $relative_path, '/' ) );
+}
+
+/**
+ * Inline-вывод SVG вложения медиатеки.
+ *
+ * @param int $attachment_id Attachment ID.
+ * @return bool
+ */
+function tolstenko_render_attachment_inline_svg( $attachment_id ) {
+    $attachment_id = (int) $attachment_id;
+    if ( $attachment_id <= 0 ) {
+        return false;
+    }
+
+    return tolstenko_render_inline_svg( (string) get_attached_file( $attachment_id ) );
+}
 
 /**
  * Подключение стилей и скриптов из папки темы

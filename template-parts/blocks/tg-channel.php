@@ -92,10 +92,7 @@ if ( $title === '' && $text === '' && empty( $items ) ) {
 					<a class="tg-channel__btn default-btn default-btn--huge default-btn--tg line-caps-bold-16-15" href="<?php echo esc_url( $btn_url ); ?>" target="_blank" rel="noopener noreferrer">
 						<?php echo esc_html( $btn_text ); ?>
 						<?php
-						if ( is_readable( $tg_icon ) ) {
-							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- theme SVG asset.
-							echo file_get_contents( $tg_icon );
-						}
+						tolstenko_render_inline_svg( $tg_icon );
 						?>
 					</a>
 				<?php endif; ?>

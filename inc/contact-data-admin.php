@@ -216,17 +216,13 @@ function tolstenko_contact_resolve_svg_path( $icon_raw ) {
 		return '';
 	}
 	if ( ctype_digit( $icon_raw ) ) {
-		$path = get_attached_file( (int) $icon_raw );
-		return ( is_string( $path ) && $path !== '' && is_readable( $path ) ) ? $path : '';
+		return tolstenko_validate_inline_svg_path( (string) get_attached_file( (int) $icon_raw ) );
 	}
 	$theme_uri = get_template_directory_uri();
 	$theme_dir = get_template_directory();
 	if ( strpos( $icon_raw, $theme_uri ) === 0 ) {
-		$rel = substr( $icon_raw, strlen( $theme_uri ) );
-		$path = $theme_dir . $rel;
-		if ( is_readable( $path ) ) {
-			return $path;
-		}
+		$rel = wp_parse_url( substr( $icon_raw, strlen( $theme_uri ) ), PHP_URL_PATH );
+		return tolstenko_validate_inline_svg_path( $theme_dir . '/' . ltrim( (string) $rel, '/' ) );
 	}
 	return '';
 }

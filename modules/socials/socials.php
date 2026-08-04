@@ -33,15 +33,15 @@ if ( empty( $items ) ) {
 		?>
 		<a href="<?php echo esc_url( $link ); ?>" class="socials__link" target="_blank" rel="noopener noreferrer"<?php echo $text !== '' ? ' title="' . esc_attr( $text ) . '"' : ''; ?>>
 			<?php
-			if ( $svg_path !== '' ) {
-				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- local SVG from media/theme.
-				echo file_get_contents( $svg_path );
-			} elseif ( $icon_url !== '' ) {
-				?>
-				<img src="<?php echo esc_url( $icon_url ); ?>" alt="<?php echo esc_attr( $text !== '' ? $text : 'Social' ); ?>">
-				<?php
-			} elseif ( $text !== '' ) {
-				echo esc_html( $text );
+			$svg_rendered = $svg_path !== '' && tolstenko_render_inline_svg( $svg_path );
+			if ( ! $svg_rendered ) {
+				if ( $icon_url !== '' ) {
+					?>
+					<img src="<?php echo esc_url( $icon_url ); ?>" alt="<?php echo esc_attr( $text !== '' ? $text : 'Social' ); ?>">
+					<?php
+				} elseif ( $text !== '' ) {
+					echo esc_html( $text );
+				}
 			}
 			?>
 		</a>
