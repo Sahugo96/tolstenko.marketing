@@ -1,0 +1,52 @@
+.vacancies-section {
+  overflow: hidden;
+  position: relative;
+
+  &__inner {
+    padding: vw(50px, $mobile) vw(20px, $mobile);
+    @media (min-width: $desk) {
+      padding: vw(50px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      padding: vw(50px, $desktop_large);
+    }
+  }
+  &__top {
+    text-align: center;
+    grid-gap: vw(15px, $mobile);
+    @media (min-width: $desk) {
+      grid-gap: vw(15px, $desktop);
+      margin: 0 auto vw(50px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(15px, $desktop_large);
+      margin: 0 auto vw(50px, $desktop_large);
+    }
+  }
+  &__text {
+    color: var(--gray-45-color);
+  }
+  
+
+  &__items {
+    display: flex;
+    flex-direction: column;
+    grid-gap: vw(20px, $mobile);
+    @media (min-width: $desk) {
+      display: grid;
+      flex-direction: row;
+      align-items: stretch;
+      flex-wrap: wrap;
+      grid-template-columns: 1fr 1fr;
+      grid-gap: vw(20px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      display: grid;
+      flex-direction: row;
+      align-items: stretch;
+      flex-wrap: wrap;
+      grid-template-columns: 1fr 1fr;
+      grid-gap: vw(20px, $desktop_large);
+    }
+  }
+}

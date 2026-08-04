@@ -1,0 +1,150 @@
+/* Фиксы Swiper для слайдеров услуг/кейсов (пока SCSS не пересобран в style.min). */
+
+.service-section__splide,
+.case-section__splide {
+  position: relative;
+  overflow: visible;
+}
+
+.service-section__splide > .splide__track.swiper,
+.case-section__splide > .splide__track.swiper {
+  display: block !important;
+  overflow: hidden;
+  width: 100%;
+  flex-direction: unset !important;
+  grid-gap: 0 !important;
+}
+
+.service-section__splide .swiper-slide.service-card {
+  width: auto;
+  max-width: none;
+}
+
+.case-section__splide .swiper-slide.case-card,
+.case-section__splide .case-section__item.swiper-slide {
+  width: 100%;
+  max-width: none;
+  height: auto;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.team__splide {
+  position: relative;
+  overflow: visible;
+}
+
+.team__splide > .splide__track.swiper {
+  display: block !important;
+  overflow: hidden;
+  width: 100%;
+  flex-direction: unset !important;
+  grid-gap: 0 !important;
+}
+
+.team__splide .swiper-slide.team__item {
+  width: auto;
+  max-width: none;
+  height: auto;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.certificates__splide {
+  position: relative;
+  overflow: visible;
+}
+
+.certificates__splide > .splide__track.swiper {
+  display: block !important;
+  overflow: hidden;
+  width: 100%;
+  flex-direction: unset !important;
+  grid-gap: 0 !important;
+}
+
+.certificates__splide .swiper-slide.certificates__list-item {
+  width: auto;
+  max-width: none;
+  height: auto;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.author__splide,
+.author__speeches {
+  position: relative;
+  overflow: visible;
+}
+
+.author__splide > .splide__track.swiper,
+.author__speeches > .splide__track.swiper {
+  display: block !important;
+  overflow: hidden;
+  width: 100%;
+  flex-direction: unset !important;
+  grid-gap: 0 !important;
+}
+
+.author__splide .swiper-slide,
+.author__speeches .swiper-slide {
+  height: auto;
+  box-sizing: border-box;
+}
+
+/* Desktop: карусель выключена (как Tolstenko) — обычный ряд, не width:100% от Swiper */
+@media (min-width: 992px) {
+  .author__splide > .splide__track.swiper,
+  .author__speeches > .splide__track.swiper {
+    overflow: visible;
+  }
+
+  .author__splide .author__list.swiper-wrapper,
+  .author__speeches .author__speeches-list.swiper-wrapper {
+    transform: none !important;
+    gap: inherit;
+  }
+
+  .author__splide .swiper-slide.author__list-item {
+    width: auto !important;
+    flex: 1 1 0;
+    max-width: none;
+  }
+
+  .author__speeches .swiper-slide.author__speech {
+    width: auto !important;
+    flex: 0 1 auto;
+  }
+}
+
+/* Пагинация автора — под треком на mobile, не absolute как у стрелочных splide */
+.author .splide__bottom {
+  position: static;
+  transform: none;
+  width: auto;
+  pointer-events: all;
+}
+
+.author .splide__bottom .splide__pagination {
+  pointer-events: all;
+}
+
+/* FAQ: свёрнутый ответ — font-size:0, иначе strong/em держат высоту при line-height:0 */
+.faq__item:not(.active) .redactor p {
+  line-height: 0;
+  font-size: 0;
+  opacity: 0;
+  margin: 0;
+}
+.faq__item:not(.active) .redactor p *,
+.faq__item:not(.active) .redactor li,
+.faq__item:not(.active) .redactor li * {
+  line-height: 0;
+  font-size: 0;
+  margin: 0;
+  padding: 0;
+}
+.faq__item:not(.active) .redactor ul,
+.faq__item:not(.active) .redactor ol {
+  font-size: 0;
+}

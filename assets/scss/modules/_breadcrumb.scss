@@ -1,0 +1,78 @@
+.breadcrumbs {
+  display: none !important;
+  @media (min-width: $desk) {
+    display: flex !important;
+    align-items: center;
+    grid-gap: vw(5px, $desktop);
+    border-radius: vw(100px, $desktop);
+    padding: vw(10px, $desktop) vw(15px, $desktop);
+    margin: vw(20px, $desktop) auto;
+    background-color: var(--gray-5-color);
+  }
+  @media (min-width: $desk_large) {
+    display: flex !important;
+    align-items: center;
+    grid-gap: vw(5px, $desktop_large);
+    border-radius: vw(100px, $desktop_large);
+    padding: vw(10px, $desktop_large) vw(15px, $desktop_large);
+    margin: vw(20px, $desktop_large) auto;
+    background-color: var(--gray-5-color);
+  }
+  svg {
+    transition: all .3s linear;
+    display: block;
+    max-width: vw(15px, $mobile);
+    min-width: vw(15px, $mobile);
+    height: auto;
+    aspect-ratio: 1/1;
+    stroke: var(--gray-50-color);
+    @media (min-width: $desk) {
+      max-width: vw(15px, $desktop);
+      min-width: vw(15px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(15px, $desktop_large);
+      min-width: vw(15px, $desktop_large);
+    }
+  }
+  &__item {
+    @media (min-width: $desk) {
+      display: flex;
+      align-items: center;
+      grid-gap: vw(5px, $desktop);
+      color: var(--gray-50-color);
+    }
+    @media (min-width: $desk_large) {
+      display: flex;
+      align-items: center;
+      grid-gap: vw(5px, $desktop_large);
+      color: var(--gray-50-color);
+    }
+    svg {
+      stroke: var(--gray-50-color);
+    }
+  }
+  &__link {
+    display: flex;
+    align-items: center;
+    transition: all .3s linear;
+    color: var(--gray-50-color);
+    &--back {
+      margin-left: auto;
+    }
+  }
+  &__item:has( > .breadcrumbs__current) {
+    max-width: 60%;
+    color: var(--gray-70-color);
+    .breadcrumbs__current {
+      @include line-camp(1);
+    }
+  }
+  &__link:hover {
+    color: var(--white-color);
+
+    svg {
+      stroke: var(--white-color);
+    }
+  }
+}

@@ -1,0 +1,96 @@
+.tg-block {
+
+  &__title {
+    text-align: center;
+    max-width: vw(300px, $mobile);
+    margin: 0 auto vw(10px, $mobile);
+    @media (min-width: $desk) {
+      text-align: left;
+      max-width: vw(370px, $desktop);
+      margin: 0 0 vw(10px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      text-align: left;
+      max-width: vw(370px, $desktop_large);
+      margin: 0 0 vw(10px, $desktop_large);
+    }
+  }
+  &__content {
+    font-family: $Montserrat;
+    font-family: vw(15px, $mobile);
+    font-weight: 400;
+    line-height: 1.66;
+    letter-spacing: -1%;
+    color: var(--gray-45-color);
+    margin-bottom: vw(30px, $mobile);
+    @media (min-width: $desk) {
+      font-family: vw(20px, $desktop);
+      font-weight: 500;
+      line-height: 1.25;
+      letter-spacing: -3%;
+      margin-bottom: vw(47px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      font-family: vw(20px, $desktop_large);
+      font-weight: 500;
+      line-height: 1.25;
+      letter-spacing: -3%;
+      margin-bottom: vw(47px, $desktop_large);
+    }
+  }
+  &__bottom {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    grid-gap: vw(20px, $mobile);
+    @media (min-width: $desk) {
+      flex-direction: row;
+      align-items: center;
+      grid-gap: vw(20px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      flex-direction: row;
+      align-items: center;
+      grid-gap: vw(20px, $desktop_large);
+    }
+  }
+  &__btn {
+    height: vw(45px, $mobile);
+    border-radius: vw(40px, $mobile);
+    font-weight: 700;
+    @media (min-width: $desk) {
+      max-width: vw(170px, $desktop);
+      height: vw(45px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(170px, $desktop_large);
+      height: vw(45px, $desktop_large);
+    }
+
+    svg {
+      max-width: vw(20px, $mobile);
+      min-width: vw(20px, $mobile);
+      height: auto;
+      aspect-ratio: 1/1;
+      fill: var(--black-color);
+      transition: all .3s linear;
+      @media (min-width: $desk) {
+        max-width: vw(20px, $desktop);
+        min-width: vw(20px, $desktop);
+      }
+      @media (min-width: $desk_large) {
+        max-width: vw(20px, $desktop_large);
+        min-width: vw(20px, $desktop_large);
+      }
+    }
+  }
+  &__text {
+    color: var(--gray-30-color);
+    @media (min-width: $desk) {
+      max-width: vw(325px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(325px, $desktop_large);
+    }
+  }
+}

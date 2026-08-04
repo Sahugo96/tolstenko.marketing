@@ -1,0 +1,48 @@
+.socials {
+  display: flex;
+  align-items: center;
+  grid-gap: vw(8px, $mobile);
+  @media (min-width: $desk) {
+    grid-gap: vw(8px, $desktop);
+  }
+  @media (min-width: $desk_large) {
+    grid-gap: vw(8px, $desktop_large);
+  }
+  &__link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+  svg {
+    transition: all .3s linear;
+    display: block;
+    max-width: vw(20px, $mobile);
+    min-width: vw(20px, $mobile);
+    height: auto;
+    aspect-ratio: 1/1;
+    fill: var(--gray-45-color);
+    @media (min-width: $desk) {
+      max-width: vw(20px, $desktop);
+      min-width: vw(20px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(20px, $desktop_large);
+      min-width: vw(20px, $desktop_large);
+    }
+  }
+  img {
+    // filter: grayscale(0);
+    transition: all .3s linear;
+  }
+
+    @media (any-hover: hover) {
+      &:hover svg {
+        fill: var(--white-color);
+      }
+      &:hover img {
+        // filter: grayscale(1);
+      }
+    }
+  }
+}

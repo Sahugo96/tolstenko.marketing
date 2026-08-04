@@ -1,0 +1,63 @@
+.more {
+
+  &-btn {
+    height: vw(45px, $mobile);
+    border-radius: vw(45px, $mobile);
+    margin: vw(30px, $mobile) auto 0;
+    padding: vw(5px, $mobile) vw(25px, $mobile);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: min-content;
+    grid-gap: vw(5px, $mobile);
+    border: 1px solid var(--gray-15-color);
+    font-size: vw(13px, $mobile);
+    font-weight: 600;
+    line-height: 1.154;
+    letter-spacing: -1%;
+    color: var(--gray-50-color);
+    border: 1px solid var(--gray-30-color);
+    text-wrap: nowrap;
+    text-transform: uppercase;
+    @media (min-width: $desk) {
+      height: vw(45px, $desktop);
+      margin-top: vw(30px, $desktop);
+      padding: vw(5px, $desktop) vw(25px, $desktop);
+      grid-gap: vw(5px, $desktop);
+      font-size: vw(13px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      height: vw(45px, $desktop_large);
+      margin-top: vw(30px, $desktop_large);
+      padding: vw(5px, $desktop_large) vw(25px, $desktop_large);
+      grid-gap: vw(5px, $desktop_large);
+      font-size: vw(13px, $desktop_large);
+    }
+    @media (any-hover: hover) {
+      transition: all .3s linear;
+      &:hover {
+        border-color: var(--white-color);
+        color: var(--white-color);
+        svg {
+          stroke: var(--white-color);
+        }
+      }
+    }
+    svg {
+      max-width: vw(15px, $mobile);
+      min-width: vw(15px, $mobile);
+      height: auto;
+      aspect-ratio: 1/1;
+      stroke: var(--gray-30-color);
+      transition: all .3s linear;
+      @media (min-width: $desk) {
+        max-width: vw(15px, $desktop);
+        min-width: vw(15px, $desktop);
+      }
+      @media (min-width: $desk_large) {
+        max-width: vw(15px, $desktop_large);
+        min-width: vw(15px, $desktop_large);
+      }
+    }
+  }
+}

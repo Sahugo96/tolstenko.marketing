@@ -1,0 +1,237 @@
+.consultation-tel {
+  &__inner {
+    display: flex;
+    flex-direction: column;
+    grid-gap: vw(60px, $mobile);
+    @media (min-width: $desk) {
+      flex-direction: row;
+      align-items: stretch;
+      justify-content: center;
+      grid-gap: vw(60px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      flex-direction: row;
+      align-items: stretch;
+      justify-content: center;
+      grid-gap: vw(60px, $desktop_large);
+    }
+  }
+  &__left {
+    display: flex;
+    flex-direction: column;
+    grid-gap: vw(40px, $mobile);
+    @media (min-width: $desk) {
+      grid-gap: vw(40px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(40px, $desktop_large);
+    }
+  }
+  &__left-top {
+    display: flex;
+    align-items: center;
+    grid-gap: vw(30px, $mobile);
+    @media (min-width: $desk) {
+      align-items: flex-start;
+      grid-gap: vw(30px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      align-items: flex-start;
+      grid-gap: vw(30px, $desktop_large);
+    }
+  }
+  &__img {
+    pointer-events: none;
+    max-width: vw(88px, $mobile);
+    min-width: vw(88px, $mobile);
+    height: auto;
+    aspect-ratio: 1/1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: vw(5px, $mobile) solid var(--brand-accent-yellow-color);
+    border-radius: 50%;
+    overflow: hidden;
+    @media (min-width: $desk) {
+      max-width: vw(110px, $desktop);
+      min-width: vw(110px, $desktop);
+      border: vw(5px, $desktop) solid var(--brand-accent-yellow-color);
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(110px, $desktop_large);
+      min-width: vw(110px, $desktop_large);
+      border: vw(5px, $desktop_large) solid var(--brand-accent-yellow-color);
+    }
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center center;
+    }
+  }
+  &__message {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    grid-gap: vw(20px, $mobile);
+    max-width: vw(237px, $mobile);
+    padding: vw(20px, $mobile);
+    background-color: var(--brand-accent-yellow-color);
+    @media (min-width: $desk) {
+      grid-gap: vw(20px, $desktop);
+      max-width: vw(350px, $desktop);
+      padding: vw(20px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(20px, $desktop_large);
+      max-width: vw(350px, $desktop_large);
+      padding: vw(20px, $desktop_large);
+    }
+  }
+  &__message-text {
+    color: var(--black-color);
+    font-family: $Montserrat;
+    font-size: vw(15px, $mobile);
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: -1%;
+    @media (min-width: $desk) {
+      font-size: vw(20px, $desktop);
+      font-weight: 500;
+      line-height: 1.25;
+      letter-spacing: -3%;
+    }
+    @media (min-width: $desk_large) {
+      font-size: vw(20px, $desktop_large);
+      font-weight: 500;
+      line-height: 1.25;
+      letter-spacing: -3%;
+    }
+  }
+  &__message-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--brand-accent-yellow-darkest-color);
+  }
+  &__message-bottom svg {
+    max-width: vw(20px, $mobile);
+    min-width: vw(20px, $mobile);
+    height: auto;
+    aspect-ratio: 1/1;
+    stroke: var(--brand-accent-yellow-darkest-color);
+    @media (min-width: $desk) {
+      max-width: vw(20px, $desktop);
+      min-width: vw(20px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(20px, $desktop_large);
+      min-width: vw(20px, $desktop_large);
+    }
+  }
+  &__message-angle {
+    position: absolute;
+    right: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    max-width: vw(20px, $mobile);
+    min-width: vw(20px, $mobile);
+    height: vw(15px, $mobile);
+    fill: var(--brand-accent-yellow-color);
+    @media (min-width: $desk) {
+      max-width: vw(20px, $desktop);
+      min-width: vw(20px, $desktop);
+      height: vw(15px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(20px, $desktop_large);
+      min-width: vw(20px, $desktop_large);
+      height: vw(15px, $desktop_large);
+    }
+  }
+  &__btns {
+    display: flex;
+    flex-direction: column;
+    grid-gap: vw(10px, $mobile);
+    @media (min-width: $desk) {
+      flex-direction: row;
+      grid-gap: vw(10px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      flex-direction: row;
+      grid-gap: vw(10px, $desktop_large);
+    }
+  }
+  &__btn {
+    border-radius: vw(40px, $mobile);
+    height: vw(45px, $mobile);
+    @media (min-width: $desk) {
+      max-width: vw(319px, $desktop);
+      height: vw(45px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(319px, $desktop_large);
+      height: vw(45px, $desktop_large);
+    }
+
+    svg {
+      max-width: vw(20px, $mobile);
+      min-width: vw(20px, $mobile);
+      height: auto;
+      aspect-ratio: 1/1;
+      @media (min-width: $desk) {
+        max-width: vw(20px, $desktop);
+        min-width: vw(20px, $desktop);
+      }
+      @media (min-width: $desk_large) {
+        max-width: vw(20px, $desktop_large);
+        min-width: vw(20px, $desktop_large);
+      }
+    }
+    &--tel {
+      @media (min-width: $desk) {
+        max-width: vw(151px, $desktop);
+      }
+      @media (min-width: $desk_large) {
+        max-width: vw(151px, $desktop_large);
+      }
+      svg {
+        fill: var(--black-color);
+      }
+    }
+  }
+
+  &__right {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    grid-gap: vw(10px, $mobile);
+    @media (min-width: $desk) {
+      max-width: vw(480px, $desktop);
+      grid-gap: vw(15px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(480px, $desktop_large);
+      grid-gap: vw(15px, $desktop_large);
+    }
+  }
+  &__quote {
+    max-width: vw(35px, $mobile);
+    min-width: vw(35px, $mobile);
+    height: vw(30px, $mobile);
+    fill: var(--gray-20-color);
+    @media (min-width: $desk) {
+      max-width: vw(35px, $desktop);
+      min-width: vw(35px, $desktop);
+      height: vw(30px, $desktop);
+      margin-top: auto;
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(35px, $desktop_large);
+      min-width: vw(35px, $desktop_large);
+      height: vw(30px, $desktop_large);
+      margin-top: auto;
+    }
+  }
+}

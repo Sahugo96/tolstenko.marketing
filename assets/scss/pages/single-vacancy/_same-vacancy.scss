@@ -1,0 +1,14 @@
+.same-vacancy {
+  
+
+  &__title {
+    text-align: center;
+    margin: 0 auto vw(30px, $desktop);
+    @media (min-width: $desk) {
+      margin: 0 auto vw(50px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      margin: 0 auto vw(50px, $desktop_large);
+    }
+  }
+}

@@ -1,0 +1,103 @@
+.blockquote {
+  display: flex;
+  flex-direction: column;
+  grid-gap: vw(30px, $mobile);
+  @media (min-width: $desk) {
+    flex-direction: row;
+    align-items: center;
+    grid-gap: vw(36px, $desktop);
+  }
+  @media (min-width: $desk_large) {
+    flex-direction: row;
+    align-items: center;
+    grid-gap: vw(36px, $desktop_large);
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    color: var(--white-color);
+  }
+  &__content svg {
+    max-width: vw(25px, $mobile);
+    min-width: vw(25px, $mobile);
+    height: auto;
+    aspect-ratio: 35/30;
+    fill: var(--gray-20-color);
+    margin-left: auto;
+    @media (min-width: $desk) {
+      max-width: vw(35px, $desktop);
+      min-width: vw(35px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(35px, $desktop_large);
+      min-width: vw(35px, $desktop_large);
+    }
+  }
+  &__content svg:first-child {
+    margin-right: auto;
+    margin-left: 0;
+    margin-bottom: vw(10px, $mobile);
+    @media (min-width: $desk) {
+      margin-bottom: vw(10px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      margin-bottom: vw(10px, $desktop_large);
+    }
+  }
+  &__right {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    grid-gap: vw(20px, $mobile);
+    @media (min-width: $desk) {
+      grid-gap: vw(20px, $desktop);
+      max-width: vw(259px, $desktop);
+      min-width: vw(259px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(20px, $desktop_large);
+      max-width: vw(259px, $desktop_large);
+      min-width: vw(259px, $desktop_large);
+    }
+  }
+  &__right-img {
+    max-width: vw(92px, $mobile);
+    min-width: vw(92px, $mobile);
+    height: auto;
+    aspect-ratio: 1/1;
+    @media (min-width: $desk) {
+      max-width: vw(92px, $desktop);
+      min-width: vw(92px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(92px, $desktop_large);
+      min-width: vw(92px, $desktop_large);
+    }
+  }
+  &__right-wrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    grid-gap: vw(15px, $mobile);
+    @media (min-width: $desk) {
+      grid-gap: vw(15px, $desktop);
+      max-width: vw(220px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(15px, $desktop_large);
+      max-width: vw(220px, $desktop_large);
+    }
+  }
+  &__right-wrapper cite {
+    color: var(--white-color);
+    font-style: normal
+  }
+  &__right-wrapper span {
+    @include line-camp(3);
+    color: var(--gray-70-color);
+  }
+}

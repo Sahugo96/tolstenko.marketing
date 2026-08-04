@@ -1,0 +1,324 @@
+.blog-card {
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--gray-15-color);
+  border-radius: vw(25px, $mobile);
+  @media (min-width: $desk) {
+    border-radius: vw(25px, $desktop);
+  }
+  @media (min-width: $desk_large) {
+    border-radius: vw(25px, $desktop_large);
+  }
+
+  &__link {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: vw(20px, $mobile);
+    grid-gap: vw(15px, $mobile);
+    @media (min-width: $desk) {
+      flex-direction: row-reverse;
+      padding: vw(20px, $desktop);
+      grid-gap: vw(15px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      flex-direction: row-reverse;
+      padding: vw(20px, $desktop_large);
+      grid-gap: vw(15px, $desktop_large);
+    }
+
+    @media (any-hover: hover) {
+      cursor: pointer;
+      &:hover .blog-card__image img {
+        filter: grayscale(0);
+      }
+    }
+  }
+
+  &__image {
+    width: 100%;
+    height: vw(130px, $mobile);
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    border-radius: vw(15px, $mobile);
+    @media (min-width: $desk) {
+      max-width: vw(180px, $desktop);
+      min-width: vw(180px, $desktop);
+      max-height: vw(130px, $desktop);
+      min-height: vw(130px, $desktop);
+      border-radius: vw(15px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(180px, $desktop_large);
+      min-width: vw(180px, $desktop_large);
+      max-height: vw(130px, $desktop_large);
+      min-height: vw(130px, $desktop_large);
+      border-radius: vw(15px, $desktop_large);
+    }
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center center;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      filter: grayscale(1);
+      transition: all 0.3s linear;
+    }
+    svg {
+      position: absolute;
+      top: vw(10px, $mobile);
+      right: vw(10px, $mobile);
+      max-width: vw(20px, $mobile);
+      min-width: vw(20px, $mobile);
+      height: vw(15px, $mobile);
+      fill: var(--white-color);
+      opacity: 0.7;
+      @media (min-width: $desk) {
+        top: vw(15px, $desktop);
+        right: vw(15px, $desktop);
+        max-width: vw(20px, $desktop);
+        min-width: vw(20px, $desktop);
+        height: vw(15px, $desktop);
+      }
+      @media (min-width: $desk_large) {
+        top: vw(15px, $desktop_large);
+        right: vw(15px, $desktop_large);
+        max-width: vw(20px, $desktop_large);
+        min-width: vw(20px, $desktop_large);
+        height: vw(15px, $desktop_large);
+      }
+    }
+  }
+  &__wrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  &__tags {
+    display: flex;
+    align-items: center;
+    grid-gap: vw(10px, $mobile);
+    margin-bottom: vw(15px, $mobile);
+    @media (min-width: $desk) {
+      grid-gap: vw(10px, $desktop);
+      margin-bottom: vw(15px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(10px, $desktop_large);
+      margin-bottom: vw(15px, $desktop_large);
+    }
+  }
+  &__tag {
+    font-family: $Montserrat;
+    font-size: vw(10px, $mobile);
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0%;
+    text-transform: uppercase;
+    color: var(--gray-30-color);
+    @media (min-width: $desk) {
+      font-size: vw(10px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      font-size: vw(10px, $desktop_large);
+    }
+    &--date {
+      margin-left: vw(5px, $mobile);
+      @media (min-width: $desk) {
+        margin-left: vw(5px, $desktop);
+      }
+      @media (min-width: $desk_large) {
+        margin-left: vw(5px, $desktop_large);
+      }
+    }
+  }
+  &__title {
+    font-family: $Montserrat;
+    font-size: vw(16px, $mobile);
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -3%;
+    color: var(--gray-70-color);
+    margin-bottom: vw(10px, $mobile);
+    @include line-camp(3);
+    @media (min-width: $desk) {
+      font-size: vw(16px, $desktop);
+      margin-bottom: vw(10px, $desktop);
+      @include line-camp(2);
+    }
+    @media (min-width: $desk_large) {
+      font-size: vw(16px, $desktop_large);
+      margin-bottom: vw(10px, $desktop_large);
+      @include line-camp(2);
+    }
+  }
+  &__text {
+    margin-bottom: vw(15px, $mobile);
+    @include line-camp(3);
+    @media (min-width: $desk) {
+      margin-bottom: vw(15px, $desktop);
+      @include line-camp(2);
+    }
+    @media (min-width: $desk_large) {
+      margin-bottom: vw(15px, $desktop_large);
+      @include line-camp(2);
+    }
+  }
+  &__stats {
+    margin-top: auto;
+  }
+
+  &--blog {
+    .blog-card__link {
+      @media (min-width: $desk) {
+        flex-direction: column;
+      }
+      @media (min-width: $desk_large) {
+        flex-direction: column;
+      }
+    }
+
+    .blog-card__image {
+      @media (min-width: $desk) {
+        max-width: unset;
+        min-width: unset;
+        max-height: vw(211px, $desktop);
+        min-height: vw(211px, $desktop);
+        height: auto;
+      }
+      @media (min-width: $desk_large) {
+        max-width: unset;
+        min-width: unset;
+        max-height: vw(211px, $desktop_large);
+        min-height: vw(211px, $desktop_large);
+        height: auto;
+      }
+    }
+  }
+
+  &--same {
+    border-radius: vw(30px, $mobile);
+    @media (min-width: $desk) {
+      border-radius: vw(30px, $desktop);
+      height: 100%;
+    }
+    @media (min-width: $desk_large) {
+      border-radius: vw(30px, $desktop_large);
+    }
+
+    .blog-card__link {
+      flex-direction: column;
+      height: 100%;
+      grid-gap: vw(20px, $mobile);
+      padding: vw(20px, $mobile);
+      @media (min-width: $desk) {
+        grid-gap: vw(20px, $desktop);
+        padding: vw(20px, $desktop);
+      }
+      @media (min-width: $desk_large) {
+        grid-gap: vw(20px, $desktop_large);
+        padding: vw(20px, $desktop_large);
+      }
+    }
+
+    .blog-card__wrapper {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+
+    .blog-card__image {
+      width: 100%;
+      max-width: unset;
+      min-width: unset;
+      height: vw(211px, $mobile);
+      min-height: vw(211px, $mobile);
+      border-radius: vw(20px, $mobile);
+      @media (min-width: $desk) {
+        height: vw(240px, $desktop);
+        min-height: vw(240px, $desktop);
+        border-radius: vw(20px, $desktop);
+      }
+      @media (min-width: $desk_large) {
+        height: vw(240px, $desktop_large);
+        min-height: vw(240px, $desktop_large);
+        border-radius: vw(20px, $desktop_large);
+      }
+
+      svg {
+        top: vw(20px, $mobile);
+        left: vw(20px, $mobile);
+        right: auto;
+        @media (min-width: $desk) {
+          top: vw(20px, $desktop);
+          left: vw(20px, $desktop);
+        }
+        @media (min-width: $desk_large) {
+          top: vw(20px, $desktop_large);
+          left: vw(20px, $desktop_large);
+        }
+      }
+    }
+
+    .blog-card__tags {
+      margin-bottom: vw(12px, $mobile);
+      @media (min-width: $desk) {
+        margin-bottom: vw(12px, $desktop);
+      }
+      @media (min-width: $desk_large) {
+        margin-bottom: vw(12px, $desktop_large);
+      }
+    }
+
+    .blog-card__tag {
+      color: var(--gray-50-color);
+    }
+
+    .blog-card__title {
+      color: var(--white-color);
+      font-size: vw(20px, $mobile);
+      line-height: 1;
+      margin-bottom: vw(10px, $mobile);
+      @include line-camp(3);
+      @media (min-width: $desk) {
+        font-size: vw(20px, $desktop);
+        margin-bottom: vw(10px, $desktop);
+        @include line-camp(2);
+      }
+      @media (min-width: $desk_large) {
+        font-size: vw(20px, $desktop_large);
+        margin-bottom: vw(10px, $desktop_large);
+      }
+    }
+
+    .blog-card__text {
+      color: var(--gray-70-color);
+      font-size: vw(15px, $mobile);
+      line-height: 1.33;
+      margin-bottom: vw(12px, $mobile);
+      @include line-camp(3);
+      @media (min-width: $desk) {
+        font-size: vw(15px, $desktop);
+        margin-bottom: vw(12px, $desktop);
+        @include line-camp(2);
+      }
+      @media (min-width: $desk_large) {
+        font-size: vw(15px, $desktop_large);
+        margin-bottom: vw(12px, $desktop_large);
+      }
+    }
+
+    .single-blog__stats {
+      margin-top: auto;
+    }
+  }
+}

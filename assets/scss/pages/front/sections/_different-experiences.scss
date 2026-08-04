@@ -1,0 +1,168 @@
+.different-experiences {
+  &__inner {
+    display: flex;
+    flex-direction: column;
+    grid-gap: vw(40px, $mobile);
+    padding: vw(50px, $mobile) vw(16px, $mobile) vw(40px, $mobile);
+
+    @media (min-width: $desk) {
+      align-items: center;
+      grid-gap: vw(60px, $desktop);
+      padding: vw(50px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      align-items: center;
+      grid-gap: vw(60px, $desktop_large);
+      padding: vw(50px, $desktop_large);
+    }
+  }
+  &__top {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    grid-gap: vw(15px, $mobile);
+
+    @media (min-width: $desk) {
+      grid-gap: vw(15px, $desktop);
+      max-width: vw(880px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(15px, $desktop_large);
+      max-width: vw(880px, $desktop_large);
+    }
+  }
+  &__text {
+    color: var(--gray-45-color);
+  }
+
+  &__list {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    grid-gap: vw(15px, $mobile) vw(10px, $mobile);
+    @media (min-width: $desk) {
+      justify-content: flex-start;
+      grid-gap: vw(15px, $desktop) vw(40px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      justify-content: flex-start;
+      grid-gap: vw(15px, $desktop_large) vw(40px, $desktop_large);
+    }
+  }
+  &__list-item {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    width: 100%;
+    max-width: vw(142px, $mobile);
+    grid-gap: vw(5px, $mobile);
+    @media (min-width: $desk) {
+      max-width: vw(333px, $desktop);
+      grid-gap: vw(5px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(333px, $desktop_large);
+      grid-gap: vw(5px, $desktop_large);
+    }
+    &::before {
+      content: "";
+      max-width: vw(6px, $mobile);
+      min-width: vw(6px, $mobile);
+      height: auto;
+      aspect-ratio: 1/1;
+      background-color: var(--brand-accent-yellow-color);
+      border-radius: 50%;
+      margin: vw(4.5px, $mobile) vw(4.5px, $mobile) 0;
+      transform: translateY(-50%);
+      @media (min-width: $desk) {
+        max-width: vw(6px, $desktop);
+        min-width: vw(6px, $desktop);
+        margin: vw(7.5px, $desktop) vw(7.5px, $desktop) 0;
+      }
+      @media (min-width: $desk_large) {
+        max-width: vw(6px, $desktop_large);
+        min-width: vw(6px, $desktop_large);
+        margin: vw(7.5px, $desktop_large) vw(7.5px, $desktop_large) 0;
+      }
+    }
+  }
+  &__list-text {
+    overflow-wrap: anywhere;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    -moz-hyphens: auto;
+  }
+
+  &__btns {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    grid-gap: vw(10px, $mobile);
+    @media (min-width: $desk) {
+      flex-direction: row;
+      justify-content: center;
+      max-width: vw(290px, $desktop);
+      grid-gap: vw(10px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(290px, $desktop_large);
+      grid-gap: vw(10px, $desktop_large);
+    }
+  }
+
+  &__btn {
+    flex-shrink: 0;
+    text-wrap: nowrap;
+    padding: vw(5px, $mobile) vw(15px, $mobile);
+    background-color: transparent;
+    color: var(--brand-accent-yellow-color);
+    border: 1px solid rgba(#FACA64, .2);
+    @media (min-width: $desk) {
+      padding: vw(5px, $desktop) vw(15px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      padding: vw(5px, $desktop_large) vw(15px, $desktop_large);
+    }
+
+    svg {
+      max-width: vw(24px, $mobile);
+      min-width: vw(24px, $mobile);
+      height: auto;
+      aspect-ratio: 1/1;
+      fill: var(--brand-accent-yellow-color);
+      transition: all .3s linear;
+      @media (min-width: $desk) {
+        max-width: vw(24px, $desktop);
+        min-width: vw(24px, $desktop);
+      }
+      @media (min-width: $desk_large) {
+        max-width: vw(24px, $desktop_large);
+        min-width: vw(24px, $desktop_large);
+      }
+    }
+
+    @media (any-hover: hover) {
+      transition: all .3s linear;
+      &:hover {
+        color: var(--black-color);
+        border-color: var(--white-color);
+        svg {
+          fill: var(--black-color);
+        }
+      }
+    }
+
+    &--modal {
+      border: 0;
+      color: var(--black-color);
+      background-color: var(--brand-accent-yellow-color);
+      svg {
+        fill: var(--black-color);
+      }
+    }
+  }
+}

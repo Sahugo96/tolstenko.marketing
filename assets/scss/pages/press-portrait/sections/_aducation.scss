@@ -1,0 +1,250 @@
+.aducation {
+  overflow: hidden;
+
+  &__inner {
+    padding: vw(50px, $mobile) vw(20px, $mobile);
+    @media (min-width: $desk) {
+      padding: vw(50px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      padding: vw(50px, $desktop_large);
+    }
+  }
+  &__top {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    grid-gap: vw(15px, $mobile);
+    margin-bottom: vw(50px, $mobile);
+    @media (min-width: $desk) {
+      grid-gap: vw(15px, $desktop);
+      margin-bottom: vw(50px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(15px, $desktop_large);
+      margin-bottom: vw(50px, $desktop_large);
+    }
+  }
+  &__wrapper {
+    display: flex;
+    flex-direction: column;
+    grid-gap: vw(10px, $mobile);
+    @media (min-width: $desk) {
+      flex-direction: row;
+      justify-content: space-between;
+      grid-gap: vw(10px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      flex-direction: row;
+      justify-content: space-between;
+      grid-gap: vw(10px, $desktop_large);
+    }
+  }
+  &__items {
+    display: flex;
+    flex-direction: column;
+    grid-gap: vw(5px, $mobile);
+    margin-bottom: vw(20px, $mobile);
+    @media (min-width: $desk) {
+      justify-content: center;
+      grid-gap: vw(0px, $desktop);
+      margin-bottom: vw(0px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      justify-content: center;
+      grid-gap: vw(0px, $desktop_large);
+      margin-bottom: vw(0px, $desktop_large);
+    }
+  }
+  &__item {
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
+    justify-content: center;
+    grid-gap: vw(20px, $mobile);
+    width: 100%;
+    @media (min-width: $desk) {
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: space-between;
+      grid-gap: vw(40px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: space-between;
+      grid-gap: vw(40px, $desktop_large);
+    }
+    &:last-child .aducation__item-svg {
+      display: none;
+    }
+  }
+  &__item-left {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    grid-gap: vw(10px, $mobile);
+    width: 100%;
+    @media (min-width: $desk) {
+      max-width: vw(190px, $desktop);
+      grid-gap: vw(10px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(190px, $desktop_large);
+      grid-gap: vw(10px, $desktop_large);
+    }
+  }
+  &__item-year {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: vw(75px, $mobile);
+    border-radius: vw(75px, $mobile);
+    font-size: vw(20px, $mobile);
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: 0%;
+    text-align: center;
+    color: var(--black-color);
+    background-color: var(--brand-accent-yellow-color);
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: vw(10px, $mobile);
+    @media (min-width: $desk) {
+      height: vw(75px, $desktop);
+      font-size: vw(23px, $desktop);
+      font-weight: 700;
+      line-height: 1.07;
+      letter-spacing: -3%;
+      margin-bottom: vw(10px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      height: vw(75px, $desktop_large);
+      font-size: vw(23px, $desktop_large);
+      font-weight: 700;
+      line-height: 1.07;
+      letter-spacing: -3%;
+      margin-bottom: vw(10px, $desktop_large);
+    }
+  }
+  &__item-svg {
+    max-width: vw(20px, $mobile);
+    min-width: vw(20px, $mobile);
+    height: auto;
+    aspect-ratio: 24/136;
+    stroke: var(--gray-70-color);
+    @media (min-width: $desk) {
+      max-width: vw(24px, $desktop);
+      min-width: vw(24px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(24px, $desktop_large);
+      min-width: vw(24px, $desktop_large);
+    }
+  }
+  &__item-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    grid-gap: vw(15px, $mobile);
+    width: 100%;
+    padding: vw(20px, $mobile) 0;
+    @media (min-width: $desk) {
+      grid-gap: vw(15px, $desktop);
+      padding: vw(20px, $desktop) 0;
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(15px, $desktop_large);
+      padding: vw(20px, $desktop_large) 0;
+    }
+  }
+  &__item-type {
+    display: block;
+    font-size: vw(20px, $mobile);
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: 0%;
+    text-align: center;
+    color: var(--brand-accent-yellow-color);
+    text-transform: uppercase;
+    margin-bottom: vw(10px, $mobile);
+    @media (min-width: $desk) {
+      font-size: vw(23px, $desktop);
+      font-weight: 700;
+      line-height: 1.07;
+      letter-spacing: -3%;
+      text-align: left;
+      margin-bottom: vw(10px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      font-size: vw(23px, $desktop_large);
+      font-weight: 700;
+      line-height: 1.07;
+      letter-spacing: -3%;
+      text-align: left;
+      margin-bottom: vw(10px, $desktop_large);
+    }
+  }
+  &__item-title {
+    display: block;
+    text-transform: uppercase;
+    color: var(--white-color);
+    text-align: left;
+  }
+  &__item-speciality {
+    display: block;
+    color: var(--white-color);
+    text-align: left;
+  }
+  &__imgs {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: stretch;
+    grid-gap: vw(20px, $mobile);
+    @media (min-width: $desk) {
+      max-width: vw(404px, $desktop);
+      justify-content: center;
+      grid-gap: vw(20px, $desktop);
+      padding: vw(13px, $desktop) vw(10px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(404px, $desktop_large);
+      justify-content: center;
+      grid-gap: vw(20px, $desktop_large);
+      padding: vw(13px, $desktop_large) vw(10px, $desktop_large);
+    }
+  }
+  &__img {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 182/289;
+    border-radius: vw(15px, $mobile);
+    background-color: var(--gray-12-color);
+    overflow: hidden;
+    color: var(--gray-25-color);
+    @media (min-width: $desk) {
+      max-width: vw(182px, $desktop);
+      border-radius: vw(15px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(182px, $desktop_large);
+      border-radius: vw(15px, $desktop_large);
+    }
+    img {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+  }
+}

@@ -1,0 +1,184 @@
+.tg-channel {
+  &__inner {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    grid-gap: vw(20px, $mobile);
+    padding: vw(50px, $mobile) vw(20px, $mobile) vw(66px, $mobile);
+    @media (min-width: $desk) {
+      flex-direction: row;
+      justify-content: space-between;
+      grid-gap: vw(50px, $desktop);
+      padding: vw(50px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      flex-direction: row;
+      justify-content: space-between;
+      grid-gap: vw(50px, $desktop_large);
+      padding: vw(50px, $desktop_large);
+    }
+  }
+  &__img {
+    pointer-events: none;
+    position: absolute;
+    top: vw(50px, $mobile);
+    z-index: 1;
+    max-width: vw(363px, $mobile);
+    min-width: vw(363px, $mobile);
+    height: auto;
+    aspect-ratio: 1/1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    @media (min-width: $desk) {
+      top: vw(20px, $desktop);
+      left: vw(37px, $desktop);
+      max-width: vw(507px, $desktop);
+      min-width: vw(507px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      top: vw(20px, $desktop_large);
+      left: vw(37px, $desktop_large);
+      max-width: vw(507px, $desktop_large);
+      min-width: vw(507px, $desktop_large);
+    }
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center center;
+    }
+  }
+  &__circle {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: vw(24px, $mobile) vw(2px, $mobile);
+    @media (min-width: $desk) {
+      padding: vw(16px, $desktop) vw(14px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      padding: vw(16px, $desktop_large) vw(14px, $desktop_large);
+    }
+  }
+  &__circle::before {
+    content: "";
+    max-width: vw(310px, $mobile);
+    min-width: vw(310px, $mobile);
+    height: auto;
+    aspect-ratio: 1/1;
+    border-radius: 50%;
+    background-color: var(--brand-accent-yellow-color);
+    @media (min-width: $desk) {
+      max-width: vw(387px, $desktop);
+      min-width: vw(387px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(387px, $desktop_large);
+      min-width: vw(387px, $desktop_large);
+    }
+  }
+
+  &__wrapper {
+    display: flex;
+    flex-direction: column;
+    grid-gap: vw(30px, $mobile);
+    @media (min-width: $desk) {
+      grid-gap: vw(30px, $desktop);
+      max-width: vw(515px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(30px, $desktop_large);
+      max-width: vw(515px, $desktop_large);
+    }
+  }
+  &__top {
+    display: flex;
+    flex-direction: column;
+    grid-gap: vw(10px, $mobile);
+    @media (min-width: $desk) {
+      grid-gap: vw(10px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(10px, $desktop_large);
+    }
+  }
+  &__title {
+    max-width: vw(250px, $mobile);
+    @media (min-width: $desk) {
+      max-width: unset;
+    }
+    @media (min-width: $desk_large) {
+      max-width: unset;
+    }
+  }
+  &__text {
+    color: var(--gray-50-color);
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    grid-gap: vw(15px, $mobile);
+    @media (min-width: $desk) {
+      grid-gap: vw(15px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(15px, $desktop_large);
+    }
+  }
+  &__item-svg {
+    max-width: vw(25px, $mobile);
+    min-width: vw(25px, $mobile);
+    height: auto;
+    aspect-ratio: 1/1;
+    @media (min-width: $desk) {
+      max-width: vw(25px, $desktop);
+      min-width: vw(25px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(25px, $desktop_large);
+      min-width: vw(25px, $desktop_large);
+    }
+  }
+  &__item {
+    display: flex;
+    align-items: center;
+    grid-gap: vw(5px, $mobile);
+    @media (min-width: $desk) {
+      grid-gap: vw(5px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(5px, $desktop_large);
+    }
+  }
+
+  &__btn {
+    font-weight: 700;
+    @media (min-width: $desk) {
+      max-width: vw(309px, $desktop);
+      margin-top: auto;
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(309px, $desktop_large);
+      margin-top: auto;
+    }
+    
+    svg {
+      max-width: vw(30px, $mobile);
+      min-width: vw(30px, $mobile);
+      height: auto;
+      aspect-ratio: 1/1;
+      fill: var(--black-color);
+      @media (min-width: $desk) {
+        max-width: vw(30px, $desktop);
+        min-width: vw(30px, $desktop);
+      }
+      @media (min-width: $desk_large) {
+        max-width: vw(30px, $desktop_large);
+        min-width: vw(30px, $desktop_large);
+      }
+    }
+  }
+}

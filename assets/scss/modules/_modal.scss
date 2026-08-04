@@ -1,0 +1,145 @@
+.modal {
+  position: fixed;
+  z-index: -10;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  opacity: 0;
+  pointer-events: none;
+  align-items: flex-start;
+  justify-content: center;
+  background-color: rgba(#000000, 0.65);
+  backdrop-filter: blur(vw(8px, $mobile));
+  @media (min-width: $desk) {
+    padding: vw(52px, $desktop);
+    backdrop-filter: blur(vw(8px, $desktop));
+  }
+  @media (min-width: $desk_large) {
+    padding: vw(52px, $desktop_large);
+    backdrop-filter: blur(vw(8px, $desktop_large));
+  }
+  &__inner {
+    display: flex;
+    min-height: min-content;
+    flex-direction: column;
+    position: relative;
+    width: 100%;
+    background-color: var(--gray-10-color);
+    margin: auto;
+    padding: vw(64px, $mobile) vw(16px, $mobile) vw(52px, $mobile);
+    @media (min-width: $desk) {
+      position: static;
+      max-width: vw(525px, $desktop);
+      padding: vw(50px, $desktop);
+      border-radius: vw(16px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      position: static;
+      max-width: vw(525px, $desktop_large);
+      padding: vw(50px, $desktop_large);
+      border-radius: vw(16px, $desktop_large);
+    }
+  }
+  &__wrapper {
+    width: 100%;
+  }
+  &__title {
+    text-align: center;
+    margin-bottom: vw(16px, $mobile);
+    @media (min-width: $desk) {
+      margin-bottom: vw(16px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      margin-bottom: vw(16px, $desktop_large);
+    }
+  }
+  &__subtitle {
+    display: block;
+    text-align: center;
+    margin-bottom: vw(32px, $mobile);
+    @media (min-width: $desk) {
+      margin-bottom: vw(40px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      margin-bottom: vw(40px, $desktop_large);
+    }
+  }
+  &__thanks {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    padding: vw(16px, $mobile) 0;
+    @media (min-width: $desk) {
+      padding: vw(16px, $desktop) 0;
+    }
+    @media (min-width: $desk_large) {
+      padding: vw(16px, $desktop_large) 0;
+    }
+  }
+  &__link {
+  }
+  &__close {
+    width: vw(32px, $mobile);
+    height: vw(32px, $mobile);
+    position: absolute;
+    top: vw(16px, $mobile);
+    right: vw(16px, $mobile);
+    left: auto;
+    stroke: var(--gray-35-color);
+    @media (min-width: $desk) {
+      width: vw(48px, $desktop);
+      height: vw(48px, $desktop);
+      top: vw(44px, $desktop);
+      right: vw(44px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      width: vw(48px, $desktop_large);
+      height: vw(48px, $desktop_large);
+      top: vw(44px, $desktop_large);
+      right: vw(44px, $desktop_large);
+    }
+    @media (any-hover: hover) {
+      transition: all .3s linear;
+      &:hover {
+        stroke: var(--white-color);
+      }
+    }
+  }
+
+  &.active {
+    z-index: 20;
+    opacity: 1;
+    pointer-events: all;
+  }
+  &.active.success {
+    .modal__wrapper {
+      display: none;
+    }
+    .modal__thanks {
+      display: flex;
+    }
+    .modal__title {
+      margin-bottom: vw(24px, $mobile);
+      @media (min-width: $desk) {
+        margin-bottom: vw(24px, $desktop);
+      }
+      @media (min-width: $desk_large) {
+        margin-bottom: vw(24px, $desktop_large);
+      }
+    }
+    .modal__subtitle {
+      margin-bottom: vw(32px, $mobile);
+      @media (min-width: $desk) {
+        margin-bottom: vw(40px, $desktop);
+      }
+      @media (min-width: $desk_large) {
+        margin-bottom: vw(40px, $desktop_large);
+      }
+    }
+  }
+}

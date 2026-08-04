@@ -1,0 +1,95 @@
+.details {
+  
+
+  &__inner {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    grid-gap: vw(20px, $mobile);
+    @media (min-width: $desk) {
+      flex-direction: row;
+      justify-content: space-between;
+      grid-gap: vw(20px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(20px, $desktop_large);
+    }
+  }
+  &__info {
+    width: 100%;
+    padding: vw(20px, $mobile);
+    display: flex;
+    flex-direction: column;
+    grid-gap: vw(30px, $mobile);
+    @media (min-width: $desk) {
+      max-width: vw(480px, $desktop);
+      padding: vw(30px, $desktop);
+      grid-gap: vw(40px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(480px, $desktop_large);
+      padding: vw(30px, $desktop_large);
+      grid-gap: vw(40px, $desktop_large);
+    }
+  }
+  &__title {
+    color: var(--brand-accent-yellow-color);
+  }
+  &__items {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    grid-gap: vw(30px, $mobile);
+    @media (min-width: $desk) {
+      grid-gap: vw(30px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(30px, $desktop_large);
+    }
+  }
+  &__item {
+    color: var(--gray-45-color);
+    strong {
+      color: var(--white-color);
+    }
+  }
+
+  &__right {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: vw(30px, $mobile) vw(20px, $mobile);
+    grid-gap: vw(30px, $mobile);
+    @media (min-width: $desk) {
+      max-width: vw(680px, $desktop);
+      padding: vw(30px, $desktop) vw(40px, $desktop);
+      grid-gap: vw(40px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(680px, $desktop_large);
+      padding: vw(30px, $desktop_large) vw(40px, $desktop_large);
+      grid-gap: vw(40px, $desktop_large);
+    }
+  }
+  &__right-top {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    grid-gap: vw(10px, $mobile);
+    text-align: center;
+    @media (min-width: $desk) {
+      grid-gap: vw(10px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(10px, $desktop_large);
+    }
+  }
+  &__right-title {
+    color: var(--brand-accent-yellow-color);
+  }
+  &__right-text {
+    color: var(--gray-70-color);
+    text-transform: uppercase;
+  }
+}

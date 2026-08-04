@@ -1,0 +1,108 @@
+.vacancies-card {
+  position: relative;
+  background-color: var(--gray-12-color);
+  padding: vw(20px, $mobile);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  grid-gap: vw(20px, $mobile);
+  @media (min-width: $desk) {
+    padding: vw(50px, $desktop);
+    grid-gap: vw(20px, $desktop);
+  }
+  @media (min-width: $desk_large) {
+    padding: vw(50px, $desktop_large);
+    grid-gap: vw(20px, $desktop_large);
+  }
+
+  &__title {
+    color: var(--white-color);
+    text-transform: uppercase;
+  }
+  &__cost {
+    color: var(--white-color);
+  }
+
+  &__list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    grid-gap: vw(5px, $mobile);
+    @media (min-width: $desk) {
+      grid-gap: vw(5px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(5px, $desktop_large);
+    }
+  }
+  &__list-item {
+    padding: vw(5px, $mobile) vw(10px, $mobile);
+    border-radius: vw(5px, $mobile);
+    color: var(--white-color);
+    background-color: var(--gray-20-color);
+    @media (min-width: $desk) {
+      padding: vw(5px, $desktop) vw(10px, $desktop);
+      border-radius: vw(5px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      padding: vw(5px, $desktop_large) vw(10px, $desktop_large);
+      border-radius: vw(5px, $desktop_large);
+    }
+  }
+  &__btns {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    grid-gap: vw(10px, $mobile);
+    @media (min-width: $desk) {
+      flex-direction: row;
+      justify-content: flex-start;
+      grid-gap: vw(10px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(10px, $desktop_large);
+    }
+  }
+  &__btn {
+    text-wrap: nowrap;
+    padding: vw(10px, $mobile) vw(10px, $mobile);
+    @media (min-width: $desk) {
+      padding: vw(10px, $desktop) vw(15px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      padding: vw(10px, $desktop_large) vw(15px, $desktop_large);
+    }
+    
+    
+    &.default-btn--transparent {
+      color: var(--white-color);
+      border: 1px solid var(--gray-20-color);
+    }
+  }
+
+  &__svg {
+    position: absolute;
+    top: vw(10px, $mobile);
+    right: vw(10px, $mobile);
+    max-width: vw(20px, $mobile);
+    min-width: vw(20px, $mobile);
+    height: vw(15px, $mobile);
+    fill: var(--white-color);
+    opacity: 0.7;
+    @media (min-width: $desk) {
+      top: vw(30px, $desktop);
+      right: vw(30px, $desktop);
+      max-width: vw(20px, $desktop);
+      min-width: vw(20px, $desktop);
+      height: vw(15px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      top: vw(30px, $desktop_large);
+      right: vw(30px, $desktop_large);
+      max-width: vw(20px, $desktop_large);
+      min-width: vw(20px, $desktop_large);
+      height: vw(15px, $desktop_large);
+    }
+  }
+}

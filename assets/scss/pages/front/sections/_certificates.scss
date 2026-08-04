@@ -1,0 +1,94 @@
+.certificates {
+  &__inner {
+    padding: vw(50px, $mobile) vw(20px, $mobile);
+    @media (min-width: $desk) {
+      padding: vw(50px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      padding: vw(50px, $desktop_large);
+    }
+  }
+  &__top {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    grid-gap: vw(15px, $mobile);
+    margin-bottom: vw(28px, $mobile);
+    @media (min-width: $desk) {
+      grid-gap: vw(15px, $desktop);
+      margin-bottom: vw(60px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(15px, $desktop_large);
+      margin-bottom: vw(60px, $desktop_large);
+    }
+  }
+  
+  &__list {
+    max-width: vw(180px, $mobile);
+    @media (min-width: $desk) {
+      max-width: unset;
+    }
+    @media (min-width: $desk_large) {
+      max-width: unset;
+    }
+  }
+
+  &__list-image {
+    cursor: pointer;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 180/245;
+    overflow: hidden;
+    position: relative;
+    border-radius: vw(15px, $mobile);
+    @media (min-width: $desk) {
+      border-radius: vw(15px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      border-radius: vw(15px, $desktop_large);
+    }
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center center;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+  }
+
+  // Как Tolstenko certificatesSplideInit: <992 — пагинация, стрелки с desk.
+  .splide__arrows {
+    display: none;
+    @media (min-width: $desk) {
+      display: flex;
+    }
+    @media (min-width: $desk_large) {
+      display: flex;
+    }
+  }
+
+  .splide__pagination {
+    @media (min-width: $desk) {
+      display: none;
+    }
+    @media (min-width: $desk_large) {
+      display: none;
+    }
+  }
+
+  .splide__bottom {
+    @media (min-width: $desk) {
+      width: calc(100% + vw(100px, $desktop));
+      transform: translate(vw(-50px, $desktop), -50%);
+    }
+    @media (min-width: $desk_large) {
+      width: calc(100% + vw(100px, $desktop_large));
+      transform: translate(vw(-50px, $desktop_large), -50%);
+    }
+  }
+}

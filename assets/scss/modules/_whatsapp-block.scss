@@ -1,0 +1,95 @@
+.whatsapp-block {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  grid-gap: vw(30px, $mobile);
+  padding: vw(50px, $mobile) vw(20px, $mobile);
+  @media (min-width: $desk) {
+    flex-direction: row;
+    justify-content: space-between;
+    grid-gap: vw(30px, $desktop);
+    padding: vw(50px, $desktop);
+  }
+  @media (min-width: $desk_large) {
+    flex-direction: row;
+    justify-content: space-between;
+    grid-gap: vw(30px, $desktop_large);
+    padding: vw(50px, $desktop_large);
+  }
+
+  &__wrapper {
+    display: flex;
+    flex-direction: column;
+    grid-gap: vw(15px, $mobile);
+    @media (min-width: $desk) {
+      max-width: vw(700px, $desktop);
+      grid-gap: vw(15px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(700px, $desktop_large);
+      grid-gap: vw(15px, $desktop_large);
+    }
+  }
+
+  &__text {
+    color: var(--gray-45-color);
+    @media (min-width: $desk) {
+      max-width: vw(464px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(464px, $desktop_large);
+    }
+  }
+
+  &__btn {
+    justify-content: center;
+    max-width: vw(303px, $mobile);
+    width: 100%;
+    height: vw(65px, $mobile);
+    padding: 0 vw(30px, $mobile);
+    font-size: vw(13px, $mobile);
+    @media (min-width: $desk) {
+      max-width: vw(303px, $desktop);
+      height: vw(65px, $desktop);
+      padding: 0 vw(30px, $desktop);
+      font-size: vw(13px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(303px, $desktop_large);
+      height: vw(65px, $desktop_large);
+      padding: 0 vw(30px, $desktop_large);
+      font-size: vw(13px, $desktop_large);
+    }
+
+    svg {
+      max-width: vw(40px, $mobile);
+      min-width: vw(40px, $mobile);
+      height: auto;
+      aspect-ratio: 1/1;
+      fill: var(--white-color);
+      transition: all .3s linear;
+      @media (min-width: $desk) {
+        max-width: vw(40px, $desktop);
+        min-width: vw(40px, $desktop);
+      }
+      @media (min-width: $desk_large) {
+        max-width: vw(40px, $desktop_large);
+        min-width: vw(40px, $desktop_large);
+      }
+    }
+    span {
+
+    }
+  }
+  &--short {
+    @media (min-width: $desk) {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    @media (min-width: $desk_large) {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+}

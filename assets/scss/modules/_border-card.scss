@@ -1,0 +1,20 @@
+.br-30 {
+  border-radius: vw(30px, $mobile);
+  background-color: var(--gray-15-color);
+  @media (min-width: $desk) {
+    border-radius: vw(30px, $desktop);
+  }
+  @media (min-width: $desk_large) {
+    border-radius: vw(30px, $desktop_large);
+  }
+}
+
+.br-20 {
+  border-radius: vw(20px, $mobile);
+  @media (min-width: $desk) {
+    border-radius: vw(20px, $desktop);
+  }
+  @media (min-width: $desk_large) {
+    border-radius: vw(20px, $desktop_large);
+  }
+}

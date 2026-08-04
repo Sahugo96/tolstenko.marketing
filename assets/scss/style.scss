@@ -1,0 +1,121 @@
+@import './past';
+@import './common/vars';
+@import './common/fonts';
+@import './functions';
+@import './common/nullstyle';
+@import './common/general';
+
+
+@import './common/header'; // + +
+@import './modules/guide-banner'; // + +
+@import './common/footer'; // + +
+
+//Модули
+@import './modules/breadcrumb'; // + +
+@import './modules/socials'; // + +
+@import './modules/border-card'; // + +
+@import './modules/modal'; // + +
+@import './modules/video'; // + +
+@import './modules/more'; // + +
+@import './modules/tabs'; // + +
+@import './modules/stats'; // + +
+@import './modules/header-services-panel'; // + +
+
+@import './modules/redactor'; // +
+@import './modules/splide'; // - +
+@import './modules/form'; // + +
+
+@import './modules/whatsapp-block'; // + +
+@import './modules/tg-block'; // + +
+@import './modules/blockquote'; // + +
+@import './modules/free-audit'; // + +
+@import './modules/pagination'; // +
+@import './modules/blog-card'; // + +
+@import './modules/service-card'; // + +
+@import './modules/case-card'; // + +
+@import './modules/vacancies-card'; // + +
+
+@import './modules/filter'; // - +
+@import './modules/anim'; // - +
+@import './modules/blog-section'; // - +
+@import './modules/seo-section'; // - +
+@import './modules/service-section'; // - +
+@import './modules/case-section'; // - +
+
+
+@import './modules/cookie'; // - +
+
+
+
+
+@import './pages/front/sections/hero'; // + +
+@import './pages/front/sections/actions'; // + +
+
+@import './pages/front/sections/solution'; // - +
+
+@import './pages/front/sections/consultation-tel'; // + +
+@import './pages/front/sections/one-team'; // + +
+@import './pages/front/sections/team'; // + +
+@import './pages/front/sections/different-experiences'; // + +
+@import './pages/front/sections/consultation-tg'; // + +
+@import './pages/front/sections/three-steps'; // + +
+@import './pages/front/sections/strategy'; // + +
+@import './pages/front/sections/author'; // + +
+@import './pages/front/sections/partners'; // + +
+@import './pages/front/sections/certificates'; // + +
+@import './pages/front/sections/tg-channel'; // + +
+@import './pages/front/sections/faq'; // + +
+@import './pages/front/sections/reviews'; // + +
+@import './pages/front/sections/consultation-free'; // + +
+
+
+
+
+
+@import './pages/services/sections/services'; // - +
+
+
+
+
+@import './pages/vacancies/sections/vacancies-banner'; // + +
+@import './pages/vacancies/sections/vacancies-section'; // - +
+
+
+
+
+@import './pages/partner/sections/referal'; // + +
+@import './pages/partner/sections/we-can'; // + +
+@import './pages/partner/sections/recomendation'; // + +
+@import './pages/partner/sections/commission'; // + +
+@import './pages/partner/sections/benefits-cooperation'; // + +
+
+
+@import './pages/press-portrait/sections/aducation'; // + +
+@import './pages/press-portrait/sections/themes'; // + +
+@import './pages/press-portrait/sections/collaboration'; // + +
+@import './pages/press-portrait/sections/clients'; // + +
+
+
+@import './pages/contacts/sections/contacts'; // - +
+@import './pages/contacts/sections/maps'; // + +
+@import './pages/contacts/sections/details'; // + +
+
+
+@import './pages/city/sections/city'; // + +
+
+
+@import './pages/actions/sections/actions-section'; // + +
+
+
+@import './pages/404/sections/error'; // + +
+
+
+
+@import './pages/single-vacancy/hero-vacancy'; // - +
+@import './pages/single-vacancy/single-vacancy'; // - +
+@import './pages/single-vacancy/same-vacancy'; // + +
+
+@import './pages/single-blog/single-blog'; // -
+@import './pages/single-blog/comments'; // - +
+
+@import './pages/single-actions/single-actions'; // + +

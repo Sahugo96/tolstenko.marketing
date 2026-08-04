@@ -1,0 +1,84 @@
+.tabs {
+  width: 100%;
+  padding: vw(5px, $mobile);
+  border-radius: vw(50px, $mobile);
+  background-color: var(--gray-12-color);
+  overflow-y: auto;
+  max-width: 100%;
+  scrollbar-width: none;
+  @media (min-width: $desk) {
+    padding: vw(5px, $desktop);
+  }
+  @media (min-width: $desk_large) {
+    padding: vw(5px, $desktop_large);
+  }
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  &.is-active.is-initialized .tabs__labels {
+    grid-gap: 0;
+  }
+
+  .splide__track {
+    overflow: visible;
+    overflow: hidden;
+    border-radius: vw(50px, $mobile);
+  }
+
+  &__labels {
+    display: flex;
+    align-items: center;
+    text-wrap: nowrap;
+    grid-gap: vw(10px, $mobile);
+    width: min-content;
+    @media (min-width: $desk) {
+      grid-gap: vw(10px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(10px, $desktop_large);
+    }
+  }
+  &__label {
+    min-width: min-content;
+    text-wrap: nowrap;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    border-radius: vw(50px, $mobile);
+    padding: vw(10px, $mobile) vw(15px, $mobile);
+    transition: all .3s linear;
+    background-color: transparent;
+    color: var(--gray-45-color);
+    @media (min-width: $desk) {
+      padding: vw(10px, $desktop) vw(20px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      padding: vw(10px, $desktop_large) vw(20px, $desktop_large);
+    }
+    
+    width: auto !important;
+    max-width: none !important;
+    flex-shrink: 0;
+
+    &:has( input:checked) {
+      color: var(--black-color);
+      background-color: var(--brand-accent-yellow-color);
+    }
+    
+    @media (any-hover: hover) {
+      &:hover {
+        background-color: var(--gray-15-color);
+      }
+    }
+  }
+  &__label input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    opacity: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+}

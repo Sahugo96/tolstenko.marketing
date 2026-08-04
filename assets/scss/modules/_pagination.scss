@@ -1,0 +1,99 @@
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  grid-gap: vw(8px, $mobile);
+  @media (min-width: $desk) {
+    grid-gap: vw(12px, $desktop);
+  }
+  @media (min-width: $desk_large) {
+    gap: vw(12px, $desktop_large);
+  }
+
+  &-page {
+    margin-top: vw(30px, $mobile);
+    @media (min-width: $desk) {
+      margin-top: vw(30px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      margin-top: vw(30px, $desktop_large);
+    }
+  }
+
+  .page-numbers {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: vw(30px, $mobile);
+    height: auto;
+    aspect-ratio: 1/1;
+    border: 1px solid var(--white-color);
+    color: var(--white-color);
+    background-color: transparent;
+    border-radius: 50%;
+    font-family: $Montserrat;
+    font-size: vw(14px, $mobile);
+    font-weight: 500;
+    line-height: 1.07;
+    letter-spacing: -1%;
+    transition: all 0.3s linear;
+    @media (min-width: $desk) {
+      width: vw(30px, $desktop);
+      font-size: vw(14px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      width: vw(30px, $desktop_large);
+      font-size: vw(14px, $desktop_large);
+    }
+    &.current {
+      color: var(--black-color);
+      border-color: var(--brand-accent-yellow-color);
+      background-color: var(--brand-accent-yellow-color);
+    }
+    &.dots {
+      border-color: transparent;
+    }
+    @media (any-hover: hover) {
+      &:not(.dots):not(.current):hover {
+          transition: all .3s linear;
+          &:hover {
+            color: var(--black-color);
+            background-color: var(--white-color);
+          }
+      }
+    }
+  }
+
+  .prev,
+  .next {
+    border: 1px solid var(--white-color);
+    margin: 0 vw(3px, $mobile);
+    @media (min-width: $desk) {
+      margin: 0 vw(3px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      margin: 0 vw(3px, $desktop_large);
+    }
+    @media (any-hover: hover) {
+      &:not(.dots):hover {
+        background-color: var(--white-color);
+        svg {
+          stroke: var(--black-color);
+        }
+      }
+    }
+    svg {
+      width: vw(17px, $mobile);
+      height: auto;
+      aspect-ratio: 1/1;
+      stroke: var(--white-color);
+      transition: all 0.3s linear;
+      @media (min-width: $desk) {
+        width: vw(17px, $desktop);
+      }
+      @media (min-width: $desk_large) {
+        width: vw(17px, $desktop_large);
+      }
+    }
+  }
+}

@@ -1,0 +1,136 @@
+.guide-banner {
+  display: none;
+  position: fixed;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 14;
+  background-color: var(--brand-accent-red-color);
+  color: var(--white-color);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-100%);
+  transition: opacity .5s linear, transform .3s linear, visibility .5s linear;
+  @media (min-width: $desk) {
+    display: block;
+  }
+
+  &.is-visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  &__inner {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: vw(10px, $mobile);
+    min-height: vw(56px, $mobile);
+    padding: vw(10px, $mobile) vw(48px, $mobile) vw(10px, $mobile) vw(16px, $mobile);
+    @media (min-width: $desk) {
+      flex-wrap: nowrap;
+      gap: vw(16px, $desktop);
+      min-height: vw(56px, $desktop);
+      padding: vw(10px, $desktop) vw(56px, $desktop) vw(10px, $desktop) 0;
+    }
+    @media (min-width: $desk_large) {
+      gap: vw(16px, $desktop_large);
+      min-height: vw(56px, $desktop_large);
+      padding-top: vw(10px, $desktop_large);
+      padding-bottom: vw(10px, $desktop_large);
+      padding-right: vw(56px, $desktop_large);
+    }
+  }
+
+  &__content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: vw(8px, $mobile);
+    width: 100%;
+    @media (min-width: $desk) {
+      width: auto;
+      flex: 1 1 auto;
+      justify-content: center;
+      gap: vw(10px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      gap: vw(10px, $desktop_large);
+    }
+  }
+
+  &__text {
+    margin: 0;
+    color: var(--white-color);
+    text-align: center;
+    text-transform: uppercase;
+    @media (min-width: $desk) {
+      text-align: left;
+    }
+  }
+
+  &__icon {
+    flex: 0 0 auto;
+    width: vw(16px, $mobile);
+    height: auto;
+    color: var(--white-color);
+    @media (min-width: $desk) {
+      width: vw(15px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      width: vw(15px, $desktop_large);
+    }
+  }
+
+  &__btn {
+    width: auto;
+    min-width: vw(160px, $mobile);
+    padding: 0 vw(20px, $mobile);
+    white-space: nowrap;
+    @media (min-width: $desk) {
+      min-width: vw(180px, $desktop);
+      padding: 0 vw(24px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      min-width: vw(180px, $desktop_large);
+      padding: 0 vw(24px, $desktop_large);
+    }
+  }
+
+  &__close {
+    position: absolute;
+    top: 50%;
+    right: vw(12px, $mobile);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: vw(32px, $mobile);
+    height: vw(32px, $mobile);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--white-color);
+    transform: translateY(-50%);
+    cursor: pointer;
+    @media (min-width: $desk) {
+      right: 0;
+      width: vw(32px, $desktop);
+      height: vw(32px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      width: vw(32px, $desktop_large);
+      height: vw(32px, $desktop_large);
+    }
+
+    @media (any-hover: hover) {
+      transition: opacity .3s linear;
+      &:hover {
+        opacity: .7;
+      }
+    }
+  }
+}

@@ -1,0 +1,200 @@
+.case-section {
+  width: 100%;
+
+  &__top {
+    text-align: center;
+    grid-gap: vw(15px, $mobile);
+    @media (min-width: $desk) {
+      grid-gap: vw(15px, $desktop);
+      max-width: vw(600px, $desktop);
+      margin: 0 auto;
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(15px, $desktop_large);
+      max-width: vw(600px, $desktop_large);
+      margin: 0 auto;
+    }
+  }
+  &__text {
+    color: var(--gray-50-color);
+    @media (min-width: $desk) {
+      max-width: vw(255px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(255px, $desktop_large);
+    }
+  }
+  .filter__label {
+    padding:  0 vw(20px, $mobile);
+    @media (min-width: $desk) {
+      padding:  0 vw(30px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      padding:  0 vw(30px, $desktop_large);
+    }
+  }
+  
+  &__splide.splide {
+    visibility: visible;
+  }
+
+  // Swiper вешается на .splide__track — без column/flex, иначе ломается ширина слайдов.
+  .splide__track.swiper {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    width: 100%;
+  }
+  // Как Tolstenko caseSectionSplideInit: на мобилке только пагинация, стрелки с desk.
+  .splide__arrows {
+    display: none;
+    @media (min-width: $desk) {
+      display: flex;
+    }
+    @media (min-width: $desk_large) {
+      display: flex;
+    }
+  }
+
+  .splide__pagination,
+  .swiper-pagination {
+    @media (min-width: $desk) {
+      display: none;
+    }
+    @media (min-width: $desk_large) {
+      display: none;
+    }
+  }
+
+  &__splide-list.splide__list {
+    
+  }
+  &__items {
+
+    @media (min-width: $desk) {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      width: 100%;
+      height: auto;
+      grid-gap: vw(20px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      width: 100%;
+      height: auto;
+      grid-gap: vw(20px, $desktop_large);
+    }
+  }
+  &__item {
+
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    grid-gap: vw(20px, $mobile);
+    @media (min-width: $desk) {
+      grid-gap: vw(20px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(20px, $desktop_large);
+    }
+  }
+  &__list > .case-card {
+    .case-card {
+
+      &__link {
+        height: 100%;
+        flex-direction: column;
+        grid-gap: vw(20px, $mobile);
+        @media (min-width: $desk) {
+          min-height: vw(543px, $desktop);
+          grid-gap: vw(20px, $desktop);
+        }
+        @media (min-width: $desk_large) {
+          min-height: vw(543px, $desktop_large);
+          grid-gap: vw(20px, $desktop_large);
+        }
+      }
+      &__image {
+        height: vw(298px, $mobile);
+        @media (min-width: $desk) {
+          max-width: unset;
+          min-width: unset;
+          max-height: vw(353px, $desktop);
+          min-height: vw(353px, $desktop);
+          height: auto;
+        }
+        @media (min-width: $desk_large) {
+          max-width: unset;
+          min-width: unset;
+          max-height: vw(353px, $desktop_large);
+          min-height: vw(353px, $desktop_large);
+          height: auto;
+        }
+        svg {
+          top: vw(20px, $mobile);
+          right: vw(20px, $mobile);
+          @media (min-width: $desk) {
+            top: vw(20px, $desktop);
+            right: vw(20px, $desktop);
+          }
+          @media (min-width: $desk_large) {
+            top: vw(20px, $desktop_large);
+            right: vw(20px, $desktop_large);
+          }
+        }
+      }
+      &__title {
+        font-size: vw(20px, $mobile);
+        line-height: 1;
+        @media (min-width: $desk) {
+          font-size: vw(20px, $desktop);
+        }
+        @media (min-width: $desk_large) {
+          font-size: vw(20px, $desktop_large);
+        }
+      }
+      &__text {
+        font-size: vw(15px, $mobile);
+        line-height: 1.33;
+        margin-bottom: vw(10px, $mobile);
+        @include line-camp(3);
+        @media (min-width: $desk) {
+          font-size: vw(16px, $desktop);
+          margin-bottom: vw(10px, $desktop);
+          @include line-camp(2);
+        }
+        @media (min-width: $desk_large) {
+          font-size: vw(16px, $desktop_large);
+          margin-bottom: vw(10px, $desktop_large);
+          @include line-camp(2);
+        }
+      }
+    }
+  }
+  &__items {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    flex-wrap: wrap;
+    grid-gap: vw(20px, $mobile);
+    @media (min-width: $desk) {
+      grid-gap: vw(20px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(20px, $desktop_large);
+    }
+  }
+
+  &__empty {
+    text-align: center;
+    background: #f9f9f9;
+    color: #666;
+  }
+  &__items.loading {
+    opacity: 0.6;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+}

@@ -1,0 +1,18 @@
+@function vw($px, $viewport-width, $precision: 3) {
+
+	// Проверяем, чтобы ширина области просмотра была больше 0
+	@if $viewport-width <=0 {
+		@error "Ширина области просмотра должна быть больше 0";
+	}
+
+	// Рассчитываем значение в vw
+	$vw-value: (
+		$px / $viewport-width) * 100;
+
+	// Округляем значение до заданного количества знаков после запятой
+	$multiplier: pow(10, $precision);
+	$rounded-value: round($vw-value * $multiplier) / $multiplier;
+
+	// Возвращаем результат с единицами измерения vw
+	@return #{$rounded-value}vw;
+}

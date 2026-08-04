@@ -1,0 +1,437 @@
+.contacts {
+  // Сброс старых стилей из _past.scss (.contacts как белая карточка).
+  overflow: hidden;
+  position: relative;
+  background-color: transparent;
+  border-radius: 0;
+
+  &__inner {
+    display: flex;
+    flex-direction: column;
+    grid-gap: vw(20px, $mobile);
+    @media (min-width: $desk) {
+      grid-gap: vw(40px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(40px, $desktop_large);
+    }
+  }
+
+  &__tabs {
+    width: 100%;
+    padding: 0;
+    background-color: transparent;
+    background-color: var(--gray-12-color);
+    padding: vw(10px, $mobile) vw(20px, $mobile);
+    @media (min-width: $desk) {
+      padding: vw(20px, $desktop) vw(37px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      padding: vw(20px, $desktop_large) vw(37px, $desktop_large);
+    }
+  }
+
+  &__labels {
+    grid-gap: vw(10px, $mobile);
+    @media (min-width: $desk) {
+      width: 100%;
+      grid-gap: vw(10px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(10px, $desktop_large);
+    }
+  }
+
+  &__label {
+    @media (min-width: $desk) {
+      flex: 1 1 0;
+      justify-content: center;
+      text-align: center;
+    }
+  }
+
+  &__card {
+    // overflow: hidden;
+    // background-color: var(--gray-12-color);
+    // padding: vw(20px, $mobile);
+    // @media (min-width: $desk) {
+    //   padding: vw(20px, $desktop);
+    // }
+    // @media (min-width: $desk_large) {
+    //   padding: vw(20px, $desktop_large);
+    // }
+  }
+
+  $items-count: 15;
+  @for $i from 1 through $items-count {
+    &:has(.contacts__label:nth-child(#{$i}) > input:checked) .contacts__gallery-panel:nth-child(#{$i}),
+    &:has(.contacts__label:nth-child(#{$i}) > input:checked) .contacts__info-panel:nth-child(#{$i}) {
+      display: block;
+    }
+  }
+
+  &__info-panels {
+    position: relative;
+    min-width: 0;
+    @media (min-width: $desk) {
+      height: 100%;
+    }
+  }
+
+  &__info-panel {
+    display: none;
+    width: 100%;
+    @media (min-width: $desk) {
+      height: 100%;
+    }
+
+    &.is-active {
+      display: block;
+    }
+  }
+
+  &__galleries {
+    position: relative;
+    width: 100%;
+  }
+
+  &__gallery-panel {
+    display: none;
+    width: 100%;
+
+    &.is-active {
+      display: block;
+    }
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-gap: vw(20px, $mobile);
+    align-items: start;
+    @media (min-width: $desk) {
+      grid-template-columns: minmax(0, 0.91fr) minmax(0, 1.09fr);
+      grid-gap: vw(20px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(20px, $desktop_large);
+    }
+    &:not(:has(.contacts__media)) {
+      @media (min-width: $desk) {
+        grid-template-columns: minmax(0, 0.91fr);
+      }
+    }
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    grid-gap: vw(24px, $mobile);
+    min-width: 0;
+    min-height: 100%;
+    height: 100%;
+    padding: vw(20px, $mobile);
+    background-color: var(--gray-15-color);
+    @media (min-width: $desk) {
+      grid-gap: vw(24px, $desktop);
+      padding: vw(24px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(24px, $desktop_large);
+      padding: vw(24px, $desktop_large);
+    }
+  }
+
+  &__info-title {
+    color: var(--brand-accent-yellow-color);
+  }
+
+  &__info-list {
+    display: flex;
+    flex-direction: column;
+    grid-gap: vw(20px, $mobile);
+    @media (min-width: $desk) {
+      grid-gap: vw(20px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(20px, $desktop_large);
+    }
+  }
+
+  &__info-item {
+    display: flex;
+    align-items: flex-start;
+    grid-gap: vw(12px, $mobile);
+    @media (min-width: $desk) {
+      grid-gap: vw(12px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(12px, $desktop_large);
+    }
+  }
+
+  &__info-icon {
+    flex: 0 0 auto;
+    width: vw(24px, $mobile);
+    height: vw(24px, $mobile);
+    color: var(--white-color);
+    @media (min-width: $desk) {
+      width: vw(24px, $desktop);
+      height: vw(24px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      width: vw(24px, $desktop_large);
+      height: vw(24px, $desktop_large);
+    }
+    svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+  }
+
+  &__info-label {
+    color: var(--white-color);
+    margin-bottom: vw(6px, $mobile);
+    @media (min-width: $desk) {
+      margin-bottom: vw(6px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      margin-bottom: vw(6px, $desktop_large);
+    }
+  }
+
+  &__info-text {
+    color: var(--gray-45-color);
+    a {
+      color: inherit;
+      text-decoration: none;
+      transition: color .3s linear;
+      @media (any-hover: hover) {
+        &:hover {
+          color: var(--brand-accent-yellow-color);
+        }
+      }
+    }
+  }
+
+  &__actions {
+    display: flex;
+    flex-direction: column;
+    grid-gap: vw(10px, $mobile);
+    margin-top: auto;
+    width: 100%;
+    @media (min-width: $desk) {
+      flex-direction: row;
+      align-items: stretch;
+      grid-gap: vw(10px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(10px, $desktop_large);
+    }
+  }
+
+  &__action {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: vw(40px, $mobile);
+    overflow: hidden;
+    white-space: nowrap;
+    @media (min-width: $desk) {
+      flex: 1 1 0;
+      min-width: 0;
+      min-height: vw(40px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      min-height: vw(40px, $desktop_large);
+    }
+    svg,
+    img {
+      flex: 0 0 auto;
+      display: block;
+      width: vw(18px, $mobile);
+      height: vw(18px, $mobile);
+      min-width: vw(18px, $mobile);
+      max-width: vw(18px, $mobile);
+      max-height: vw(18px, $mobile);
+      @media (min-width: $desk) {
+        width: vw(18px, $desktop);
+        height: vw(18px, $desktop);
+        min-width: vw(18px, $desktop);
+        max-width: vw(18px, $desktop);
+        max-height: vw(18px, $desktop);
+      }
+      @media (min-width: $desk_large) {
+        width: vw(18px, $desktop_large);
+        height: vw(18px, $desktop_large);
+        min-width: vw(18px, $desktop_large);
+        max-width: vw(18px, $desktop_large);
+        max-height: vw(18px, $desktop_large);
+      }
+    }
+    img {
+      object-fit: contain;
+    }
+    span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    &--tel svg {
+      fill: currentColor;
+      color: var(--black-color);
+    }
+  }
+
+  &__media {
+    position: relative;
+    min-width: 0;
+    min-height: vw(280px, $mobile);
+    @media (min-width: $desk) {
+      min-height: unset;
+      height: 100%;
+    }
+  }
+
+  &__gallery {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    overflow: visible;
+    grid-gap: vw(12px, $mobile);
+    @media (min-width: $desk) {
+      grid-gap: vw(12px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(12px, $desktop_large);
+    }
+  }
+
+  &__gallery-main {
+    position: relative;
+    flex: 0 0 auto;
+
+    > .splide__track {
+      position: relative;
+      z-index: 1;
+    }
+
+    > .splide__arrows {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 100%;
+      width: 100%;
+      align-items: center;
+      justify-content: space-between;
+      margin: 0;
+      padding: 0 vw(12px, $mobile);
+      pointer-events: none;
+      z-index: 2;
+      @media (min-width: $desk) {
+        display: flex;
+        padding: 0 vw(10px, $desktop);
+      }
+      @media (min-width: $desk_large) {
+        padding: 0 vw(10px, $desktop_large);
+      }
+    }
+
+    .splide__arrow {
+      pointer-events: all;
+      transform: none;
+    }
+
+    .splide__arrow--prev {
+      transform: none;
+    }
+
+    .splide__arrow--next {
+      transform: none;
+
+      svg {
+        transform: rotate(180deg);
+      }
+    }
+  }
+
+  &__gallery-slide {
+    overflow: hidden;
+    border-radius: vw(20px, $mobile);
+    @media (min-width: $desk) {
+      border-radius: vw(20px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      border-radius: vw(20px, $desktop_large);
+    }
+    img {
+      width: 100%;
+      aspect-ratio: 580 / 488;
+      object-fit: cover;
+      object-position: center center;
+      display: block;
+    }
+  }
+
+  // Thumbs как Splide: fixedWidth/Height 88×58 / 110×72, gap 8/12.
+  // max-width ≈ 4 превью — пятая только скроллом (и на мобилке, и на деске).
+  &__gallery-thumbs {
+    max-width: calc(4 * 88px + 3 * 8px);
+    width: 100%;
+
+    @media (min-width: $desk) {
+      max-width: calc(4 * 110px + 3 * 12px);
+    }
+
+    .splide__track.swiper {
+      overflow: hidden;
+    }
+
+    .swiper-slide {
+      width: 88px;
+      height: 58px;
+      flex-shrink: 0;
+      box-sizing: border-box;
+      opacity: 0.55;
+      transition: opacity .3s linear;
+      @media (min-width: $desk) {
+        width: 110px;
+        height: 72px;
+      }
+      &.is-active,
+      &.swiper-slide-thumb-active {
+        opacity: 1;
+      }
+    }
+  }
+
+  &__gallery-thumb {
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    border-radius: vw(12px, $mobile);
+    cursor: pointer;
+    @media (min-width: $desk) {
+      border-radius: vw(12px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      border-radius: vw(12px, $desktop_large);
+    }
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+  }
+}
