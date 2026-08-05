@@ -2,7 +2,7 @@
 /**
  * Блоки темы для Gutenberg (без ACF Pro — через ядро WordPress).
  * В редакторе: категория «Блоки темы», добавляй блоки и меняй порядок.
- * Контент блоков: из настроек темы, записей CPT или дефолты (редактирование — на странице настроек или через шаблон «Page with blocks» + CPT «Блок»).
+ * Контент блоков: из настроек темы (Дефолты блоков) или атрибутов Gutenberg.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -91,8 +91,7 @@ function tolstenko_filter_allowed_blocks_by_post_type( $allowed, $editor_context
         'tolstenko/consultation-tel', 'tolstenko/consultation-free',
         'tolstenko/free-audit', 'tolstenko/solution', 'tolstenko/one-team', 'tolstenko/author', 'tolstenko/different-experiences', 'tolstenko/partners',
         'tolstenko/strategy', 'tolstenko/team-cards', 'tolstenko/tg-channel',
-        'tolstenko/three-steps', 'tolstenko/faq',
-        'tolstenko/seo-section',
+        'tolstenko/three-steps', 'tolstenko/faq', 'tolstenko/seo-section', 'tolstenko/hidden-seo',
     );
 
     if ( $post_type === 'service' ) {
@@ -165,6 +164,15 @@ function tolstenko_enqueue_editor_blocks() {
                 );
             }
         }
+        $blog_authors_for_editor = array();
+        if ( function_exists( 'tolstenko_get_blog_authors_list' ) ) {
+            foreach ( tolstenko_get_blog_authors_list() as $index => $author_row ) {
+                $blog_authors_for_editor[] = array(
+                    'index' => (string) $index,
+                    'label' => tolstenko_get_blog_author_option_label( $author_row, (int) $index ),
+                );
+            }
+        }
         wp_localize_script(
             'tolstenko-editor-blocks',
             'tolstenkoBlockDefaults',
@@ -224,6 +232,7 @@ function tolstenko_enqueue_editor_blocks() {
                 'same_vacancy'          => tolstenko_get_block_defaults( 'same_vacancy' ),
                 'vacancyPosts'          => $vacancy_posts_for_editor,
                 'actionPosts'           => $action_posts_for_editor,
+                'blogAuthors'           => $blog_authors_for_editor,
             )
         );
     }
@@ -231,10 +240,6 @@ function tolstenko_enqueue_editor_blocks() {
 
 function tolstenko_get_theme_block_attributes() {
     return array(
-        'promo-notice'   => array(
-            'promo_text_1' => array( 'type' => 'string', 'default' => 'Получите гайд ' ),
-            'promo_text_2' => array( 'type' => 'string', 'default' => '"Как владельцу бизнеса контролировать подрядчика по маркетингу"' ),
-        ),
         'main-hero' => array(
             'block_main_hero_title'          => array( 'type' => 'string', 'default' => '' ),
             'block_main_hero_title_tag'      => array( 'type' => 'string', 'default' => 'h1' ),
@@ -265,23 +270,6 @@ function tolstenko_get_theme_block_attributes() {
             'block_contacts_maps_title'     => array( 'type' => 'string', 'default' => '' ),
             'block_contacts_maps_title_tag' => array( 'type' => 'string', 'default' => 'h2' ),
             'block_contacts_maps_items'     => array( 'type' => 'array', 'default' => array() ),
-        ),
-        'seo-section' => array(
-            'block_seo_section_title'     => array( 'type' => 'string', 'default' => '' ),
-            'block_seo_section_title_tag' => array( 'type' => 'string', 'default' => 'h2' ),
-            'block_seo_section_subtitle'  => array( 'type' => 'string', 'default' => '' ),
-            'block_seo_section_more_text' => array( 'type' => 'string', 'default' => '' ),
-            'block_seo_section_blocks'    => array( 'type' => 'array', 'default' => array() ),
-        ),
-        'callback-modal' => array( 'block_callback_modal_cf7_id' => array( 'type' => 'string', 'default' => '' ) ),
-        'header-footer' => array(
-            'site_phone'         => array( 'type' => 'string', 'default' => '' ),
-            'site_social_telegram' => array( 'type' => 'string', 'default' => '' ),
-            'site_social_whatsapp' => array( 'type' => 'string', 'default' => '' ),
-            'site_social_vk'     => array( 'type' => 'string', 'default' => '' ),
-            'site_social_rutube' => array( 'type' => 'string', 'default' => '' ),
-            'site_email'         => array( 'type' => 'string', 'default' => '' ),
-            'site_footer_html'   => array( 'type' => 'string', 'default' => '' ),
         ),
         'thanks' => array(
             'block_thanks_title'       => array( 'type' => 'string', 'default' => '' ),
@@ -553,6 +541,14 @@ function tolstenko_get_theme_block_attributes() {
             'block_faq_phone'        => array( 'type' => 'string', 'default' => '' ),
             'block_faq_telegram_url' => array( 'type' => 'string', 'default' => '' ),
         ),
+        'seo-section' => array(
+            'block_seo_section_title'         => array( 'type' => 'string', 'default' => '' ),
+            'block_seo_section_title_tag'     => array( 'type' => 'string', 'default' => 'h2' ),
+            'block_seo_section_subtitle'      => array( 'type' => 'string', 'default' => '' ),
+            'block_seo_section_more_text'     => array( 'type' => 'string', 'default' => '' ),
+            'block_seo_section_blocks'        => array( 'type' => 'array', 'default' => array() ),
+        ),
+        'hidden-seo'  => array(),
         'we-can' => array(
             'block_we_can_title'      => array( 'type' => 'string', 'default' => '' ),
             'block_we_can_title_tag'  => array( 'type' => 'string', 'default' => 'h2' ),
@@ -640,11 +636,9 @@ function tolstenko_get_theme_block_attributes() {
             'block_vacancy_content_html'             => array( 'type' => 'string', 'default' => '' ),
             'block_vacancy_content_apply_text'       => array( 'type' => 'string', 'default' => '' ),
             'block_vacancy_content_apply_url'        => array( 'type' => 'string', 'default' => '' ),
-            'block_vacancy_content_sidebar_name'     => array( 'type' => 'string', 'default' => '' ),
-            'block_vacancy_content_sidebar_text'     => array( 'type' => 'string', 'default' => '' ),
+            'block_vacancy_content_sidebar_author'   => array( 'type' => 'string', 'default' => '' ),
             'block_vacancy_content_sidebar_btn'      => array( 'type' => 'string', 'default' => '' ),
             'block_vacancy_content_sidebar_btn_url'  => array( 'type' => 'string', 'default' => '' ),
-            'block_vacancy_content_sidebar_photo'    => array( 'type' => 'integer', 'default' => 0 ),
         ),
         'same-vacancy' => array(
             'block_same_vacancy_title'     => array( 'type' => 'string', 'default' => '' ),
@@ -752,6 +746,7 @@ function tolstenko_register_theme_blocks() {
         array( 'name' => 'three-steps', 'title' => __( 'Три шага', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'faq', 'title' => __( 'FAQ', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'seo-section', 'title' => __( 'SEO продвижение', 'tolstenko-theme' ), 'category' => $cat_new ),
+        array( 'name' => 'hidden-seo', 'title' => __( 'Скрытый seo', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'we-can', 'title' => __( 'Мы можем', 'tolstenko-theme' ), 'category' => $cat_partner ),
         array( 'name' => 'recomendation', 'title' => __( 'Рекомендации', 'tolstenko-theme' ), 'category' => $cat_partner ),
         array( 'name' => 'referal', 'title' => __( 'Рефералка', 'tolstenko-theme' ), 'category' => $cat_partner ),
@@ -764,8 +759,6 @@ function tolstenko_register_theme_blocks() {
         array( 'name' => 'hero-vacancy', 'title' => __( 'Баннер вакансии', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'vacancy-content', 'title' => __( 'Контент вакансии', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'same-vacancy', 'title' => __( 'Похожие вакансии', 'tolstenko-theme' ), 'category' => $cat_new ),
-        array( 'name' => 'callback-modal', 'title' => __( 'Модалка заявки', 'tolstenko-theme' ) ),
-        array( 'name' => 'header-footer', 'title' => __( 'Шапка и подвал сайта', 'tolstenko-theme' ) ),
         array( 'name' => 'thanks', 'title' => __( 'Страница «Спасибо»', 'tolstenko-theme' ) ),
     );
 
@@ -798,7 +791,7 @@ function tolstenko_register_theme_blocks() {
 
 /**
  * Рендер блока темы: подключает шаблон из template-parts/blocks/.
- * Контент — дефолты или со страницы настроек (tolstenko_block_id = 0, tolstenko_acf_block = false).
+ * Контент — дефолты из «Настройки сайта → Дефолты блоков» или атрибуты Gutenberg.
  *
  * @param array    $attributes Атрибуты блока.
  * @param string   $content    Внутренний контент (пусто у динамических блоков).
@@ -823,8 +816,6 @@ function tolstenko_render_theme_block( $attributes, $content, $block ) {
     $bem         = function_exists( 'tolstenko_get_single_content_bem' )
         ? tolstenko_get_single_content_bem()
         : 'single-blog';
-    set_query_var( 'tolstenko_acf_block', false );
-    set_query_var( 'tolstenko_block_id', 0 );
     set_query_var( 'tolstenko_block_attributes', is_array( $attributes ) ? $attributes : array() );
     set_query_var( 'tolstenko_block_inner_content', $content );
     set_query_var( 'tolstenko_block_blog_inline', $blog_inline );
@@ -832,6 +823,10 @@ function tolstenko_render_theme_block( $attributes, $content, $block ) {
     get_template_part( 'template-parts/blocks/' . $slug );
     $html = ob_get_clean();
     set_query_var( 'tolstenko_block_blog_inline', false );
+
+    if ( 'hidden-seo' === $slug ) {
+        return $html;
+    }
 
     if ( $blog_inline && $html !== '' ) {
         if ( function_exists( 'tolstenko_adapt_single_content_classes' ) ) {

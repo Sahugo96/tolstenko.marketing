@@ -33,11 +33,9 @@ function tolstenko_vacancy_template_schema() {
 			'content'          => '<p>Описание вакансии: обязанности, требования и условия работы.</p>',
 			'apply_text'       => 'Отправить заявку',
 			'apply_url'        => '',
-			'sidebar_name'     => '',
-			'sidebar_text'     => '',
+			'sidebar_author'   => '',
 			'sidebar_btn'      => 'Бесплатный аудит',
 			'sidebar_btn_url'  => '',
-			'sidebar_photo'    => 0,
 		),
 		'same_vacancy' => array(
 			'title' => 'Другие вакансии',
@@ -94,8 +92,7 @@ function tolstenko_render_vacancy_template_admin_page() {
 
 	$hero_img_id = (int) ( $hero['image'] ?? 0 );
 	$hero_img_url = $hero_img_id ? wp_get_attachment_image_url( $hero_img_id, 'medium' ) : '';
-	$side_img_id = (int) ( $content['sidebar_photo'] ?? 0 );
-	$side_img_url = $side_img_id ? wp_get_attachment_image_url( $side_img_id, 'medium' ) : '';
+	$sidebar_author = (string) ( $content['sidebar_author'] ?? '' );
 
 	$vacancy_posts = get_posts(
 		array(
@@ -209,16 +206,26 @@ function tolstenko_render_vacancy_template_admin_page() {
 					<div class="row"><input type="url" name="tolstenko_vacancy_template[vacancy_content][apply_url]" value="<?php echo esc_attr( $content['apply_url'] ?? '' ); ?>" style="width:100%" placeholder="<?php esc_attr_e( 'Ссылка кнопки заявки (пусто = модалка)', 'tolstenko-theme' ); ?>"></div>
 					<hr>
 					<div class="muted"><?php esc_html_e( 'Сайдбар', 'tolstenko-theme' ); ?></div>
-					<div class="row"><input type="text" name="tolstenko_vacancy_template[vacancy_content][sidebar_name]" value="<?php echo esc_attr( $content['sidebar_name'] ?? '' ); ?>" style="width:100%" placeholder="<?php esc_attr_e( 'Имя', 'tolstenko-theme' ); ?>"></div>
-					<div class="row"><textarea name="tolstenko_vacancy_template[vacancy_content][sidebar_text]" rows="3" placeholder="<?php esc_attr_e( 'Текст', 'tolstenko-theme' ); ?>"><?php echo esc_textarea( $content['sidebar_text'] ?? '' ); ?></textarea></div>
+					<div class="row">
+						<label for="tolstenko_vacancy_template_sidebar_author"><strong><?php esc_html_e( 'Автор по умолчанию', 'tolstenko-theme' ); ?></strong></label><br>
+						<?php
+						tolstenko_render_blog_author_select(
+							'tolstenko_vacancy_template[vacancy_content][sidebar_author]',
+							$sidebar_author,
+							__( 'Не выбран', 'tolstenko-theme' ),
+							'tolstenko_vacancy_template_sidebar_author'
+						);
+						?>
+						<p class="muted" style="margin-top:6px">
+							<?php esc_html_e( 'Список авторов:', 'tolstenko-theme' ); ?>
+							<a href="<?php echo esc_url( admin_url( 'admin.php?page=tolstenko-blog-authors' ) ); ?>">
+								<?php esc_html_e( 'Настройки сайта → Авторы статей', 'tolstenko-theme' ); ?>
+							</a>.
+							<?php esc_html_e( 'Пусто = из «Шаблон вакансии» или из блока «Контент вакансии».', 'tolstenko-theme' ); ?>
+						</p>
+					</div>
 					<div class="row"><input type="text" name="tolstenko_vacancy_template[vacancy_content][sidebar_btn]" value="<?php echo esc_attr( $content['sidebar_btn'] ?? '' ); ?>" style="width:100%" placeholder="<?php esc_attr_e( 'Текст кнопки сайдбара', 'tolstenko-theme' ); ?>"></div>
 					<div class="row"><input type="url" name="tolstenko_vacancy_template[vacancy_content][sidebar_btn_url]" value="<?php echo esc_attr( $content['sidebar_btn_url'] ?? '' ); ?>" style="width:100%" placeholder="<?php esc_attr_e( 'Ссылка кнопки сайдбара (пусто = модалка)', 'tolstenko-theme' ); ?>"></div>
-					<div class="row">
-						<input type="hidden" class="tolstenko-defaults-icon-id" name="tolstenko_vacancy_template[vacancy_content][sidebar_photo]" value="<?php echo (int) $side_img_id; ?>">
-						<button type="button" class="button tolstenko-defaults-pick-icon"><?php esc_html_e( 'Выбрать фото', 'tolstenko-theme' ); ?></button>
-						<button type="button" class="button tolstenko-defaults-clear-icon"><?php esc_html_e( 'Очистить', 'tolstenko-theme' ); ?></button>
-						<div class="icon-preview" style="margin-top:8px;"><?php if ( $side_img_url ) : ?><img src="<?php echo esc_url( $side_img_url ); ?>" alt=""><?php endif; ?></div>
-					</div>
 					<p class="muted"><?php esc_html_e( 'Соцсети в сайдбаре берутся из блока «Шапка и подвал».', 'tolstenko-theme' ); ?></p>
 				</div>
 
@@ -392,11 +399,9 @@ function tolstenko_save_vacancy_template_from_request() {
 			'content'         => wp_kses_post( $content_raw['content'] ?? '' ),
 			'apply_text'      => sanitize_text_field( $content_raw['apply_text'] ?? '' ),
 			'apply_url'       => esc_url_raw( $content_raw['apply_url'] ?? '' ),
-			'sidebar_name'    => sanitize_text_field( $content_raw['sidebar_name'] ?? '' ),
-			'sidebar_text'    => sanitize_textarea_field( $content_raw['sidebar_text'] ?? '' ),
+			'sidebar_author'  => sanitize_text_field( $content_raw['sidebar_author'] ?? '' ),
 			'sidebar_btn'     => sanitize_text_field( $content_raw['sidebar_btn'] ?? '' ),
 			'sidebar_btn_url' => esc_url_raw( $content_raw['sidebar_btn_url'] ?? '' ),
-			'sidebar_photo'   => (int) ( $content_raw['sidebar_photo'] ?? 0 ),
 		),
 		'same_vacancy' => array(
 			'title' => sanitize_text_field( $same_raw['title'] ?? '' ),

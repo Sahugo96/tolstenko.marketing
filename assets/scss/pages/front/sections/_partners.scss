@@ -24,6 +24,25 @@
     }
   }
 
+  .splide__arrows {
+    display: none;
+    @media (min-width: $desk) {
+      display: flex;
+    }
+    @media (min-width: $desk_large) {
+      display: flex;
+    }
+  }
+
+  .splide__pagination {
+    @media (min-width: $desk) {
+      display: none;
+    }
+    @media (min-width: $desk_large) {
+      display: none;
+    }
+  }
+
   &__list {
     max-width: vw(179px, $mobile);
     @media (min-width: $desk) {

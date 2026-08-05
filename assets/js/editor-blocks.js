@@ -68,6 +68,27 @@
         });
     }
 
+    function renderBlogAuthorSelect(attrs, set, key, label, emptyLabel, templateDefault) {
+        if (!SelectControl) return null;
+        var authors = Array.isArray(blockDefaults.blogAuthors) ? blockDefaults.blogAuthors : [];
+        var options = [{ label: emptyLabel || 'По умолчанию (шаблон вакансии)', value: '' }];
+        authors.forEach(function (author) {
+            options.push({ label: author.label || ('Автор #' + author.index), value: String(author.index) });
+        });
+        var value = Object.prototype.hasOwnProperty.call(attrs, key) ? (attrs[key] || '') : (templateDefault || '');
+        return el(SelectControl, {
+            key: key,
+            label: label || 'Автор',
+            value: value,
+            options: options,
+            onChange: function (v) {
+                var patch = {};
+                patch[key] = v;
+                set(patch);
+            }
+        });
+    }
+
     function getMoveMeta(clientId) {
         if (!clientId || !wp.data || !wp.data.select || !wp.data.dispatch) return null;
         var select = wp.data.select('core/block-editor');
@@ -2017,6 +2038,50 @@
             ]);
         },
         save: function () { return null; }
+    });
+
+    var hiddenSeoAllowedBlocks = [
+        'core/paragraph',
+        'core/heading',
+        'core/list',
+        'core/list-item',
+        'core/quote',
+        'core/html'
+    ];
+
+    wp.blocks.registerBlockType('tolstenko/hidden-seo', {
+        title: 'Скрытый seo',
+        category: 'tolstenko-blocks-new',
+        icon: 'hidden',
+        description: 'SEO-текст, скрытый на сайте от посетителей (class hide).',
+        edit: function (props) {
+            var blockProps = useBlockProps ? useBlockProps() : {};
+            return wrapBlock(blockProps, [
+                el('p', { key: 'l', style: { marginBottom: '8px', fontWeight: '600' } }, 'Скрытый seo'),
+                el('p', {
+                    key: 'hint',
+                    style: { marginTop: 0, marginBottom: '8px', fontSize: '12px', color: '#757575' }
+                }, 'SEO-текст. На сайте скрыт классом hide — посетители его не видят. Контент задаётся на каждой странице.'),
+                InnerBlocks ? el('div', {
+                    key: 'inner',
+                    style: {
+                        marginTop: '8px',
+                        padding: '12px',
+                        border: '1px dashed #ccc',
+                        borderRadius: '4px',
+                        background: '#fafafa',
+                        minHeight: '96px'
+                    }
+                }, el(InnerBlocks, {
+                    allowedBlocks: hiddenSeoAllowedBlocks,
+                    template: [['core/paragraph', {}]],
+                    templateLock: false
+                })) : el('p', { key: 'no-ib' }, 'Редактор недоступен')
+            ]);
+        },
+        save: function () {
+            return InnerBlocks ? el(InnerBlocks.Content) : null;
+        }
     });
 
     // SEO продвижение: гибкое содержимое из раскладок + сворачивание тела секции.
@@ -5010,20 +5075,14 @@
                     onChange: function (v) { set({ block_vacancy_content_apply_url: v }); }
                 }) : null,
                 el('p', { key: 'side', style: { margin: '14px 0 6px', fontWeight: '600' } }, 'Сайдбар'),
-                TextControl ? el(TextControl, {
-                    key: 'name',
-                    label: 'Имя',
-                    value: attrs.block_vacancy_content_sidebar_name || '',
-                    placeholder: getDefault('vacancy_content.sidebar_name', ''),
-                    onChange: function (v) { set({ block_vacancy_content_sidebar_name: v }); }
-                }) : null,
-                TextareaControl ? el(TextareaControl, {
-                    key: 'stext',
-                    label: 'Текст',
-                    value: attrs.block_vacancy_content_sidebar_text || '',
-                    placeholder: getDefault('vacancy_content.sidebar_text', ''),
-                    onChange: function (v) { set({ block_vacancy_content_sidebar_text: v }); }
-                }) : null,
+                renderBlogAuthorSelect(
+                    attrs,
+                    set,
+                    'block_vacancy_content_sidebar_author',
+                    'Автор',
+                    'По умолчанию (шаблон вакансии)',
+                    getDefault('vacancy_content.sidebar_author', '')
+                ),
                 TextControl ? el(TextControl, {
                     key: 'sbtn',
                     label: 'Текст кнопки',
@@ -5037,10 +5096,7 @@
                     value: attrs.block_vacancy_content_sidebar_btn_url || '',
                     placeholder: getDefault('vacancy_content.sidebar_btn_url', '') || 'Пусто = модалка заявки',
                     onChange: function (v) { set({ block_vacancy_content_sidebar_btn_url: v }); }
-                }) : null,
-                vacancyMediaControl('Фото', attrs.block_vacancy_content_sidebar_photo || 0, function (id) {
-                    set({ block_vacancy_content_sidebar_photo: id });
-                })
+                }) : null
             ]);
         },
         save: function () { return null; }

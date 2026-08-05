@@ -53,14 +53,21 @@ $director_photo = ! empty( $director['photo'] ) && function_exists( 'tolstenko_g
 	? tolstenko_get_image_attrs( $director['photo'] )
 	: null;
 
+$sidebar_person = function_exists( 'tolstenko_get_vacancy_sidebar_person' )
+	? tolstenko_get_vacancy_sidebar_person()
+	: array(
+		'photo_id' => 0,
+		'name'     => '',
+		'text'     => '',
+	);
 $sidebar_defaults = function_exists( 'tolstenko_get_block_defaults' )
 	? tolstenko_get_block_defaults( 'vacancy_content' )
 	: array();
-$sidebar_photo_id  = (int) ( $sidebar_defaults['sidebar_photo'] ?? 0 );
+$sidebar_photo_id  = (int) ( $sidebar_person['photo_id'] ?? 0 );
 $sidebar_photo_url = $sidebar_photo_id ? (string) wp_get_attachment_image_url( $sidebar_photo_id, 'medium' ) : '';
 $sidebar_photo_alt = $sidebar_photo_id ? (string) get_post_meta( $sidebar_photo_id, '_wp_attachment_image_alt', true ) : '';
-$sidebar_name      = trim( (string) ( $sidebar_defaults['sidebar_name'] ?? '' ) );
-$sidebar_text      = (string) ( $sidebar_defaults['sidebar_text'] ?? '' );
+$sidebar_name      = trim( (string) ( $sidebar_person['name'] ?? '' ) );
+$sidebar_text      = (string) ( $sidebar_person['text'] ?? '' );
 $sidebar_btn       = trim( (string) ( $sidebar_defaults['sidebar_btn'] ?? '' ) );
 if ( $sidebar_btn === '' ) {
 	$sidebar_btn = __( 'Бесплатный аудит', 'tolstenko-theme' );

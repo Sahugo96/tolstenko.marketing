@@ -191,3 +191,77 @@ function tolstenko_seo_section_block_title( array $row ) {
 		tolstenko_kses_html( $row['title'] ) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- kses.
 	);
 }
+
+/**
+ * Санитизация гибкого содержимого для дефолтов и атрибутов блока.
+ *
+ * @param mixed $raw Строки из POST или атрибутов Gutenberg.
+ * @return array<int,array<string,mixed>>
+ */
+function tolstenko_sanitize_seo_section_blocks_raw( $raw ) {
+	if ( ! is_array( $raw ) ) {
+		return array();
+	}
+
+	$allowed_layouts = array_keys( tolstenko_get_seo_section_layouts() );
+	$out             = array();
+
+	foreach ( $raw as $row ) {
+		if ( ! is_array( $row ) ) {
+			continue;
+		}
+
+		$layout = sanitize_key( (string) ( $row['layout'] ?? ( $row['acf_fc_layout'] ?? '' ) ) );
+		if ( ! in_array( $layout, $allowed_layouts, true ) ) {
+			continue;
+		}
+
+		$columns = array();
+		foreach ( (array) ( $row['columns'] ?? array() ) as $column ) {
+			$columns[] = tolstenko_kses_redactor( is_array( $column ) ? ( $column['text'] ?? '' ) : $column );
+		}
+		while ( count( $columns ) < 2 ) {
+			$columns[] = '';
+		}
+
+		$items = array();
+		foreach ( (array) ( $row['items'] ?? array() ) as $item ) {
+			if ( ! is_array( $item ) ) {
+				continue;
+			}
+			$item_title = sanitize_text_field( $item['title'] ?? '' );
+			$item_text  = tolstenko_kses_redactor( $item['text'] ?? '' );
+			if ( $item_title === '' && trim( wp_strip_all_tags( $item_text ) ) === '' ) {
+				continue;
+			}
+			$items[] = array(
+				'title' => $item_title,
+				'text'  => $item_text,
+			);
+		}
+
+		$sanitized = array(
+			'layout'       => $layout,
+			'title'        => sanitize_text_field( $row['title'] ?? '' ),
+			'title_center' => ! empty( $row['title_center'] ),
+			'image'        => (int) ( $row['image'] ?? 0 ),
+			'text'         => tolstenko_kses_redactor( $row['text'] ?? '' ),
+			'btn_text'     => sanitize_text_field( $row['btn_text'] ?? '' ),
+			'btn_url'      => esc_url_raw( $row['btn_url'] ?? '' ),
+			'btn_wide'     => ! empty( $row['btn_wide'] ),
+			'columns'      => $columns,
+			'items'        => $items,
+			'gallery'      => tolstenko_seo_section_attachment_ids( $row['gallery'] ?? array() ),
+			'redactor'     => tolstenko_kses_redactor( $row['redactor'] ?? '' ),
+		);
+
+		$normalized = tolstenko_normalize_seo_section_row( $sanitized );
+		if ( null === $normalized || tolstenko_is_seo_section_row_empty( $normalized ) ) {
+			continue;
+		}
+
+		$out[] = $sanitized;
+	}
+
+	return $out;
+}

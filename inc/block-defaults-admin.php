@@ -86,8 +86,10 @@ function tolstenko_block_defaults_schema() {
 		'blog_section_filters' => array(
 			'title'          => 'Статьи',
 			'text'           => '',
-			'posts_per_page' => 6,
+			'posts_per_page' => 4,
 			'ids'            => array(),
+			'btn_text'       => 'Все статьи',
+			'btn_url'        => '',
 		),
 		'blog_section_tile' => array(
 			'title'            => 'Статьи',
@@ -334,33 +336,10 @@ function tolstenko_block_defaults_schema() {
 			'telegram_url' => '',
 		),
 		'seo_section' => array(
-			'title'     => 'SEO продвижение',
-			'subtitle'  => 'Выводим сайт в топ поисковых систем и приводим клиентов из органического поиска.',
+			'title'     => '',
+			'subtitle'  => '',
 			'more_text' => 'Читать далее',
-			'blocks'    => array(
-				array(
-					'layout'   => 'image_text',
-					'title'    => 'Что входит в продвижение',
-					'image'    => 0,
-					'text'     => '<p>Технический аудит, работа с семантикой, контентом и ссылочным профилем — все этапы в одном процессе.</p>',
-					'btn_text' => 'Получить консультацию',
-					'btn_url'  => '',
-				),
-				array(
-					'layout'  => 'two_columns',
-					'title'   => 'Как мы работаем',
-					'columns' => array(
-						'<p>Собираем семантику, чистим её от нецелевых запросов и строим структуру сайта под спрос.</p>',
-						'<p>Правим технические ошибки, ускоряем сайт и настраиваем аналитику для контроля результата.</p>',
-					),
-					'items'   => array(
-						array(
-							'title' => 'Прозрачные отчёты',
-							'text'  => 'Каждый месяц показываем позиции, трафик и заявки из поиска.',
-						),
-					),
-				),
-			),
+			'blocks'    => array(),
 		),
 		'we_can' => array(
 			'title'      => 'Мы можем',
@@ -710,23 +689,6 @@ function tolstenko_get_block_defaults( $block ) {
 			$data = tolstenko_merge_block_defaults_data( $base, $saved['service_section'] );
 			$data['ids'] = tolstenko_sanitize_service_section_ids( $data['ids'] ?? array() );
 			return $data;
-		}
-		// Backward compatibility with previous implementation.
-		$page_id = function_exists( 'tolstenko_get_settings_page_id' ) ? tolstenko_get_settings_page_id() : 0;
-		if ( $page_id ) {
-			$legacy = get_post_meta( $page_id, '_tolstenko_block_defaults', true );
-			if ( is_array( $legacy ) && isset( $legacy[ $block ] ) && is_array( $legacy[ $block ] ) ) {
-				$data = tolstenko_merge_block_defaults_data( $base, $legacy[ $block ] );
-				if ( $block === 'service_section' || $block === 'service_section_filters' ) {
-					$data['ids'] = tolstenko_sanitize_service_section_ids( $data['ids'] ?? array() );
-				}
-				return $data;
-			}
-			if ( $block === 'service_section_filters' && is_array( $legacy ) && isset( $legacy['service_section'] ) && is_array( $legacy['service_section'] ) ) {
-				$data = tolstenko_merge_block_defaults_data( $base, $legacy['service_section'] );
-				$data['ids'] = tolstenko_sanitize_service_section_ids( $data['ids'] ?? array() );
-				return $data;
-			}
 		}
 		return $base;
 	}
@@ -1508,7 +1470,12 @@ function tolstenko_render_block_defaults_admin_page() {
 		</div>
 
 		<div class="tolstenko-df-panel" data-panel="blog_section_filters" data-group="post_sliders">
-			<?php tolstenko_render_blog_section_defaults_fields( 'blog_section_filters', $all['blog_section_filters'] ?? array() ); ?>
+			<?php
+			$bsf = $all['blog_section_filters'] ?? array();
+			tolstenko_render_blog_section_defaults_fields( 'blog_section_filters', $bsf );
+			?>
+			<div class="row"><input type="text" name="tolstenko_block_defaults[blog_section_filters][btn_text]" value="<?php echo esc_attr( $bsf['btn_text'] ?? '' ); ?>" style="width:100%" placeholder="Текст кнопки под списком (Все статьи)"></div>
+			<div class="row"><input type="url" name="tolstenko_block_defaults[blog_section_filters][btn_url]" value="<?php echo esc_attr( $bsf['btn_url'] ?? '' ); ?>" style="width:100%" placeholder="Ссылка кнопки (пусто = архив статей)"></div>
 			<p class="description"><?php esc_html_e( 'Слайдер с фильтром по рубрикам blog_cat.', 'tolstenko-theme' ); ?></p>
 		</div>
 
@@ -1551,7 +1518,7 @@ function tolstenko_render_block_defaults_admin_page() {
 				</div>
 				<div class="actions">
 					<button type="button" class="button" data-add-item="different-experiences-list"><?php esc_html_e( 'Добавить пункт', 'tolstenko-theme' ); ?></button>
-				</div>
+			</div>
 			</div>
 			<div class="row"><input type="text" name="tolstenko_block_defaults[different_experiences][tg_text]" value="<?php echo esc_attr( $de['tg_text'] ?? '' ); ?>" style="width:100%" placeholder="Текст кнопки Telegram"></div>
 			<div class="row"><input type="url" name="tolstenko_block_defaults[different_experiences][tg_url]" value="<?php echo esc_attr( $de['tg_url'] ?? '' ); ?>" style="width:100%" placeholder="Ссылка Telegram (пусто = из шапки/подвала)"></div>
@@ -1594,6 +1561,7 @@ function tolstenko_render_block_defaults_admin_page() {
 		$tgc = $all['tg_channel'] ?? array();
 		$ts  = $all['three_steps'] ?? array();
 		$faq = $all['faq'] ?? array();
+		$seo_section = $all['seo_section'] ?? array();
 		$faq_foto_id = isset( $faq['foto'] ) ? (int) $faq['foto'] : 0;
 		$faq_foto_url = $faq_foto_id ? wp_get_attachment_image_url( $faq_foto_id, 'medium' ) : '';
 		$st_img_id = isset( $st['image'] ) ? (int) $st['image'] : 0;
@@ -1769,72 +1737,11 @@ function tolstenko_render_block_defaults_admin_page() {
 			<div class="row"><input type="url" name="tolstenko_block_defaults[faq][telegram_url]" value="<?php echo esc_attr( $faq['telegram_url'] ?? '' ); ?>" style="width:100%" placeholder="Telegram URL (пусто = из шапки)"></div>
 		</div>
 
-		<?php
-		$seo         = $all['seo_section'] ?? array();
-		$seo_rows    = is_array( $seo['blocks'] ?? null ) ? $seo['blocks'] : array();
-		$seo_layouts = function_exists( 'tolstenko_get_seo_section_layout_labels' ) ? tolstenko_get_seo_section_layout_labels() : array();
-		?>
 		<div class="tolstenko-df-panel" data-panel="seo_section" data-group="main">
-			<div class="row"><input type="text" name="tolstenko_block_defaults[seo_section][title]" value="<?php echo esc_attr( $seo['title'] ?? '' ); ?>" style="width:100%" placeholder="Заголовок"></div>
-			<div class="row"><textarea name="tolstenko_block_defaults[seo_section][subtitle]" rows="3" placeholder="Подзаголовок"><?php echo esc_textarea( $seo['subtitle'] ?? '' ); ?></textarea></div>
-			<div class="row"><input type="text" name="tolstenko_block_defaults[seo_section][more_text]" value="<?php echo esc_attr( $seo['more_text'] ?? '' ); ?>" style="width:100%" placeholder="Текст кнопки раскрытия (по умолчанию «Читать далее»)"></div>
-			<div class="row">
-				<div class="muted"><?php esc_html_e( 'Блоки содержимого. Поля используются в зависимости от выбранной раскладки.', 'tolstenko-theme' ); ?></div>
-				<div data-repeater-list="seo-section-list">
-					<?php foreach ( $seo_rows as $idx => $row ) : ?>
-						<?php
-						$row      = is_array( $row ) ? $row : array();
-						$name     = 'tolstenko_block_defaults[seo_section][blocks][' . (int) $idx . ']';
-						$layout   = (string) ( $row['layout'] ?? ( $row['acf_fc_layout'] ?? 'image_text' ) );
-						$img_id   = isset( $row['image'] ) ? (int) $row['image'] : 0;
-						$img_url  = $img_id ? wp_get_attachment_image_url( $img_id, 'thumbnail' ) : '';
-						$columns  = is_array( $row['columns'] ?? null ) ? $row['columns'] : array();
-						$gallery  = function_exists( 'tolstenko_seo_section_attachment_ids' ) ? tolstenko_seo_section_attachment_ids( $row['gallery'] ?? array() ) : array();
-						$items    = is_array( $row['items'] ?? null ) ? $row['items'] : array();
-						$items_tx = array();
-						foreach ( $items as $item ) {
-							if ( ! is_array( $item ) ) {
-								$items_tx[] = (string) $item;
-								continue;
-							}
-							$items_tx[] = trim( (string) ( $item['title'] ?? '' ) ) . ' | ' . trim( (string) ( $item['text'] ?? '' ) );
-						}
-						?>
-						<div class="repeater-item" data-repeater-item>
-							<div class="cols">
-								<select name="<?php echo esc_attr( $name ); ?>[layout]" style="min-width:200px">
-									<?php foreach ( $seo_layouts as $value => $label ) : ?>
-										<option value="<?php echo esc_attr( $value ); ?>"<?php selected( $layout, $value ); ?>><?php echo esc_html( $label ); ?></option>
-									<?php endforeach; ?>
-								</select>
-								<input type="text" name="<?php echo esc_attr( $name ); ?>[title]" value="<?php echo esc_attr( $row['title'] ?? '' ); ?>" placeholder="Заголовок блока">
-								<label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[title_center]" value="1"<?php checked( ! empty( $row['title_center'] ) ); ?>> <?php esc_html_e( 'Заголовок по центру', 'tolstenko-theme' ); ?></label>
-								<button type="button" class="button" data-remove-item><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button>
-							</div>
-							<div class="row"><textarea name="<?php echo esc_attr( $name ); ?>[text]" rows="3" placeholder="Текст (раскладки «Фото + текст», «Текст + фото», «Текст»)"><?php echo esc_textarea( $row['text'] ?? '' ); ?></textarea></div>
-							<div class="cols">
-								<input type="hidden" class="tolstenko-defaults-icon-id" name="<?php echo esc_attr( $name ); ?>[image]" value="<?php echo (int) $img_id; ?>">
-								<button type="button" class="button tolstenko-defaults-pick-icon"><?php esc_html_e( 'Изображение', 'tolstenko-theme' ); ?></button>
-								<input type="text" name="<?php echo esc_attr( $name ); ?>[btn_text]" value="<?php echo esc_attr( $row['btn_text'] ?? '' ); ?>" placeholder="Текст кнопки">
-								<input type="url" name="<?php echo esc_attr( $name ); ?>[btn_url]" value="<?php echo esc_attr( $row['btn_url'] ?? '' ); ?>" placeholder="Ссылка кнопки (пусто = модалка)">
-								<label><input type="checkbox" name="<?php echo esc_attr( $name ); ?>[btn_wide]" value="1"<?php checked( ! empty( $row['btn_wide'] ) ); ?>> <?php esc_html_e( 'Широкая кнопка', 'tolstenko-theme' ); ?></label>
-							</div>
-							<div class="icon-preview" style="margin:8px 0;"><?php if ( $img_url ) : ?><img src="<?php echo esc_url( $img_url ); ?>" alt=""><?php endif; ?></div>
-							<div class="cols">
-								<textarea name="<?php echo esc_attr( $name ); ?>[columns][0]" rows="3" placeholder="Левая колонка (раскладка «Две колонки»)"><?php echo esc_textarea( (string) ( $columns[0] ?? '' ) ); ?></textarea>
-								<textarea name="<?php echo esc_attr( $name ); ?>[columns][1]" rows="3" placeholder="Правая колонка"><?php echo esc_textarea( (string) ( $columns[1] ?? '' ) ); ?></textarea>
-							</div>
-							<div class="row"><textarea name="<?php echo esc_attr( $name ); ?>[items_text]" rows="3" placeholder="Пункты под колонками: по одному в строке, «Заголовок | Текст»"><?php echo esc_textarea( implode( "\n", $items_tx ) ); ?></textarea></div>
-							<div class="cols">
-								<input type="text" class="tolstenko-defaults-gallery-ids" name="<?php echo esc_attr( $name ); ?>[gallery]" value="<?php echo esc_attr( implode( ',', $gallery ) ); ?>" placeholder="Галерея: ID вложений через запятую">
-								<button type="button" class="button tolstenko-defaults-pick-gallery"><?php esc_html_e( 'Выбрать изображения', 'tolstenko-theme' ); ?></button>
-							</div>
-							<div class="row"><textarea name="<?php echo esc_attr( $name ); ?>[redactor]" rows="4" placeholder="Содержимое раскладки «Редактор (HTML)»"><?php echo esc_textarea( $row['redactor'] ?? '' ); ?></textarea></div>
-						</div>
-					<?php endforeach; ?>
-				</div>
-				<div class="actions"><button type="button" class="button" data-add-item="seo-section-list"><?php esc_html_e( 'Добавить блок', 'tolstenko-theme' ); ?></button></div>
-			</div>
+			<p class="description"><?php esc_html_e( 'Заголовок, подзаголовок и текст кнопки «Читать далее». Блоки содержимого настраиваются в редакторе записи (блок «SEO продвижение»).', 'tolstenko-theme' ); ?></p>
+			<div class="row"><input type="text" name="tolstenko_block_defaults[seo_section][title]" value="<?php echo esc_attr( $seo_section['title'] ?? '' ); ?>" style="width:100%" placeholder="Заголовок"></div>
+			<div class="row"><textarea name="tolstenko_block_defaults[seo_section][subtitle]" rows="3" placeholder="Подзаголовок"><?php echo esc_textarea( $seo_section['subtitle'] ?? '' ); ?></textarea></div>
+			<div class="row"><input type="text" name="tolstenko_block_defaults[seo_section][more_text]" value="<?php echo esc_attr( $seo_section['more_text'] ?? '' ); ?>" style="width:100%" placeholder="Текст кнопки раскрытия (по умолчанию: Читать далее)"></div>
 		</div>
 
 		</div><!-- .tolstenko-df-panels-source -->
@@ -1869,6 +1776,7 @@ function tolstenko_render_block_defaults_admin_page() {
 			consultation_free: 'main',
 			tg_channel: 'main',
 			faq: 'main',
+			seo_section: 'main',
 			case_section: 'post_sliders',
 			reviews: 'post_sliders',
 			service_section: 'post_sliders',
@@ -1912,14 +1820,14 @@ function tolstenko_render_block_defaults_admin_page() {
 
 		function activateTab(tab){
 			if (!tab) return;
-			var target = tab.getAttribute('data-panel');
+				var target = tab.getAttribute('data-panel');
 			var group = tab.getAttribute('data-group') || panelGroupMap[target] || '';
 			root.querySelectorAll('.tolstenko-df-tab').forEach(function(t){ t.classList.remove('active'); });
 			root.querySelectorAll('.tolstenko-df-panel').forEach(function(p){ p.classList.remove('active'); });
 			root.querySelectorAll('.tolstenko-df-tabs-group').forEach(function(g){ g.classList.remove('is-active'); });
-			tab.classList.add('active');
+				tab.classList.add('active');
 			var panel = root.querySelector('.tolstenko-df-panel[data-panel="' + target + '"]');
-			if (panel) panel.classList.add('active');
+				if (panel) panel.classList.add('active');
 			var groupEl = root.querySelector('.tolstenko-df-tabs-group[data-group="' + group + '"]');
 			if (groupEl) {
 				groupEl.classList.add('is-active');
@@ -2043,34 +1951,6 @@ function tolstenko_render_block_defaults_admin_page() {
 						});
 					}
 					html = '';
-				} else if (key === 'seo-section-list') {
-					var seoLayoutOpts = <?php
-					$layout_html = '';
-					foreach ( ( function_exists( 'tolstenko_get_seo_section_layout_labels' ) ? tolstenko_get_seo_section_layout_labels() : array() ) as $layout_value => $layout_label ) {
-						$layout_html .= '<option value="' . esc_attr( $layout_value ) . '">' . esc_html( $layout_label ) . '</option>';
-					}
-					echo wp_json_encode( $layout_html );
-					?>;
-					var seoName = 'tolstenko_block_defaults[seo_section][blocks][' + idx + ']';
-					html = '<div class="repeater-item" data-repeater-item>'
-						+ '<div class="cols"><select name="' + seoName + '[layout]" style="min-width:200px">' + seoLayoutOpts + '</select>'
-						+ '<input type="text" name="' + seoName + '[title]" placeholder="Заголовок блока">'
-						+ '<label><input type="checkbox" name="' + seoName + '[title_center]" value="1"> Заголовок по центру</label>'
-						+ '<button type="button" class="button" data-remove-item>Удалить</button></div>'
-						+ '<div class="row"><textarea name="' + seoName + '[text]" rows="3" placeholder="Текст (раскладки «Фото + текст», «Текст + фото», «Текст»)"></textarea></div>'
-						+ '<div class="cols"><input type="hidden" class="tolstenko-defaults-icon-id" name="' + seoName + '[image]" value="0">'
-						+ '<button type="button" class="button tolstenko-defaults-pick-icon">Изображение</button>'
-						+ '<input type="text" name="' + seoName + '[btn_text]" placeholder="Текст кнопки">'
-						+ '<input type="url" name="' + seoName + '[btn_url]" placeholder="Ссылка кнопки (пусто = модалка)">'
-						+ '<label><input type="checkbox" name="' + seoName + '[btn_wide]" value="1"> Широкая кнопка</label></div>'
-						+ '<div class="icon-preview" style="margin:8px 0;"></div>'
-						+ '<div class="cols"><textarea name="' + seoName + '[columns][0]" rows="3" placeholder="Левая колонка (раскладка «Две колонки»)"></textarea>'
-						+ '<textarea name="' + seoName + '[columns][1]" rows="3" placeholder="Правая колонка"></textarea></div>'
-						+ '<div class="row"><textarea name="' + seoName + '[items_text]" rows="3" placeholder="Пункты под колонками: по одному в строке, «Заголовок | Текст»"></textarea></div>'
-						+ '<div class="cols"><input type="text" class="tolstenko-defaults-gallery-ids" name="' + seoName + '[gallery]" placeholder="Галерея: ID вложений через запятую">'
-						+ '<button type="button" class="button tolstenko-defaults-pick-gallery">Выбрать изображения</button></div>'
-						+ '<div class="row"><textarea name="' + seoName + '[redactor]" rows="4" placeholder="Содержимое раскладки «Редактор (HTML)»"></textarea></div>'
-						+ '</div>';
 				}
 				if (html) list.insertAdjacentHTML('beforeend', html);
 			}
@@ -2109,31 +1989,10 @@ function tolstenko_render_block_defaults_admin_page() {
 			});
 		}
 		bindIconPicker(document);
-		function bindGalleryPicker(scope){
-			scope.querySelectorAll('.tolstenko-defaults-pick-gallery').forEach(function(btn){
-				if (btn.dataset.bound) return;
-				btn.dataset.bound = '1';
-				btn.addEventListener('click', function(ev){
-					ev.preventDefault();
-					if (typeof wp === 'undefined' || !wp.media) return;
-					var row = btn.closest('[data-repeater-item]');
-					if (!row) return;
-					var input = row.querySelector('.tolstenko-defaults-gallery-ids');
-					if (!input) return;
-					var frame = wp.media({ title: 'Выберите изображения', button: { text: 'Использовать' }, multiple: 'add', library: { type: 'image' } });
-					frame.on('select', function(){
-						var ids = frame.state().get('selection').map(function(item){ return item.id; });
-						input.value = ids.join(',');
-					});
-					frame.open();
-				});
-			});
-		}
-		bindGalleryPicker(document);
 		document.addEventListener('click', function(e){
 			var btn = e.target;
 			if (btn.matches('[data-add-item]')) {
-				setTimeout(function(){ bindIconPicker(document); bindGalleryPicker(document); }, 0);
+				setTimeout(function(){ bindIconPicker(document); }, 0);
 			}
 		});
 	})();
@@ -2328,8 +2187,10 @@ function tolstenko_save_block_defaults_from_request() {
 	$out['blog_section_filters'] = array(
 		'title'          => tolstenko_kses_html( $raw['blog_section_filters']['title'] ?? '' ),
 		'text'           => tolstenko_kses_html( $raw['blog_section_filters']['text'] ?? '' ),
-		'posts_per_page' => isset( $raw['blog_section_filters']['posts_per_page'] ) ? (int) $raw['blog_section_filters']['posts_per_page'] : 6,
+		'posts_per_page' => isset( $raw['blog_section_filters']['posts_per_page'] ) ? (int) $raw['blog_section_filters']['posts_per_page'] : 4,
 		'ids'            => tolstenko_sanitize_service_section_ids( $raw['blog_section_filters']['ids'] ?? array() ),
+		'btn_text'       => sanitize_text_field( $raw['blog_section_filters']['btn_text'] ?? '' ),
+		'btn_url'        => esc_url_raw( $raw['blog_section_filters']['btn_url'] ?? '' ),
 	);
 
 	$out['blog_section_tile'] = array(
@@ -2687,68 +2548,22 @@ function tolstenko_save_block_defaults_from_request() {
 		}
 	}
 
+	$prev_seo_defaults = get_option( 'tolstenko_block_defaults', array() );
+	$prev_seo_blocks   = ( is_array( $prev_seo_defaults ) && isset( $prev_seo_defaults['seo_section']['blocks'] ) && is_array( $prev_seo_defaults['seo_section']['blocks'] ) )
+		? $prev_seo_defaults['seo_section']['blocks']
+		: array();
+	$raw_seo_blocks    = ( isset( $raw['seo_section']['blocks'] ) && is_array( $raw['seo_section']['blocks'] ) )
+		? $raw['seo_section']['blocks']
+		: $prev_seo_blocks;
+
 	$out['seo_section'] = array(
 		'title'     => tolstenko_kses_html( $raw['seo_section']['title'] ?? '' ),
 		'subtitle'  => tolstenko_kses_html( $raw['seo_section']['subtitle'] ?? '' ),
 		'more_text' => sanitize_text_field( $raw['seo_section']['more_text'] ?? '' ),
-		'blocks'    => array(),
+		'blocks'    => function_exists( 'tolstenko_sanitize_seo_section_blocks_raw' )
+			? tolstenko_sanitize_seo_section_blocks_raw( $raw_seo_blocks )
+			: array(),
 	);
-	if ( isset( $raw['seo_section']['blocks'] ) && is_array( $raw['seo_section']['blocks'] ) ) {
-		$seo_layouts = function_exists( 'tolstenko_get_seo_section_layouts' ) ? tolstenko_get_seo_section_layouts() : array();
-		foreach ( $raw['seo_section']['blocks'] as $seo_row ) {
-			if ( ! is_array( $seo_row ) ) {
-				continue;
-			}
-			$layout = (string) ( $seo_row['layout'] ?? '' );
-			if ( ! isset( $seo_layouts[ $layout ] ) ) {
-				continue;
-			}
-
-			$columns = array();
-			foreach ( (array) ( $seo_row['columns'] ?? array() ) as $column ) {
-				$columns[] = tolstenko_kses_redactor( is_array( $column ) ? ( $column['text'] ?? '' ) : $column );
-			}
-
-			$items = array();
-			$items_raw = isset( $seo_row['items_text'] )
-				? preg_split( '/\r\n|\r|\n/', (string) $seo_row['items_text'] )
-				: (array) ( $seo_row['items'] ?? array() );
-			foreach ( $items_raw as $item ) {
-				if ( is_array( $item ) ) {
-					$item_title = tolstenko_kses_html( $item['title'] ?? '' );
-					$item_text  = tolstenko_kses_redactor( $item['text'] ?? '' );
-				} else {
-					$parts      = explode( '|', (string) $item, 2 );
-					$item_title = tolstenko_kses_html( trim( $parts[0] ) );
-					$item_text  = tolstenko_kses_redactor( trim( $parts[1] ?? '' ) );
-				}
-				if ( $item_title === '' && trim( wp_strip_all_tags( $item_text ) ) === '' ) {
-					continue;
-				}
-				$items[] = array(
-					'title' => $item_title,
-					'text'  => $item_text,
-				);
-			}
-
-			$out['seo_section']['blocks'][] = array(
-				'layout'       => $layout,
-				'title'        => tolstenko_kses_html( $seo_row['title'] ?? '' ),
-				'title_center' => ! empty( $seo_row['title_center'] ),
-				'image'        => isset( $seo_row['image'] ) ? absint( $seo_row['image'] ) : 0,
-				'text'         => tolstenko_kses_redactor( $seo_row['text'] ?? '' ),
-				'btn_text'     => sanitize_text_field( $seo_row['btn_text'] ?? '' ),
-				'btn_url'      => esc_url_raw( $seo_row['btn_url'] ?? '' ),
-				'btn_wide'     => ! empty( $seo_row['btn_wide'] ),
-				'columns'      => $columns,
-				'items'        => $items,
-				'gallery'      => function_exists( 'tolstenko_seo_section_attachment_ids' )
-					? tolstenko_seo_section_attachment_ids( $seo_row['gallery'] ?? array() )
-					: array(),
-				'redactor'     => tolstenko_kses_redactor( $seo_row['redactor'] ?? '' ),
-			);
-		}
-	}
 
 	// Не затирать дефолты блоков тела статьи (правятся на отдельной странице).
 	$prev = get_option( 'tolstenko_block_defaults', array() );

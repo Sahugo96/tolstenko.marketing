@@ -519,36 +519,9 @@ class Tolstenko_Walker_Flat_Menu extends Walker_Nav_Menu {
 
 /**
  * Регистрация кастомных типов записей:
- * - block, service, review, vacancy, actions, city, case, blog
+ * - service, review, vacancy, actions, city, case, blog
  */
 function tolstenko_register_cpts() {
-    // Блоки страниц (промо, баннер, контакты, форма, отзывы, слайдер)
-    register_post_type(
-        'block',
-        array(
-            'labels'        => array(
-                'name'               => __( 'Блоки', 'tolstenko-theme' ),
-                'singular_name'      => __( 'Блок', 'tolstenko-theme' ),
-                'add_new'            => __( 'Добавить блок', 'tolstenko-theme' ),
-                'add_new_item'       => __( 'Добавить блок', 'tolstenko-theme' ),
-                'edit_item'          => __( 'Редактировать блок', 'tolstenko-theme' ),
-                'new_item'           => __( 'Новый блок', 'tolstenko-theme' ),
-                'view_item'          => __( 'Смотреть блок', 'tolstenko-theme' ),
-                'search_items'       => __( 'Искать блоки', 'tolstenko-theme' ),
-                'not_found'          => __( 'Блоков не найдено', 'tolstenko-theme' ),
-                'not_found_in_trash' => __( 'В корзине блоков нет', 'tolstenko-theme' ),
-            ),
-            'public'        => false,
-            'show_ui'       => true,
-            'show_in_menu'  => 'tolstenko-site-settings',
-            'menu_position' => 19,
-            'menu_icon'     => 'dashicons-layout',
-            'supports'      => array( 'title' ),
-            'has_archive'   => false,
-            'rewrite'       => false,
-        )
-    );
-
     // Услуги
     register_post_type(
         'service',
@@ -570,7 +543,10 @@ function tolstenko_register_cpts() {
             'show_in_nav_menus' => true,
             'supports'          => array( 'title', 'editor', 'thumbnail', 'excerpt', 'custom-fields' ),
             'has_archive'       => false,
-            'rewrite'           => false,
+            'rewrite'           => array(
+                'slug'       => 'service',
+                'with_front' => false,
+            ),
             'show_in_rest'      => true,
             'menu_position'     => 20,
             'menu_icon'         => 'dashicons-hammer',
@@ -1917,6 +1893,12 @@ function tolstenko_service_post_type_link( $post_link, $post ) {
         return $post_link;
     }
 
+    // В админке и REST (Gutenberg) — стандартный /service/{slug}/, как у city.
+    // Кастомный /services/{category}/{slug}/ только на фронте.
+    if ( is_admin() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
+        return $post_link;
+    }
+
     $terms = get_the_terms( $post, 'service_category' );
     if ( empty( $terms ) || is_wp_error( $terms ) ) {
         return home_url( '/services/' . $post->post_name . '/' );
@@ -2083,30 +2065,23 @@ function tolstenko_get_cpt_listing_breadcrumb( $post_type ) {
 require_once get_template_directory() . '/inc/cf7/custom-elements.php';
 
 /**
- * Страница настроек (одна на все блоки с общими данными)
- */
-require_once get_template_directory() . '/inc/acf-settings-page.php';
-
-/**
- * Разрешаем query var для передачи ID блока в шаблоны блоков
+ * Разрешаем query var для атрибутов Gutenberg-блоков темы.
  */
 function tolstenko_query_vars( $vars ) {
-    $vars[] = 'tolstenko_block_id';
-    $vars[] = 'tolstenko_acf_block';
     $vars[] = 'tolstenko_block_attributes';
     return $vars;
 }
 add_filter( 'query_vars', 'tolstenko_query_vars' );
 
 /**
+ * Хелперы блока «SEO продвижение».
+ */
+require_once get_template_directory() . '/inc/seo-section-helpers.php';
+
+/**
  * ACF Block Types для Gutenberg (блоки темы в редакторе)
  */
 require_once get_template_directory() . '/inc/acf-blocks.php';
-
-/**
- * ACF: поля записи «Блок» (шаблон из template-parts/blocks + данные для шаблона)
- */
-require_once get_template_directory() . '/inc/acf-block-fields.php';
 
 /**
  * ACF: поля для услуг (карточка)
@@ -2132,11 +2107,6 @@ require_once get_template_directory() . '/inc/review-metabox.php';
 require_once get_template_directory() . '/inc/reviews-helpers.php';
 
 /**
- * Блок «SEO продвижение»: раскладки гибкого содержимого + хелперы шаблонов.
- */
-require_once get_template_directory() . '/inc/seo-section-helpers.php';
-
-/**
  * Дефолты блоков темы: админка + helper для шаблонов.
  */
 require_once get_template_directory() . '/inc/block-defaults-admin.php';
@@ -2153,30 +2123,15 @@ require_once get_template_directory() . '/inc/vacancy-template-admin.php';
 require_once get_template_directory() . '/inc/rest-posts-filter.php';
 
 /**
- * ACF: блок «Отзывы» (заголовок + карточки рейтинга на странице настроек)
- */
-require_once get_template_directory() . '/inc/acf-reviews-block.php';
-
-/**
- * ACF: populate CF7 choices for callback modal.
- */
-require_once get_template_directory() . '/inc/acf-form-banner.php';
-
-/**
  * Настройки сайта → Контактные данные (телефон, почта, соцсети).
  */
 require_once get_template_directory() . '/inc/contact-data-admin.php';
 require_once get_template_directory() . '/inc/contacts-page-admin.php';
 
 /**
- * Данные блока «Шапка и подвал» (телефон, соцсети, текст футера)
+ * Данные шапки и подвала (телефон, соцсети) из «Контактных данных».
  */
 require_once get_template_directory() . '/inc/site-header-footer-data.php';
-
-/**
- * Метабокс: полноценный repeater соцсетей для блока «Шапка и подвал».
- */
-require_once get_template_directory() . '/inc/header-footer-socials-meta.php';
 
 /**
  * Блог (CPT blog): stats, reading time, плагины, метабоксы, авторы.

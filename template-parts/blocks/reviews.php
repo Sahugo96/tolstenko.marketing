@@ -88,60 +88,6 @@ if ( $show_items ) {
 			);
 		}
 	}
-
-	if ( empty( $cards ) ) {
-		$settings_page_id = function_exists( 'tolstenko_get_settings_page_id' ) ? tolstenko_get_settings_page_id() : 0;
-		$get_meta         = static function ( $post_id, $key ) {
-			if ( function_exists( 'get_field' ) ) {
-				$v = get_field( $key, $post_id );
-				if ( $v !== null && $v !== false && $v !== '' ) {
-					return $v;
-				}
-			}
-			return get_post_meta( $post_id, $key, true );
-		};
-		$reviews_block_id = 0;
-		$block_id         = (int) get_query_var( 'tolstenko_block_id', 0 );
-		if ( $block_id > 0 && trim( (string) $get_meta( $block_id, 'block_type' ) ) === 'reviews' ) {
-			$reviews_block_id = $block_id;
-		}
-		if ( ! $reviews_block_id ) {
-			$blocks = get_posts(
-				array(
-					'post_type'      => 'block',
-					'posts_per_page' => 50,
-					'post_status'    => 'publish',
-					'orderby'        => 'menu_order title',
-					'order'          => 'ASC',
-				)
-			);
-			foreach ( $blocks as $b ) {
-				if ( trim( (string) $get_meta( $b->ID, 'block_type' ) ) === 'reviews' ) {
-					$reviews_block_id = (int) $b->ID;
-					break;
-				}
-			}
-		}
-		$source_id = $reviews_block_id ?: $settings_page_id;
-		if ( $source_id ) {
-			for ( $i = 1; $i <= 4; $i++ ) {
-				$title  = $get_meta( $source_id, 'reviews_card_' . $i . '_title' );
-				$rating = (int) $get_meta( $source_id, 'reviews_card_' . $i . '_rating' );
-				if ( $rating < 1 ) {
-					$rating = 5;
-				}
-				if ( $rating > 5 ) {
-					$rating = 5;
-				}
-				if ( $title ) {
-					$cards[] = array(
-						'title'  => (string) $title,
-						'rating' => $rating,
-					);
-				}
-			}
-		}
-	}
 }
 
 $grouped = function_exists( 'tolstenko_get_reviews_grouped' )

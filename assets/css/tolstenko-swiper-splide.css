@@ -71,6 +71,27 @@
   flex-shrink: 0;
 }
 
+.partners__splide {
+  position: relative;
+  overflow: visible;
+}
+
+.partners__splide > .splide__track.swiper {
+  display: block !important;
+  overflow: hidden;
+  width: 100%;
+  flex-direction: unset !important;
+  grid-gap: 0 !important;
+}
+
+.partners__splide .swiper-slide.partners__list-item {
+  width: auto;
+  max-width: none;
+  height: auto;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
 .author__splide,
 .author__speeches {
   position: relative;
