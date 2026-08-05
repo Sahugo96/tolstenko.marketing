@@ -1,8 +1,7 @@
 <?php
 /**
- * Блок «Статьи»: заголовок, текст, фильтр blog_cat, слайдер.
- * Фильтр — REST /tolstenko/v1/filter-posts, карточки card=blog_slider.
- * Без фильтра — tolstenko/blog-section-simple.
+ * Блок «Статьи» — разметка и поведение как tolstenko.marketing pages/sections/blog-section.php.
+ * Данные: атрибуты Gutenberg + дефолты blog_section_filters.
  */
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -38,10 +37,11 @@ $title_tag = function_exists( 'tolstenko_normalize_heading_tag' )
 
 $posts_per_page = isset( $block_attrs['block_blog_section_posts_per_page'] )
 	? (int) $block_attrs['block_blog_section_posts_per_page']
-	: ( isset( $defaults['posts_per_page'] ) ? (int) $defaults['posts_per_page'] : 6 );
-if ( $posts_per_page === 0 ) {
-	$posts_per_page = 6;
+	: ( isset( $defaults['posts_per_page'] ) ? (int) $defaults['posts_per_page'] : 4 );
+if ( $posts_per_page < 1 ) {
+	$posts_per_page = 4;
 }
+$posts_per_page = min( 4, $posts_per_page );
 
 $post_ids = array();
 if ( ! empty( $block_attrs['block_blog_section_ids'] ) && is_array( $block_attrs['block_blog_section_ids'] ) ) {
@@ -61,7 +61,6 @@ if ( ! empty( $block_attrs['block_blog_section_ids'] ) && is_array( $block_attrs
 $section_id = 'blog_' . wp_unique_id();
 $taxonomy   = 'blog_cat';
 $post_type  = 'blog';
-$card       = 'blog_slider';
 
 $all_categories = taxonomy_exists( $taxonomy )
 	? get_terms(
@@ -81,31 +80,33 @@ if ( ! is_wp_error( $all_categories ) && is_array( $all_categories ) ) {
 	}
 }
 
-$items_html = function_exists( 'tolstenko_render_filtered_posts_html' )
-	? tolstenko_render_filtered_posts_html(
+$payload = function_exists( 'tolstenko_render_filtered_posts_payload' )
+	? tolstenko_render_filtered_posts_payload(
 		array(
 			'post_type'      => $post_type,
 			'taxonomy'       => $taxonomy,
 			'term'           => '',
 			'posts_per_page' => $posts_per_page,
-			'card'           => $card,
+			'card'           => 'blog_slider',
 			'post_ids'       => $post_ids,
 		)
 	)
-	: '';
+	: array( 'html' => '' );
+
+$items_html = isset( $payload['html'] ) ? (string) $payload['html'] : '';
 
 if ( $title === '' && $text === '' && $items_html === '' && empty( $categories_with_posts ) ) {
 	return;
 }
 ?>
 <section
-	class="blog-section blog-section--slider section"
+	class="blog-section section"
 	data-tolstenko-filter
 	data-section-id="<?php echo esc_attr( $section_id ); ?>"
 	data-taxonomy="<?php echo esc_attr( $taxonomy ); ?>"
 	data-post-type="<?php echo esc_attr( $post_type ); ?>"
 	data-posts-per-page="<?php echo esc_attr( (string) $posts_per_page ); ?>"
-	data-card="<?php echo esc_attr( $card ); ?>"
+	data-card="blog_slider"
 	data-post-ids="<?php echo esc_attr( implode( ',', $post_ids ) ); ?>"
 >
 	<div class="container">
@@ -150,36 +151,11 @@ if ( $title === '' && $text === '' && $items_html === '' && empty( $categories_w
 
 		<?php if ( $items_html !== '' ) : ?>
 			<div
-				class="blog-section__splide splide is-overflow"
+				class="fade-in-container blog-section__splide splide"
 				id="<?php echo esc_attr( $section_id ); ?>-container"
 				aria-label="<?php esc_attr_e( 'Статьи', 'tolstenko-theme' ); ?>"
 			>
-				<div class="splide__track swiper">
-					<div
-						class="blog-section__splide-list splide__list swiper-wrapper"
-						data-tolstenko-filter-container
-					>
-						<?php echo $items_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped card template. ?>
-					</div>
-				</div>
-
-				<div class="splide__bottom">
-					<div class="swiper-pagination splide__pagination"></div>
-
-					<div class="splide__arrows splide__arrows--ltr">
-						<button class="splide__arrow splide__arrow--prev" type="button" aria-label="<?php esc_attr_e( 'Назад', 'tolstenko-theme' ); ?>">
-							<svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-								<path d="M15.8332 10H4.99987M9.16654 5L4.7558 9.41074C4.43036 9.73618 4.43036 10.2638 4.7558 10.5893L9.16654 15" stroke-width="2" stroke-linecap="round" />
-							</svg>
-						</button>
-
-						<button class="splide__arrow splide__arrow--next" type="button" aria-label="<?php esc_attr_e( 'Вперёд', 'tolstenko-theme' ); ?>">
-							<svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-								<path d="M15.8332 10H4.99987M9.16654 5L4.7558 9.41074C4.43036 9.73618 4.43036 10.2638 4.7558 10.5893L9.16654 15" stroke-width="2" stroke-linecap="round" />
-							</svg>
-						</button>
-					</div>
-				</div>
+				<?php echo $items_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped card template. ?>
 			</div>
 		<?php endif; ?>
 	</div>
@@ -188,4 +164,3 @@ if ( $title === '' && $text === '' && $items_html === '' && empty( $categories_w
 set_query_var( 'tolstenko_blog_post', null );
 set_query_var( 'tolstenko_blog_card_class', '' );
 set_query_var( 'tolstenko_blog_card_same', null );
-?>

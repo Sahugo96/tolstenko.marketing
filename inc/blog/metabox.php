@@ -78,8 +78,6 @@ function tolstenko_blog_render_metabox( $post ) {
 		$comments = array();
 	}
 
-	$authors = function_exists( 'tolstenko_get_blog_authors_list' ) ? tolstenko_get_blog_authors_list() : array();
-
 	$exclude_ids = ( $post->post_type === 'actions' ) ? array( (int) $post->ID ) : array();
 	$action_posts = get_posts(
 		array(
@@ -133,23 +131,14 @@ function tolstenko_blog_render_metabox( $post ) {
 
 			<p class="tolstenko-blog-field">
 				<label for="tolstenko_blog_author"><strong><?php echo esc_html( $author_label ); ?></strong></label><br>
-				<select id="tolstenko_blog_author" name="tolstenko_blog_author">
-					<option value=""><?php esc_html_e( 'По умолчанию (из шаблона вакансии / без автора)', 'tolstenko-theme' ); ?></option>
-					<?php foreach ( $authors as $index => $a ) : ?>
-						<?php
-						$name = trim( (string) ( $a['name'] ?? '' ) );
-						$job  = trim( (string) ( $a['job_title'] ?? '' ) );
-						if ( $name === '' && $job === '' ) {
-							$label = sprintf( /* translators: %d author number */ __( 'Автор #%d', 'tolstenko-theme' ), $index + 1 );
-						} elseif ( $name !== '' && $job !== '' ) {
-							$label = $name . ' — ' . $job;
-						} else {
-							$label = $name !== '' ? $name : $job;
-						}
-						?>
-						<option value="<?php echo esc_attr( (string) $index ); ?>" <?php selected( $author, (string) $index ); ?>><?php echo esc_html( $label ); ?></option>
-					<?php endforeach; ?>
-				</select>
+				<?php
+				tolstenko_render_blog_author_select(
+					'tolstenko_blog_author',
+					$author,
+					__( 'По умолчанию (из шаблона вакансии / без автора)', 'tolstenko-theme' ),
+					'tolstenko_blog_author'
+				);
+				?>
 				<br><span class="description">
 					<?php esc_html_e( 'Список авторов:', 'tolstenko-theme' ); ?>
 					<a href="<?php echo esc_url( admin_url( 'admin.php?page=tolstenko-blog-authors' ) ); ?>">

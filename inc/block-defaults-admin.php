@@ -86,8 +86,10 @@ function tolstenko_block_defaults_schema() {
 		'blog_section_filters' => array(
 			'title'          => 'Статьи',
 			'text'           => '',
-			'posts_per_page' => 6,
+			'posts_per_page' => 4,
 			'ids'            => array(),
+			'btn_text'       => 'Все статьи',
+			'btn_url'        => '',
 		),
 		'blog_section_tile' => array(
 			'title'            => 'Статьи',
@@ -332,6 +334,12 @@ function tolstenko_block_defaults_schema() {
 			'foto_text'  => '',
 			'phone'      => '',
 			'telegram_url' => '',
+		),
+		'seo_section' => array(
+			'title'     => '',
+			'subtitle'  => '',
+			'more_text' => 'Читать далее',
+			'blocks'    => array(),
 		),
 		'we_can' => array(
 			'title'      => 'Мы можем',
@@ -682,23 +690,6 @@ function tolstenko_get_block_defaults( $block ) {
 			$data['ids'] = tolstenko_sanitize_service_section_ids( $data['ids'] ?? array() );
 			return $data;
 		}
-		// Backward compatibility with previous implementation.
-		$page_id = function_exists( 'tolstenko_get_settings_page_id' ) ? tolstenko_get_settings_page_id() : 0;
-		if ( $page_id ) {
-			$legacy = get_post_meta( $page_id, '_tolstenko_block_defaults', true );
-			if ( is_array( $legacy ) && isset( $legacy[ $block ] ) && is_array( $legacy[ $block ] ) ) {
-				$data = tolstenko_merge_block_defaults_data( $base, $legacy[ $block ] );
-				if ( $block === 'service_section' || $block === 'service_section_filters' ) {
-					$data['ids'] = tolstenko_sanitize_service_section_ids( $data['ids'] ?? array() );
-				}
-				return $data;
-			}
-			if ( $block === 'service_section_filters' && is_array( $legacy ) && isset( $legacy['service_section'] ) && is_array( $legacy['service_section'] ) ) {
-				$data = tolstenko_merge_block_defaults_data( $base, $legacy['service_section'] );
-				$data['ids'] = tolstenko_sanitize_service_section_ids( $data['ids'] ?? array() );
-				return $data;
-			}
-		}
 		return $base;
 	}
 	$data = tolstenko_merge_block_defaults_data( $base, $saved[ $block ] );
@@ -843,6 +834,7 @@ function tolstenko_render_block_defaults_admin_page() {
 				<button type="button" class="tolstenko-df-tab" data-panel="consultation_free" data-group="main"><?php esc_html_e( 'Бесплатная консультация', 'tolstenko-theme' ); ?></button>
 				<button type="button" class="tolstenko-df-tab" data-panel="tg_channel" data-group="main"><?php esc_html_e( 'TG-канал', 'tolstenko-theme' ); ?></button>
 				<button type="button" class="tolstenko-df-tab" data-panel="faq" data-group="main"><?php esc_html_e( 'FAQ', 'tolstenko-theme' ); ?></button>
+				<button type="button" class="tolstenko-df-tab" data-panel="seo_section" data-group="main"><?php esc_html_e( 'SEO продвижение', 'tolstenko-theme' ); ?></button>
 			</div>
 			<div class="tolstenko-df-group-panels" data-group-panels="main"></div>
 		</div>
@@ -1478,7 +1470,12 @@ function tolstenko_render_block_defaults_admin_page() {
 		</div>
 
 		<div class="tolstenko-df-panel" data-panel="blog_section_filters" data-group="post_sliders">
-			<?php tolstenko_render_blog_section_defaults_fields( 'blog_section_filters', $all['blog_section_filters'] ?? array() ); ?>
+			<?php
+			$bsf = $all['blog_section_filters'] ?? array();
+			tolstenko_render_blog_section_defaults_fields( 'blog_section_filters', $bsf );
+			?>
+			<div class="row"><input type="text" name="tolstenko_block_defaults[blog_section_filters][btn_text]" value="<?php echo esc_attr( $bsf['btn_text'] ?? '' ); ?>" style="width:100%" placeholder="Текст кнопки под списком (Все статьи)"></div>
+			<div class="row"><input type="url" name="tolstenko_block_defaults[blog_section_filters][btn_url]" value="<?php echo esc_attr( $bsf['btn_url'] ?? '' ); ?>" style="width:100%" placeholder="Ссылка кнопки (пусто = архив статей)"></div>
 			<p class="description"><?php esc_html_e( 'Слайдер с фильтром по рубрикам blog_cat.', 'tolstenko-theme' ); ?></p>
 		</div>
 
@@ -1521,7 +1518,7 @@ function tolstenko_render_block_defaults_admin_page() {
 				</div>
 				<div class="actions">
 					<button type="button" class="button" data-add-item="different-experiences-list"><?php esc_html_e( 'Добавить пункт', 'tolstenko-theme' ); ?></button>
-				</div>
+			</div>
 			</div>
 			<div class="row"><input type="text" name="tolstenko_block_defaults[different_experiences][tg_text]" value="<?php echo esc_attr( $de['tg_text'] ?? '' ); ?>" style="width:100%" placeholder="Текст кнопки Telegram"></div>
 			<div class="row"><input type="url" name="tolstenko_block_defaults[different_experiences][tg_url]" value="<?php echo esc_attr( $de['tg_url'] ?? '' ); ?>" style="width:100%" placeholder="Ссылка Telegram (пусто = из шапки/подвала)"></div>
@@ -1564,6 +1561,7 @@ function tolstenko_render_block_defaults_admin_page() {
 		$tgc = $all['tg_channel'] ?? array();
 		$ts  = $all['three_steps'] ?? array();
 		$faq = $all['faq'] ?? array();
+		$seo_section = $all['seo_section'] ?? array();
 		$faq_foto_id = isset( $faq['foto'] ) ? (int) $faq['foto'] : 0;
 		$faq_foto_url = $faq_foto_id ? wp_get_attachment_image_url( $faq_foto_id, 'medium' ) : '';
 		$st_img_id = isset( $st['image'] ) ? (int) $st['image'] : 0;
@@ -1739,6 +1737,13 @@ function tolstenko_render_block_defaults_admin_page() {
 			<div class="row"><input type="url" name="tolstenko_block_defaults[faq][telegram_url]" value="<?php echo esc_attr( $faq['telegram_url'] ?? '' ); ?>" style="width:100%" placeholder="Telegram URL (пусто = из шапки)"></div>
 		</div>
 
+		<div class="tolstenko-df-panel" data-panel="seo_section" data-group="main">
+			<p class="description"><?php esc_html_e( 'Заголовок, подзаголовок и текст кнопки «Читать далее». Блоки содержимого настраиваются в редакторе записи (блок «SEO продвижение»).', 'tolstenko-theme' ); ?></p>
+			<div class="row"><input type="text" name="tolstenko_block_defaults[seo_section][title]" value="<?php echo esc_attr( $seo_section['title'] ?? '' ); ?>" style="width:100%" placeholder="Заголовок"></div>
+			<div class="row"><textarea name="tolstenko_block_defaults[seo_section][subtitle]" rows="3" placeholder="Подзаголовок"><?php echo esc_textarea( $seo_section['subtitle'] ?? '' ); ?></textarea></div>
+			<div class="row"><input type="text" name="tolstenko_block_defaults[seo_section][more_text]" value="<?php echo esc_attr( $seo_section['more_text'] ?? '' ); ?>" style="width:100%" placeholder="Текст кнопки раскрытия (по умолчанию: Читать далее)"></div>
+		</div>
+
 		</div><!-- .tolstenko-df-panels-source -->
 	</div>
 	<div class="actions">
@@ -1771,6 +1776,7 @@ function tolstenko_render_block_defaults_admin_page() {
 			consultation_free: 'main',
 			tg_channel: 'main',
 			faq: 'main',
+			seo_section: 'main',
 			case_section: 'post_sliders',
 			reviews: 'post_sliders',
 			service_section: 'post_sliders',
@@ -1814,14 +1820,14 @@ function tolstenko_render_block_defaults_admin_page() {
 
 		function activateTab(tab){
 			if (!tab) return;
-			var target = tab.getAttribute('data-panel');
+				var target = tab.getAttribute('data-panel');
 			var group = tab.getAttribute('data-group') || panelGroupMap[target] || '';
 			root.querySelectorAll('.tolstenko-df-tab').forEach(function(t){ t.classList.remove('active'); });
 			root.querySelectorAll('.tolstenko-df-panel').forEach(function(p){ p.classList.remove('active'); });
 			root.querySelectorAll('.tolstenko-df-tabs-group').forEach(function(g){ g.classList.remove('is-active'); });
-			tab.classList.add('active');
+				tab.classList.add('active');
 			var panel = root.querySelector('.tolstenko-df-panel[data-panel="' + target + '"]');
-			if (panel) panel.classList.add('active');
+				if (panel) panel.classList.add('active');
 			var groupEl = root.querySelector('.tolstenko-df-tabs-group[data-group="' + group + '"]');
 			if (groupEl) {
 				groupEl.classList.add('is-active');
@@ -2181,8 +2187,10 @@ function tolstenko_save_block_defaults_from_request() {
 	$out['blog_section_filters'] = array(
 		'title'          => tolstenko_kses_html( $raw['blog_section_filters']['title'] ?? '' ),
 		'text'           => tolstenko_kses_html( $raw['blog_section_filters']['text'] ?? '' ),
-		'posts_per_page' => isset( $raw['blog_section_filters']['posts_per_page'] ) ? (int) $raw['blog_section_filters']['posts_per_page'] : 6,
+		'posts_per_page' => isset( $raw['blog_section_filters']['posts_per_page'] ) ? (int) $raw['blog_section_filters']['posts_per_page'] : 4,
 		'ids'            => tolstenko_sanitize_service_section_ids( $raw['blog_section_filters']['ids'] ?? array() ),
+		'btn_text'       => sanitize_text_field( $raw['blog_section_filters']['btn_text'] ?? '' ),
+		'btn_url'        => esc_url_raw( $raw['blog_section_filters']['btn_url'] ?? '' ),
 	);
 
 	$out['blog_section_tile'] = array(
@@ -2540,6 +2548,22 @@ function tolstenko_save_block_defaults_from_request() {
 		}
 	}
 
+	$prev_seo_defaults = get_option( 'tolstenko_block_defaults', array() );
+	$prev_seo_blocks   = ( is_array( $prev_seo_defaults ) && isset( $prev_seo_defaults['seo_section']['blocks'] ) && is_array( $prev_seo_defaults['seo_section']['blocks'] ) )
+		? $prev_seo_defaults['seo_section']['blocks']
+		: array();
+	$raw_seo_blocks    = ( isset( $raw['seo_section']['blocks'] ) && is_array( $raw['seo_section']['blocks'] ) )
+		? $raw['seo_section']['blocks']
+		: $prev_seo_blocks;
+
+	$out['seo_section'] = array(
+		'title'     => tolstenko_kses_html( $raw['seo_section']['title'] ?? '' ),
+		'subtitle'  => tolstenko_kses_html( $raw['seo_section']['subtitle'] ?? '' ),
+		'more_text' => sanitize_text_field( $raw['seo_section']['more_text'] ?? '' ),
+		'blocks'    => function_exists( 'tolstenko_sanitize_seo_section_blocks_raw' )
+			? tolstenko_sanitize_seo_section_blocks_raw( $raw_seo_blocks )
+			: array(),
+	);
 
 	// Не затирать дефолты блоков тела статьи (правятся на отдельной странице).
 	$prev = get_option( 'tolstenko_block_defaults', array() );

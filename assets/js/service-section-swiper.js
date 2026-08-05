@@ -84,7 +84,7 @@
 
 	function initAll() {
 		document.querySelectorAll(
-			'.service-section__splide .splide__track.swiper, .blog-section--same .blog-section__splide .splide__track.swiper, .blog-section--slider .blog-section__splide .splide__track.swiper'
+			'.service-section__splide .splide__track.swiper, .blog-section--same .blog-section__splide .splide__track.swiper'
 		).forEach(mount);
 	}
 

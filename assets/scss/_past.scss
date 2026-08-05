@@ -754,7 +754,7 @@
     .reviews {
       margin-bottom: 100px;
     }
-
+    
     @media screen and (min-width: 768px) and (max-width: 1500px) {
       .reviews {
         margin-bottom: 7.81vw;
@@ -887,15 +887,15 @@
   &-results {
     padding-top: 40px;
     padding-bottom: 60px;
-    color: #FFFFFF;
+        color: #FFFFFF;
 
     .page-numbers {
       color: #FFFFFF;
     }
     .nav-links {
-      display: flex;
+          display: flex;
       justify-content: center;
-      align-items: center;
+        align-items: center;
       gap: 10px;
       @media screen and (min-width: 768px) and (max-width: 1500px) {
         gap: 0.78vw;

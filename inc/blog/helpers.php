@@ -98,10 +98,9 @@ function tolstenko_get_single_blog_director( $post_id = 0 ) {
 
 	$author_index = get_post_meta( $post_id, 'blog_author', true );
 	if ( $author_index !== null && $author_index !== '' && $author_index !== false ) {
-		$authors = function_exists( 'tolstenko_get_blog_authors_list' ) ? tolstenko_get_blog_authors_list() : array();
-		if ( is_array( $authors ) && isset( $authors[ (int) $author_index ] ) && is_array( $authors[ (int) $author_index ] ) ) {
-			$author = $authors[ (int) $author_index ];
-			$title  = trim( (string) ( $author['job_title'] ?? '' ) );
+		$author = tolstenko_get_blog_author_by_index( $author_index );
+		if ( is_array( $author ) ) {
+			$title = trim( (string) ( $author['job_title'] ?? '' ) );
 			if ( $title === '' ) {
 				$title = trim( (string) ( $author['position'] ?? '' ) );
 			}
@@ -117,11 +116,24 @@ function tolstenko_get_single_blog_director( $post_id = 0 ) {
 		}
 	}
 
-	// Fallback: сайдбар из «Шаблон вакансии» (общая персона сайта).
-	$defaults = function_exists( 'tolstenko_get_block_defaults' )
+	// Fallback: автор по умолчанию из шаблона вакансии.
+	$defaults     = function_exists( 'tolstenko_get_block_defaults' )
 		? tolstenko_get_block_defaults( 'vacancy_content' )
 		: array();
+	$author_index = (string) ( $defaults['sidebar_author'] ?? '' );
+	$author       = tolstenko_get_blog_author_by_index( $author_index );
+	if ( is_array( $author ) ) {
+		return array(
+			'photo'       => ! empty( $author['photo'] ) ? (int) $author['photo'] : null,
+			'name'        => trim( (string) ( $author['name'] ?? '' ) ),
+			'title'       => trim( (string) ( $author['job_title'] ?? $author['position'] ?? '' ) ),
+			'position'    => trim( (string) ( $author['position'] ?? '' ) ),
+			'description' => trim( (string) ( $author['description'] ?? '' ) ),
+			'show_quest'  => $show_quest,
+		);
+	}
 
+	// Legacy: старые ручные поля шаблона вакансии.
 	$photo_id = (int) ( $defaults['sidebar_photo'] ?? 0 );
 
 	return array(

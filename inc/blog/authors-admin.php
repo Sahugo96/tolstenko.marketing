@@ -38,6 +38,96 @@ function tolstenko_get_blog_authors_list() {
 	return $out;
 }
 
+/**
+ * @param array<string, mixed> $author Author row.
+ * @param int                  $index  Zero-based index.
+ * @return string
+ */
+function tolstenko_get_blog_author_option_label( array $author, $index ) {
+	$name = trim( (string) ( $author['name'] ?? '' ) );
+	$job  = trim( (string) ( $author['job_title'] ?? '' ) );
+	if ( $name === '' && $job === '' ) {
+		return sprintf(
+			/* translators: %d author number */
+			__( 'Автор #%d', 'tolstenko-theme' ),
+			$index + 1
+		);
+	}
+	if ( $name !== '' && $job !== '' ) {
+		return $name . ' — ' . $job;
+	}
+	return $name !== '' ? $name : $job;
+}
+
+/**
+ * @param mixed $index Author index from meta/option.
+ * @return array{photo:int,name:string,job_title:string,position:string,description:string}|null
+ */
+function tolstenko_get_blog_author_by_index( $index ) {
+	if ( $index === null || $index === '' || $index === false ) {
+		return null;
+	}
+	$authors = tolstenko_get_blog_authors_list();
+	if ( ! isset( $authors[ (int) $index ] ) || ! is_array( $authors[ (int) $index ] ) ) {
+		return null;
+	}
+	return $authors[ (int) $index ];
+}
+
+/**
+ * @param string $field_name   Select name attribute.
+ * @param string $selected     Selected index.
+ * @param string $empty_label  Label for empty option.
+ * @param string $select_id    Optional id attribute.
+ */
+function tolstenko_render_blog_author_select( $field_name, $selected, $empty_label, $select_id = '' ) {
+	$authors = tolstenko_get_blog_authors_list();
+	$selected = (string) $selected;
+	?>
+	<select<?php echo $select_id !== '' ? ' id="' . esc_attr( $select_id ) . '"' : ''; ?> name="<?php echo esc_attr( $field_name ); ?>" style="width:100%;max-width:720px">
+		<option value=""><?php echo esc_html( $empty_label ); ?></option>
+		<?php foreach ( $authors as $index => $author ) : ?>
+			<option value="<?php echo esc_attr( (string) $index ); ?>" <?php selected( $selected, (string) $index ); ?>>
+				<?php echo esc_html( tolstenko_get_blog_author_option_label( $author, (int) $index ) ); ?>
+			</option>
+		<?php endforeach; ?>
+	</select>
+	<?php
+}
+
+/**
+ * Персона в сайдбаре вакансии: индекс автора блока → дефолт шаблона → legacy-поля.
+ *
+ * @param string|null $author_index Индекс из block_vacancy_content_sidebar_author.
+ * @return array{photo_id:int,name:string,text:string}
+ */
+function tolstenko_get_vacancy_sidebar_person( $author_index = null ) {
+	$defaults = function_exists( 'tolstenko_get_block_defaults' )
+		? tolstenko_get_block_defaults( 'vacancy_content' )
+		: array();
+
+	if ( $author_index === null || $author_index === '' ) {
+		$author_index = (string) ( $defaults['sidebar_author'] ?? '' );
+	} else {
+		$author_index = (string) $author_index;
+	}
+
+	$author = tolstenko_get_blog_author_by_index( $author_index );
+	if ( is_array( $author ) ) {
+		return array(
+			'photo_id' => (int) ( $author['photo'] ?? 0 ),
+			'name'     => trim( (string) ( $author['name'] ?? '' ) ),
+			'text'     => trim( (string) ( $author['description'] ?? '' ) ),
+		);
+	}
+
+	return array(
+		'photo_id' => (int) ( $defaults['sidebar_photo'] ?? 0 ),
+		'name'     => trim( (string) ( $defaults['sidebar_name'] ?? '' ) ),
+		'text'     => trim( (string) ( $defaults['sidebar_text'] ?? '' ) ),
+	);
+}
+
 function tolstenko_register_blog_authors_admin_page() {
 	add_submenu_page(
 		'tolstenko-site-settings',

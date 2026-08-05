@@ -115,14 +115,181 @@ function tolstenko_render_blog_filter_card( $post ) {
  *
  * @param WP_Post $post Post.
  */
-function tolstenko_render_blog_slider_filter_card( $post ) {
+function tolstenko_render_blog_slider_filter_card( $post, $show_date = false ) {
 	if ( ! $post instanceof WP_Post ) {
 		return;
 	}
 	set_query_var( 'tolstenko_blog_post', $post );
-	set_query_var( 'tolstenko_blog_card_class', 'blog-section__item blog-card swiper-slide' );
+	set_query_var( 'tolstenko_blog_card_class', 'blog-section__item blog-card fade-in-element splide__slide' );
 	set_query_var( 'tolstenko_blog_card_same', false );
+	set_query_var( 'tolstenko_blog_card_show_date', (bool) $show_date );
+	set_query_var( 'tolstenko_blog_card_show_stats', true );
 	get_template_part( 'template-parts/blocks/blog-card' );
+}
+
+/**
+ * Кнопка «Все статьи» для блока «Статьи» (дефолты blog_section_filters).
+ *
+ * @return array{text:string,url:string}|null
+ */
+function tolstenko_get_blog_section_filters_button() {
+	$defaults = function_exists( 'tolstenko_get_block_defaults' )
+		? tolstenko_get_block_defaults( 'blog_section_filters' )
+		: array();
+
+	$text = trim( (string) ( $defaults['btn_text'] ?? '' ) );
+	$url  = trim( (string) ( $defaults['btn_url'] ?? '' ) );
+
+	if ( $url === '' && post_type_exists( 'blog' ) ) {
+		$url = (string) get_post_type_archive_link( 'blog' );
+	}
+
+	if ( $text === '' || $url === '' ) {
+		return null;
+	}
+
+	return array(
+		'text' => $text,
+		'url'  => $url,
+	);
+}
+
+/**
+ * HTML кнопки под списком статей в блоке «Статьи».
+ */
+function tolstenko_render_blog_section_filters_button() {
+	$btn = tolstenko_get_blog_section_filters_button();
+	if ( null === $btn ) {
+		return;
+	}
+	?>
+	<a class="blog-section__btn default-btn" href="<?php echo esc_url( $btn['url'] ); ?>">
+		<?php echo esc_html( $btn['text'] ); ?>
+		<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+			<path d="M5.87524 14.1246L13.5356 6.46426M7.05376 5.875H13.2915C13.7517 5.875 14.1248 6.2481 14.1248 6.70833V12.9461" stroke="black" stroke-width="2" stroke-linecap="round" />
+		</svg>
+	</a>
+	<?php
+}
+
+/**
+ * Разметка блока «Статьи»: 1-я карточка слева + до 3 справа + кнопка (как marketing blog-section).
+ *
+ * @param array $args См. tolstenko_render_filtered_posts_html().
+ * @return array{html:string,pagination:string,max_pages:int,page:int}
+ */
+function tolstenko_render_blog_slider_layout_payload( $args ) {
+	$empty = array(
+		'html'       => '',
+		'pagination' => '',
+		'max_pages'  => 0,
+		'page'       => 1,
+	);
+
+	$post_type      = sanitize_key( $args['post_type'] ?? 'blog' );
+	$taxonomy       = sanitize_key( $args['taxonomy'] ?? 'blog_cat' );
+	$term           = sanitize_title( $args['term'] ?? '' );
+	$posts_per_page = isset( $args['posts_per_page'] ) ? (int) $args['posts_per_page'] : 4;
+	if ( $posts_per_page < 1 ) {
+		$posts_per_page = 4;
+	}
+	$posts_per_page = min( 4, $posts_per_page );
+
+	$post_ids = array();
+	if ( isset( $args['post_ids'] ) ) {
+		$raw_ids = $args['post_ids'];
+		if ( is_string( $raw_ids ) ) {
+			$raw_ids = preg_split( '/[\s,]+/', $raw_ids, -1, PREG_SPLIT_NO_EMPTY );
+		}
+		if ( is_array( $raw_ids ) ) {
+			foreach ( $raw_ids as $id ) {
+				$id = (int) $id;
+				if ( $id > 0 ) {
+					$post_ids[] = $id;
+				}
+			}
+			$post_ids = array_values( array_unique( $post_ids ) );
+			if ( count( $post_ids ) > 4 ) {
+				$post_ids = array_slice( $post_ids, 0, 4 );
+			}
+		}
+	}
+
+	if ( $post_type === '' || ! post_type_exists( $post_type ) ) {
+		return $empty;
+	}
+
+	$query_args = array(
+		'post_type'              => $post_type,
+		'post_status'            => 'publish',
+		'posts_per_page'         => $posts_per_page,
+		'orderby'                => 'date',
+		'order'                  => 'DESC',
+		'no_found_rows'          => true,
+		'update_post_meta_cache' => true,
+		'update_post_term_cache' => true,
+	);
+
+	if ( ! empty( $post_ids ) ) {
+		$query_args['post__in'] = $post_ids;
+		$query_args['orderby']  = 'post__in';
+	}
+
+	if ( $term !== '' && $taxonomy !== '' && taxonomy_exists( $taxonomy ) ) {
+		$query_args['tax_query'] = array(
+			array(
+				'taxonomy' => $taxonomy,
+				'field'    => 'slug',
+				'terms'    => $term,
+			),
+		);
+		set_query_var( 'tolstenko_service_card_selected_category', $term );
+	} else {
+		set_query_var( 'tolstenko_service_card_selected_category', '' );
+	}
+
+	$query = new WP_Query( $query_args );
+	if ( ! $query->have_posts() ) {
+		wp_reset_postdata();
+		return $empty;
+	}
+
+	ob_start();
+	$index = 0;
+	while ( $query->have_posts() ) {
+		$query->the_post();
+		$post = get_post();
+		if ( ! ( $post instanceof WP_Post ) ) {
+			continue;
+		}
+
+		if ( 0 === $index ) {
+			tolstenko_render_blog_slider_filter_card( $post, true );
+		} else {
+			if ( 1 === $index ) {
+				echo '<div class="splide__track"><div class="blog-section__splide-list splide__list">';
+			}
+			tolstenko_render_blog_slider_filter_card( $post, false );
+		}
+		++$index;
+	}
+
+	if ( $index > 1 ) {
+		echo '</div>';
+		echo '<div class="splide__pagination"></div>';
+		tolstenko_render_blog_section_filters_button();
+		echo '</div>';
+	}
+
+	wp_reset_postdata();
+	$html = (string) ob_get_clean();
+
+	return array(
+		'html'       => $html,
+		'pagination' => '',
+		'max_pages'  => 0,
+		'page'       => 1,
+	);
 }
 
 /**
@@ -152,32 +319,39 @@ function tolstenko_get_blog_archive_sidebar_data() {
 	$tile = function_exists( 'tolstenko_get_block_defaults' )
 		? tolstenko_get_block_defaults( 'blog_section_tile' )
 		: array();
-	$vac  = function_exists( 'tolstenko_get_block_defaults' )
-		? tolstenko_get_block_defaults( 'vacancy_content' )
-		: array();
+	$vac_person = function_exists( 'tolstenko_get_vacancy_sidebar_person' )
+		? tolstenko_get_vacancy_sidebar_person()
+		: array(
+			'photo_id' => 0,
+			'name'     => '',
+			'text'     => '',
+		);
 
 	$photo_id = (int) ( $tile['sidebar_photo'] ?? 0 );
 	if ( ! $photo_id ) {
-		$photo_id = (int) ( $vac['sidebar_photo'] ?? 0 );
+		$photo_id = (int) ( $vac_person['photo_id'] ?? 0 );
 	}
 	$name = trim( (string) ( $tile['sidebar_name'] ?? '' ) );
 	if ( $name === '' ) {
-		$name = trim( (string) ( $vac['sidebar_name'] ?? '' ) );
+		$name = trim( (string) ( $vac_person['name'] ?? '' ) );
 	}
 	$text = (string) ( $tile['sidebar_text'] ?? '' );
 	if ( trim( wp_strip_all_tags( $text ) ) === '' ) {
-		$text = (string) ( $vac['sidebar_text'] ?? '' );
+		$text = (string) ( $vac_person['text'] ?? '' );
 	}
+	$vac_defaults = function_exists( 'tolstenko_get_block_defaults' )
+		? tolstenko_get_block_defaults( 'vacancy_content' )
+		: array();
 	$btn = trim( (string) ( $tile['sidebar_btn'] ?? '' ) );
 	if ( $btn === '' ) {
-		$btn = trim( (string) ( $vac['sidebar_btn'] ?? '' ) );
+		$btn = trim( (string) ( $vac_defaults['sidebar_btn'] ?? '' ) );
 	}
 	if ( $btn === '' ) {
 		$btn = __( 'Бесплатный аудит', 'tolstenko-theme' );
 	}
 	$btn_url = (string) ( $tile['sidebar_btn_url'] ?? '' );
 	if ( $btn_url === '' ) {
-		$btn_url = (string) ( $vac['sidebar_btn_url'] ?? '' );
+		$btn_url = (string) ( $vac_defaults['sidebar_btn_url'] ?? '' );
 	}
 	$btn_url = function_exists( 'tolstenko_url_or_modal' )
 		? tolstenko_url_or_modal( $btn_url )
@@ -485,6 +659,11 @@ function tolstenko_render_filtered_posts_payload( $args ) {
 	$renderers = tolstenko_get_posts_filter_card_renderers();
 	if ( $card === '' || empty( $renderers[ $card ] ) || ! is_callable( $renderers[ $card ] ) ) {
 		return $empty;
+	}
+
+	// Блок «Статьи»: крупная карточка слева + колонка справа + кнопка.
+	if ( $card === 'blog_slider' ) {
+		return tolstenko_render_blog_slider_layout_payload( $args );
 	}
 
 	// Архивная плитка: 1-я карточка + сайдбар + сетка (как blog-archive в marketing).

@@ -18,7 +18,7 @@
   &__text {
     color: var(--gray-50-color);
   }
-  
+
   &__right-wrapper {
     order: 5;
     display: flex;
@@ -161,7 +161,6 @@
       border-radius: vw(30px, $desktop_large);
     }
     .blog-card {
-
       &__link {
         flex-direction: column;
         grid-gap: vw(20px, $mobile);
@@ -230,7 +229,6 @@
     }
   }
   &__splide-list.splide__list {
-    
     @media (min-width: $desk) {
       display: flex;
       flex-direction: column;
@@ -245,9 +243,6 @@
       height: auto;
       grid-gap: vw(20px, $desktop_large);
     }
-  }
-  &__item {
-
   }
   &__btn {
     font-weight: 700;
@@ -265,7 +260,7 @@
     order: 10;
     width: 100%;
   }
-  .swiper-pagination {
+  .splide__pagination {
     @media (min-width: $desk) {
       display: none;
     }
@@ -307,7 +302,6 @@
       border-radius: vw(30px, $desktop_large);
     }
     .blog-card {
-
       &__link {
         height: 100%;
         flex-direction: column;
@@ -425,8 +419,24 @@
     }
   }
 
-  &--slider,
+  // «Слайдер статей» (blog-section-simple) — Swiper, не Splide.
   &--same {
+    .section-top {
+      text-align: center;
+      margin-bottom: vw(30px, $mobile);
+      @media (min-width: $desk) {
+        margin-bottom: vw(40px, $desktop);
+      }
+      @media (min-width: $desk_large) {
+        margin-bottom: vw(40px, $desktop_large);
+      }
+    }
+
+    .blog-section__title {
+      color: var(--brand-accent-yellow-color);
+      text-transform: uppercase;
+    }
+
     .blog-section__splide.splide {
       position: relative;
       display: block;
@@ -451,28 +461,11 @@
       }
     }
 
+    .splide__pagination,
     .swiper-pagination {
       @media (min-width: $desk) {
         display: none;
       }
-    }
-  }
-
-  &--same {
-    .section-top {
-      text-align: center;
-      margin-bottom: vw(30px, $mobile);
-      @media (min-width: $desk) {
-        margin-bottom: vw(40px, $desktop);
-      }
-      @media (min-width: $desk_large) {
-        margin-bottom: vw(40px, $desktop_large);
-      }
-    }
-
-    .blog-section__title {
-      color: var(--brand-accent-yellow-color);
-      text-transform: uppercase;
     }
   }
 }

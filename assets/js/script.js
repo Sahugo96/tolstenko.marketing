@@ -697,6 +697,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Сертификаты — как Tolstenko certificatesSplideInit (1 / 5, стрелки с desk).
     // Клиенты — как clientsSplideInit (.clients__splide + .clients__smi-splide, 1 / 4).
+    // Партнёры — как partnersSplideInit (1 / 5, pagination mobile / arrows desk).
     (function() {
         function mountThemeSplideSwiper(rootSelector, deskPerView) {
             document.querySelectorAll(rootSelector + ' .splide__track.swiper').forEach(function(el) {
@@ -747,6 +748,7 @@ document.addEventListener('DOMContentLoaded', () => {
         mountThemeSplideSwiper('.certificates__splide', 5);
         mountThemeSplideSwiper('.clients__splide', 4);
         mountThemeSplideSwiper('.clients__smi-splide', 4);
+        mountThemeSplideSwiper('.partners__splide', 5);
     })();
 
     (function() {
@@ -815,48 +817,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (typeof mq.addListener === 'function') {
             mq.addListener(initMobile);
         }
-    })();
-
-    (function() {
-        document.querySelectorAll('.partners__splide .splide__track.swiper').forEach(function(el) {
-            var root = el.closest('.partners__splide');
-            if (!root || !el.querySelector('.swiper-slide')) return;
-
-            function syncOverflow(swiper) {
-                root.classList.toggle('is-overflow', !swiper.isLocked);
-            }
-
-            var instance = new Swiper(el, {
-                slidesPerView: 1,
-                slidesPerGroup: 1,
-                spaceBetween: 20,
-                watchOverflow: true,
-                pagination: {
-                    el: root.querySelector('.splide__pagination'),
-                    clickable: true,
-                    enabled: true
-                },
-                navigation: {
-                    nextEl: root.querySelector('.splide__arrow--next'),
-                    prevEl: root.querySelector('.splide__arrow--prev'),
-                    enabled: false
-                },
-                breakpoints: {
-                    992: {
-                        slidesPerView: 5,
-                        slidesPerGroup: 1,
-                        spaceBetween: 20,
-                        pagination: { enabled: false },
-                        navigation: { enabled: true }
-                    }
-                },
-                on: {
-                    init: function () { syncOverflow(this); },
-                    resize: function () { syncOverflow(this); },
-                    update: function () { syncOverflow(this); }
-                }
-            });
-        });
     })();
 
     (function() {
@@ -1154,8 +1114,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (serviceRoot && typeof window.tolstenkoMountServiceSectionSwiper === 'function') {
                 window.tolstenkoMountServiceSectionSwiper(serviceRoot);
             }
-            var blogRoot = container.closest('.blog-section__splide');
-            if (blogRoot && typeof window.tolstenkoMountServiceSectionSwiper === 'function') {
+            var blogRoot = container.classList.contains('blog-section__splide')
+                ? container
+                : container.closest('.blog-section__splide');
+            if (blogRoot && typeof window.tolstenkoMountBlogSectionSplide === 'function') {
+                window.tolstenkoMountBlogSectionSplide(blogRoot);
+            } else if (blogRoot && blogRoot.closest('.blog-section--same') && typeof window.tolstenkoMountServiceSectionSwiper === 'function') {
                 window.tolstenkoMountServiceSectionSwiper(blogRoot);
             }
 

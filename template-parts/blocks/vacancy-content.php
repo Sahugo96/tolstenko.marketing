@@ -47,12 +47,20 @@ $apply_url = tolstenko_url_or_modal(
 		: (string) ( $defaults['apply_url'] ?? '' )
 );
 
-$name = ! empty( $block_attrs['block_vacancy_content_sidebar_name'] )
-	? (string) $block_attrs['block_vacancy_content_sidebar_name']
-	: (string) ( $defaults['sidebar_name'] ?? '' );
-$text = isset( $block_attrs['block_vacancy_content_sidebar_text'] ) && trim( (string) $block_attrs['block_vacancy_content_sidebar_text'] ) !== ''
-	? (string) $block_attrs['block_vacancy_content_sidebar_text']
-	: (string) ( $defaults['sidebar_text'] ?? '' );
+$sidebar_person = function_exists( 'tolstenko_get_vacancy_sidebar_person' )
+	? tolstenko_get_vacancy_sidebar_person(
+		array_key_exists( 'block_vacancy_content_sidebar_author', $block_attrs )
+			? (string) $block_attrs['block_vacancy_content_sidebar_author']
+			: null
+	)
+	: array(
+		'photo_id' => (int) ( $defaults['sidebar_photo'] ?? 0 ),
+		'name'     => trim( (string) ( $defaults['sidebar_name'] ?? '' ) ),
+		'text'     => trim( (string) ( $defaults['sidebar_text'] ?? '' ) ),
+	);
+$name     = trim( (string) ( $sidebar_person['name'] ?? '' ) );
+$text     = trim( (string) ( $sidebar_person['text'] ?? '' ) );
+$photo_id = (int) ( $sidebar_person['photo_id'] ?? 0 );
 $sidebar_btn = ! empty( $block_attrs['block_vacancy_content_sidebar_btn'] )
 	? (string) $block_attrs['block_vacancy_content_sidebar_btn']
 	: (string) ( $defaults['sidebar_btn'] ?? '' );
@@ -65,9 +73,6 @@ $sidebar_btn_url = tolstenko_url_or_modal(
 		: (string) ( $defaults['sidebar_btn_url'] ?? '' )
 );
 
-$photo_id = ! empty( $block_attrs['block_vacancy_content_sidebar_photo'] )
-	? (int) $block_attrs['block_vacancy_content_sidebar_photo']
-	: (int) ( $defaults['sidebar_photo'] ?? 0 );
 $photo_url = $photo_id ? (string) wp_get_attachment_image_url( $photo_id, 'medium' ) : '';
 $photo_alt = $photo_id ? (string) get_post_meta( $photo_id, '_wp_attachment_image_alt', true ) : '';
 
