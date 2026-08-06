@@ -128,6 +128,43 @@ if ( ! function_exists( 'tolstenko_render_breadcrumb_ancestors' ) ) {
 			</div>
 			<?php
 		endif;
+
+		$term_map = array(
+			'blog'    => 'blog_cat',
+			'service' => 'service_category',
+			'vacancy' => 'vacancy_cat',
+			'post'    => 'category',
+		);
+		$term_map = apply_filters( 'tolstenko_breadcrumb_single_taxonomy', $term_map, $post_type );
+
+		$crumb_term = null;
+		$tax        = isset( $term_map[ $post_type ] ) ? (string) $term_map[ $post_type ] : '';
+		if ( $tax !== '' && taxonomy_exists( $tax ) ) {
+			$terms = get_the_terms( get_the_ID(), $tax );
+			if ( is_array( $terms ) && ! empty( $terms ) ) {
+				$first = reset( $terms );
+				if ( $first instanceof WP_Term ) {
+					$crumb_term = $first;
+				}
+			}
+		}
+
+		if ( $crumb_term ) :
+			$term_url = get_term_link( $crumb_term );
+			if ( ! is_wp_error( $term_url ) && $term_url ) :
+				?>
+			<div class="breadcrumbs__item">
+				<svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<path d="M6.25 3.75L9.55806 7.05806C9.80214 7.30214 9.80214 7.69786 9.55806 7.94194L6.25 11.25" stroke-width="1.5" stroke-linecap="round" />
+				</svg>
+
+				<a class="breadcrumbs__link line-13-15" href="<?php echo esc_url( $term_url ); ?>">
+					<?php echo esc_html( $crumb_term->name ); ?>
+				</a>
+			</div>
+				<?php
+			endif;
+		endif;
 		?>
 		<div class="breadcrumbs__item">
 			<svg viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">

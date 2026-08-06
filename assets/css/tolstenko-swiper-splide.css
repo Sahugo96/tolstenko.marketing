@@ -169,3 +169,65 @@
 .faq__item:not(.active) .redactor ol {
   font-size: 0;
 }
+
+/* TOC статьи/акции: h2 нумерация + вложенные h3 с акцентной линией (пока SCSS не пересобран). */
+.single-blog__toc,
+.single-actions__toc {
+  display: flex;
+  flex-direction: column;
+  grid-gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: toc;
+}
+.single-blog__toc > .single-blog__toc-item,
+.single-actions__toc > .single-actions__toc-item {
+  counter-increment: toc;
+}
+.single-blog__toc > .single-blog__toc-item > .single-blog__toc-link::before,
+.single-actions__toc > .single-actions__toc-item > .single-actions__toc-link::before {
+  content: counter(toc) ". ";
+}
+.single-blog__toc-sub,
+.single-actions__toc-sub {
+  display: flex;
+  flex-direction: column;
+  grid-gap: 12px;
+  margin: 12px 0 0;
+  padding: 0 0 0 16px;
+  list-style: none;
+  border-left: 2px solid var(--brand-accent-yellow-color);
+}
+.single-blog__toc-sub .single-blog__toc-item--h3,
+.single-actions__toc-sub .single-actions__toc-item--h3 {
+  display: flex;
+  align-items: flex-start;
+  grid-gap: 10px;
+  padding-left: 0;
+}
+.single-blog__toc-sub .single-blog__toc-item--h3::before,
+.single-actions__toc-sub .single-actions__toc-item--h3::before {
+  content: "";
+  flex-shrink: 0;
+  width: 5px;
+  height: 5px;
+  margin-top: 0.45em;
+  border-radius: 50%;
+  background-color: var(--brand-accent-yellow-color);
+}
+.single-blog__toc-link,
+.single-actions__toc-link {
+  color: var(--gray-50-color);
+  text-decoration: none;
+}
+@media (any-hover: hover) {
+  .single-blog__toc-link,
+  .single-actions__toc-link {
+    transition: color 0.2s linear;
+  }
+  .single-blog__toc-link:hover,
+  .single-actions__toc-link:hover {
+    color: var(--white-color);
+  }
+}

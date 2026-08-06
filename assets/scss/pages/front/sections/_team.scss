@@ -23,6 +23,7 @@
     letter-spacing: 0%;
   }
 
+  // Как Tolstenko teamSplideInit: <992 — пагинация, стрелки с desk.
   .splide__arrows {
     display: none;
     @media (min-width: $desk) {

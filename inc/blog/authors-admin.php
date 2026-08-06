@@ -84,7 +84,7 @@ function tolstenko_render_blog_author_select( $field_name, $selected, $empty_lab
 	$authors = tolstenko_get_blog_authors_list();
 	$selected = (string) $selected;
 	?>
-	<select<?php echo $select_id !== '' ? ' id="' . esc_attr( $select_id ) . '"' : ''; ?> name="<?php echo esc_attr( $field_name ); ?>" style="width:100%;max-width:720px">
+	<select<?php echo $select_id !== '' ? ' id="' . esc_attr( $select_id ) . '"' : ''; ?> name="<?php echo esc_attr( $field_name ); ?>" style="width:100%;max-width:none;box-sizing:border-box">
 		<option value=""><?php echo esc_html( $empty_label ); ?></option>
 		<?php foreach ( $authors as $index => $author ) : ?>
 			<option value="<?php echo esc_attr( (string) $index ); ?>" <?php selected( $selected, (string) $index ); ?>>

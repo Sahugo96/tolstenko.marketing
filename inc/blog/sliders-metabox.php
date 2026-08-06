@@ -136,51 +136,6 @@ function tolstenko_blog_sliders_add_metabox() {
 }
 
 /**
- * Чекбоксы списка постов.
- *
- * @param string $post_type CPT.
- * @param string $input_name Input name.
- * @param int[]  $selected   Selected IDs.
- * @param int    $exclude_id Exclude from list (current post).
- */
-function tolstenko_blog_sliders_render_post_checkboxes( $post_type, $input_name, array $selected, $exclude_id = 0 ) {
-	$posts = get_posts(
-		array(
-			'post_type'              => $post_type,
-			'post_status'            => 'publish',
-			'posts_per_page'         => -1,
-			'orderby'                => 'title',
-			'order'                  => 'ASC',
-			'no_found_rows'          => true,
-			'update_post_meta_cache' => false,
-			'update_post_term_cache' => false,
-		)
-	);
-	if ( ! $posts ) {
-		echo '<p class="description">' . esc_html__( 'Пока нет опубликованных записей.', 'tolstenko-theme' ) . '</p>';
-		return;
-	}
-	echo '<div class="tolstenko-bs-ids">';
-	foreach ( $posts as $p ) {
-		if ( ! ( $p instanceof WP_Post ) ) {
-			continue;
-		}
-		$pid = (int) $p->ID;
-		if ( $exclude_id && $pid === (int) $exclude_id ) {
-			continue;
-		}
-		printf(
-			'<label class="tolstenko-bs-ids__item"><input type="checkbox" name="%1$s[]" value="%2$d" %3$s> <span>%4$s</span></label>',
-			esc_attr( $input_name ),
-			$pid,
-			checked( in_array( $pid, $selected, true ), true, false ),
-			esc_html( get_the_title( $p ) )
-		);
-	}
-	echo '</div>';
-}
-
-/**
  * @param WP_Post $post Post.
  */
 function tolstenko_blog_sliders_render_metabox( $post ) {
@@ -199,16 +154,19 @@ function tolstenko_blog_sliders_render_metabox( $post ) {
 	$rel_ids    = tolstenko_blog_sliders_sanitize_ids( get_post_meta( $post->ID, 'blog_related_ids', true ) );
 
 	$settings_url = admin_url( 'admin.php?page=tolstenko-site-settings' );
+	$rel_exclude  = ( $post->post_type === 'blog' ) ? array( (int) $post->ID ) : array();
+
+	if ( function_exists( 'tolstenko_post_select_print_assets' ) ) {
+		tolstenko_post_select_print_assets();
+	}
 	?>
 	<style>
-		.tolstenko-blog-sliders .tolstenko-bs-block{border:1px solid #dcdcde;background:#fff;padding:14px 16px;margin:0 0 16px;max-width:860px}
+		.tolstenko-blog-sliders .tolstenko-bs-block{border:1px solid #dcdcde;background:#fff;padding:14px 16px;margin:0 0 16px;max-width:none;width:100%;box-sizing:border-box}
 		.tolstenko-blog-sliders .tolstenko-bs-block h3{margin:0 0 8px;font-size:14px}
 		.tolstenko-blog-sliders .tolstenko-bs-field{margin:0 0 12px}
 		.tolstenko-blog-sliders .tolstenko-bs-field input[type=text],
 		.tolstenko-blog-sliders .tolstenko-bs-field input[type=number],
-		.tolstenko-blog-sliders .tolstenko-bs-field textarea{width:100%;max-width:760px}
-		.tolstenko-blog-sliders .tolstenko-bs-ids{display:flex;flex-wrap:wrap;gap:8px 16px;max-width:760px;max-height:220px;overflow:auto;padding:8px;border:1px solid #dcdcde;background:#f6f7f7}
-		.tolstenko-blog-sliders .tolstenko-bs-ids__item{display:flex;align-items:flex-start;gap:6px;min-width:220px}
+		.tolstenko-blog-sliders .tolstenko-bs-field textarea{width:100%;max-width:none;box-sizing:border-box}
 		.tolstenko-blog-sliders .description{margin:0 0 12px}
 	</style>
 
@@ -239,11 +197,23 @@ function tolstenko_blog_sliders_render_metabox( $post ) {
 				<label for="tolstenko_blog_services_ppp"><strong><?php esc_html_e( 'Количество, если услуги не выбраны (−1 = все)', 'tolstenko-theme' ); ?></strong></label><br>
 				<input type="number" id="tolstenko_blog_services_ppp" name="tolstenko_blog_services_posts_per_page" value="<?php echo esc_attr( $svc_ppp === '' || $svc_ppp === null ? '' : (string) (int) $svc_ppp ); ?>" placeholder="<?php esc_attr_e( 'Пусто = из общих настроек', 'tolstenko-theme' ); ?>">
 			</p>
-			<p class="tolstenko-bs-field">
-				<strong><?php esc_html_e( 'Услуги', 'tolstenko-theme' ); ?></strong><br>
-				<span class="description"><?php esc_html_e( 'Пусто = дефолты настроек, иначе самые новые.', 'tolstenko-theme' ); ?></span>
-			</p>
-			<?php tolstenko_blog_sliders_render_post_checkboxes( 'service', 'tolstenko_blog_services_ids', $svc_ids ); ?>
+			<div class="tolstenko-bs-field">
+				<strong><?php esc_html_e( 'Услуги', 'tolstenko-theme' ); ?></strong>
+				<p class="description" style="margin:4px 0 8px;"><?php esc_html_e( 'Пусто = дефолты настроек, иначе самые новые. Кликните в поле или начните ввод — уже выбранные не показываются.', 'tolstenko-theme' ); ?></p>
+				<?php
+				if ( function_exists( 'tolstenko_render_post_select' ) ) {
+					tolstenko_render_post_select(
+						'tolstenko_blog_services_ids',
+						$svc_ids,
+						'service',
+						'',
+						array(
+							'placeholder' => __( 'Поиск услуг...', 'tolstenko-theme' ),
+						)
+					);
+				}
+				?>
+			</div>
 		</div>
 
 		<div class="tolstenko-bs-block">
@@ -267,11 +237,24 @@ function tolstenko_blog_sliders_render_metabox( $post ) {
 				<label for="tolstenko_blog_related_ppp"><strong><?php esc_html_e( 'Количество, если статьи не выбраны (−1 = все)', 'tolstenko-theme' ); ?></strong></label><br>
 				<input type="number" id="tolstenko_blog_related_ppp" name="tolstenko_blog_related_posts_per_page" value="<?php echo esc_attr( $rel_ppp === '' || $rel_ppp === null ? '' : (string) (int) $rel_ppp ); ?>" placeholder="<?php esc_attr_e( 'Пусто = из общих настроек', 'tolstenko-theme' ); ?>">
 			</p>
-			<p class="tolstenko-bs-field">
-				<strong><?php esc_html_e( 'Статьи', 'tolstenko-theme' ); ?></strong><br>
-				<span class="description"><?php esc_html_e( 'Пусто = дефолты настроек, иначе самые новые (текущая статья исключается).', 'tolstenko-theme' ); ?></span>
-			</p>
-			<?php tolstenko_blog_sliders_render_post_checkboxes( 'blog', 'tolstenko_blog_related_ids', $rel_ids, (int) $post->ID ); ?>
+			<div class="tolstenko-bs-field">
+				<strong><?php esc_html_e( 'Статьи', 'tolstenko-theme' ); ?></strong>
+				<p class="description" style="margin:4px 0 8px;"><?php esc_html_e( 'Пусто = дефолты настроек, иначе самые новые (текущая статья исключается). Кликните в поле или начните ввод — уже выбранные не показываются.', 'tolstenko-theme' ); ?></p>
+				<?php
+				if ( function_exists( 'tolstenko_render_post_select' ) ) {
+					tolstenko_render_post_select(
+						'tolstenko_blog_related_ids',
+						$rel_ids,
+						'blog',
+						'',
+						array(
+							'exclude_ids' => $rel_exclude,
+							'placeholder' => __( 'Поиск статей...', 'tolstenko-theme' ),
+						)
+					);
+				}
+				?>
+			</div>
 		</div>
 	</div>
 	<?php

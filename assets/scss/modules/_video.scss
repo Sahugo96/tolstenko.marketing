@@ -58,7 +58,9 @@
     padding: vw(15px, $mobile);
     height: auto;
     aspect-ratio: 1/1;
-    z-index: 1;
+    z-index: 3;
+    border: 0;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -77,6 +79,16 @@
     }
     svg {
       fill: black;
+    }
+  }
+  &__embed {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    &[hidden] {
+      display: none !important;
     }
   }
 }

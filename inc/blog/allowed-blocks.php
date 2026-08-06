@@ -70,7 +70,6 @@ function tolstenko_adapt_single_content_classes( $html ) {
 function tolstenko_get_blog_theme_blocks_catalog() {
 	$catalog = array(
 		'tolstenko/blog-large-img'   => __( 'Крупное фото', 'tolstenko-theme' ),
-		'tolstenko/blog-imgs'        => __( 'Два фото', 'tolstenko-theme' ),
 		'tolstenko/blog-video'       => __( 'Видео', 'tolstenko-theme' ),
 		'tolstenko/blog-blockquote'  => __( 'Цитата', 'tolstenko-theme' ),
 		'tolstenko/blog-number-list' => __( 'Нумерованный список', 'tolstenko-theme' ),
@@ -172,10 +171,6 @@ function tolstenko_blog_content_defaults_schema() {
 	return array(
 		'blog_large_img' => array(
 			'image' => 0,
-		),
-		'blog_imgs' => array(
-			'left'  => 0,
-			'right' => 0,
 		),
 		'blog_video' => array(
 			'preview' => 0,
@@ -296,7 +291,6 @@ function tolstenko_render_blog_content_defaults_admin_page() {
 	}
 
 	$li   = $all['blog_large_img'];
-	$imgs = $all['blog_imgs'];
 	$vid  = $all['blog_video'];
 	$bq   = $all['blog_blockquote'];
 	$nl   = $all['blog_number_list'];
@@ -348,7 +342,6 @@ function tolstenko_render_blog_content_defaults_admin_page() {
 					'blog_warning'     => __( 'Предупреждения', 'tolstenko-theme' ),
 					'blog_table'       => __( 'Таблица', 'tolstenko-theme' ),
 					'blog_large_img'   => __( 'Крупное фото', 'tolstenko-theme' ),
-					'blog_imgs'        => __( 'Два фото', 'tolstenko-theme' ),
 					'blog_video'       => __( 'Видео', 'tolstenko-theme' ),
 				);
 				$first = true;
@@ -476,12 +469,6 @@ function tolstenko_render_blog_content_defaults_admin_page() {
 				<?php tolstenko_blog_content_defaults_image_field( 'tolstenko_block_defaults[blog_large_img][image]', (int) ( $li['image'] ?? 0 ), __( 'Изображение по умолчанию', 'tolstenko-theme' ) ); ?>
 			</div>
 
-			<div class="tolstenko-bcd-panel" data-bcd-panel="blog_imgs" hidden>
-				<h2><?php esc_html_e( 'Два фото', 'tolstenko-theme' ); ?></h2>
-				<?php tolstenko_blog_content_defaults_image_field( 'tolstenko_block_defaults[blog_imgs][left]', (int) ( $imgs['left'] ?? 0 ), __( 'Левое', 'tolstenko-theme' ) ); ?>
-				<?php tolstenko_blog_content_defaults_image_field( 'tolstenko_block_defaults[blog_imgs][right]', (int) ( $imgs['right'] ?? 0 ), __( 'Правое', 'tolstenko-theme' ) ); ?>
-			</div>
-
 			<div class="tolstenko-bcd-panel" data-bcd-panel="blog_video" hidden>
 				<h2><?php esc_html_e( 'Видео', 'tolstenko-theme' ); ?></h2>
 				<?php tolstenko_blog_content_defaults_image_field( 'tolstenko_block_defaults[blog_video][preview]', (int) ( $vid['preview'] ?? 0 ), __( 'Превью', 'tolstenko-theme' ) ); ?>
@@ -563,12 +550,6 @@ function tolstenko_save_blog_content_defaults_from_request() {
 	$li = isset( $raw_all['blog_large_img'] ) && is_array( $raw_all['blog_large_img'] ) ? $raw_all['blog_large_img'] : array();
 	$saved['blog_large_img'] = array(
 		'image' => isset( $li['image'] ) ? (int) $li['image'] : 0,
-	);
-
-	$imgs = isset( $raw_all['blog_imgs'] ) && is_array( $raw_all['blog_imgs'] ) ? $raw_all['blog_imgs'] : array();
-	$saved['blog_imgs'] = array(
-		'left'  => isset( $imgs['left'] ) ? (int) $imgs['left'] : 0,
-		'right' => isset( $imgs['right'] ) ? (int) $imgs['right'] : 0,
 	);
 
 	$vid = isset( $raw_all['blog_video'] ) && is_array( $raw_all['blog_video'] ) ? $raw_all['blog_video'] : array();

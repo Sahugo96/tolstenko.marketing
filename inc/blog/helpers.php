@@ -147,16 +147,15 @@ function tolstenko_get_single_blog_director( $post_id = 0 ) {
 }
 
 /**
- * Собирает TOC и проставляет id заголовкам в HTML (h2, иначе h3).
+ * Собирает иерархический TOC (h2 → пункты 1..n, h3 → вложенные) и проставляет id.
  *
  * @param string $html Content HTML.
- * @return array{html:string,items:array<int,array{id:string,text:string,level:int}>}
+ * @return array{html:string,items:array<int,array{id:string,text:string,level:int,children:array}>}
  */
 function tolstenko_prepare_blog_toc( $html ) {
-	$html = (string) $html;
-	$toc_items = array();
+	$html        = (string) $html;
+	$toc_items   = array();
 	$used_toc_ids = array();
-	$toc_heading_level = 0;
 
 	if ( $html === '' ) {
 		return array(
@@ -165,24 +164,24 @@ function tolstenko_prepare_blog_toc( $html ) {
 		);
 	}
 
-	if ( preg_match( '/<h2\b/i', $html ) ) {
-		$toc_heading_level = 2;
-	} elseif ( preg_match( '/<h3\b/i', $html ) ) {
-		$toc_heading_level = 3;
-	}
+	$has_h2 = (bool) preg_match( '/<h2\b/i', $html );
+	$has_h3 = (bool) preg_match( '/<h3\b/i', $html );
 
-	if ( ! $toc_heading_level ) {
+	if ( ! $has_h2 && ! $has_h3 ) {
 		return array(
 			'html'  => $html,
 			'items' => $toc_items,
 		);
 	}
 
-	$heading_pattern = '/<h(' . $toc_heading_level . ')([^>]*)>(.*?)<\/h\1>/isu';
+	// Оба уровня, если есть h2; иначе только h3 как верхний уровень.
+	$heading_pattern = $has_h2
+		? '/<h([23])([^>]*)>(.*?)<\/h\1>/isu'
+		: '/<h(3)([^>]*)>(.*?)<\/h\1>/isu';
 
 	$html = preg_replace_callback(
 		$heading_pattern,
-		function ( $matches ) use ( &$toc_items, &$used_toc_ids ) {
+		function ( $matches ) use ( &$toc_items, &$used_toc_ids, $has_h2 ) {
 			$level = (int) $matches[1];
 			$attrs = (string) $matches[2];
 			$body  = (string) $matches[3];
@@ -205,11 +204,24 @@ function tolstenko_prepare_blog_toc( $html ) {
 			}
 			$used_toc_ids[ $unique_id ] = true;
 
-			$toc_items[] = array(
-				'id'    => $unique_id,
-				'text'  => $text,
-				'level' => $level,
+			$entry = array(
+				'id'       => $unique_id,
+				'text'     => $text,
+				'level'    => $level,
+				'children' => array(),
 			);
+
+			if ( $has_h2 && 3 === $level ) {
+				$last = count( $toc_items ) - 1;
+				if ( $last >= 0 && (int) $toc_items[ $last ]['level'] === 2 ) {
+					$toc_items[ $last ]['children'][] = $entry;
+				} else {
+					// h3 до первого h2 — как верхний пункт.
+					$toc_items[] = $entry;
+				}
+			} else {
+				$toc_items[] = $entry;
+			}
 
 			if ( preg_match( '/\sid=(["\']).*?\1/i', $attrs ) ) {
 				return $matches[0];

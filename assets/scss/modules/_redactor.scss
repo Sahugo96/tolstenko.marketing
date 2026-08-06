@@ -235,13 +235,13 @@
     list-style-type: decimal;
   }
 
-  a {
-    color: var(--primary-color);
+  a:not([class]) {
+    color: var(--gray-90-color);
     cursor: pointer;
     transition: all 0.3s linear;
     @media (any-hover: hover) {
       &:hover {
-        color: var(--primary-second-color);
+        color: var(--brand-accent-yellow-color);
       }
     }
   }

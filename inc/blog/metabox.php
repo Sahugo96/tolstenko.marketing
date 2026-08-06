@@ -79,36 +79,29 @@ function tolstenko_blog_render_metabox( $post ) {
 	}
 
 	$exclude_ids = ( $post->post_type === 'actions' ) ? array( (int) $post->ID ) : array();
-	$action_posts = get_posts(
-		array(
-			'post_type'      => 'actions',
-			'posts_per_page' => -1,
-			'post_status'    => 'publish',
-			'orderby'        => 'title',
-			'order'          => 'ASC',
-			'post__not_in'   => $exclude_ids,
-		)
-	);
 	$author_label = ( $post->post_type === 'actions' )
 		? __( 'Автор', 'tolstenko-theme' )
 		: __( 'Автор статьи', 'tolstenko-theme' );
+
+	if ( function_exists( 'tolstenko_post_select_print_assets' ) ) {
+		tolstenko_post_select_print_assets();
+	}
 	?>
 	<style>
 		.tolstenko-blog-box .tolstenko-blog-field{margin:0 0 14px}
 		.tolstenko-blog-box .tolstenko-blog-field input[type=text],
 		.tolstenko-blog-box .tolstenko-blog-field textarea,
-		.tolstenko-blog-box .tolstenko-blog-field select{width:100%;max-width:720px}
+		.tolstenko-blog-box .tolstenko-blog-field select{width:100%;max-width:none;box-sizing:border-box}
 		.tolstenko-blog-box .tolstenko-blog-section{margin:20px 0 0;padding:16px 0 0;border-top:1px solid #dcdcde}
 		.tolstenko-blog-box .tolstenko-blog-section h3{margin:0 0 10px;font-size:14px}
-		.tolstenko-blog-box .tolstenko-blog-actions-list{max-height:180px;overflow:auto;border:1px solid #dcdcde;padding:8px 10px;max-width:720px;background:#fff}
-		.tolstenko-blog-box .tolstenko-blog-actions-list label{display:block;margin:0 0 6px}
-		.tolstenko-blog-box .tolstenko-bc-item{border:1px solid #dcdcde;background:#fff;padding:12px;margin:0 0 10px;max-width:760px}
+		.tolstenko-blog-box .tolstenko-blog-actions-select{width:100%}
+		.tolstenko-blog-box .tolstenko-bc-item{border:1px solid #dcdcde;background:#fff;padding:12px;margin:0 0 10px;width:100%;box-sizing:border-box}
 		.tolstenko-blog-box .tolstenko-bc-item.is-reply{margin-left:24px;background:#f6f7f7}
 		.tolstenko-blog-box .tolstenko-bc-grid{display:grid;grid-template-columns:90px 1fr;gap:12px}
 		.tolstenko-blog-box .tolstenko-bc-preview img{max-width:80px;height:auto;display:block;margin-bottom:6px}
 		.tolstenko-blog-box .tolstenko-bc-fields label{display:block;font-weight:600;margin:0 0 4px}
 		.tolstenko-blog-box .tolstenko-bc-fields input,
-		.tolstenko-blog-box .tolstenko-bc-fields textarea{width:100%;margin:0 0 8px}
+		.tolstenko-blog-box .tolstenko-bc-fields textarea{width:100%;max-width:none;margin:0 0 8px;box-sizing:border-box}
 		.tolstenko-blog-box .tolstenko-bc-replies{margin-top:10px;padding-top:10px;border-top:1px dashed #c3c4c7}
 	</style>
 
@@ -147,20 +140,25 @@ function tolstenko_blog_render_metabox( $post ) {
 				</span>
 			</p>
 
-			<div class="tolstenko-blog-field">
+			<div class="tolstenko-blog-field tolstenko-blog-actions-select">
 				<strong><?php esc_html_e( 'Акции в сайдбаре', 'tolstenko-theme' ); ?></strong>
-				<div class="tolstenko-blog-actions-list">
-					<?php if ( empty( $action_posts ) ) : ?>
-						<em><?php esc_html_e( 'Нет опубликованных акций.', 'tolstenko-theme' ); ?></em>
-					<?php else : ?>
-						<?php foreach ( $action_posts as $action_post ) : ?>
-							<label>
-								<input type="checkbox" name="tolstenko_blog_actions[]" value="<?php echo (int) $action_post->ID; ?>" <?php checked( in_array( (int) $action_post->ID, $actions, true ) ); ?>>
-								<?php echo esc_html( get_the_title( $action_post ) ); ?>
-							</label>
-						<?php endforeach; ?>
-					<?php endif; ?>
-				</div>
+				<?php
+				if ( function_exists( 'tolstenko_render_post_select' ) ) {
+					tolstenko_render_post_select(
+						'tolstenko_blog_actions',
+						$actions,
+						'actions',
+						'',
+						array(
+							'exclude_ids' => $exclude_ids,
+							'placeholder' => __( 'Поиск акций...', 'tolstenko-theme' ),
+						)
+					);
+				}
+				?>
+				<p class="description" style="margin:6px 0 0;">
+					<?php esc_html_e( 'Начните ввод или кликните в поле — откроется список. Уже выбранные акции в подсказках не показываются.', 'tolstenko-theme' ); ?>
+				</p>
 			</div>
 		</div>
 
@@ -359,7 +357,7 @@ function tolstenko_blog_save_metabox( $post_id, $post ) {
 			$actions[] = $aid;
 		}
 	}
-	update_post_meta( $post_id, 'blog_actions', $actions );
+	update_post_meta( $post_id, 'blog_actions', array_values( array_unique( $actions ) ) );
 
 	$comments_raw = isset( $_POST['tolstenko_blog_comments'] ) && is_array( $_POST['tolstenko_blog_comments'] )
 		? wp_unslash( $_POST['tolstenko_blog_comments'] ) // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized

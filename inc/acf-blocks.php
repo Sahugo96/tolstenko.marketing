@@ -195,7 +195,6 @@ function tolstenko_enqueue_editor_blocks() {
                 'blog_section_filters'  => tolstenko_get_block_defaults( 'blog_section_filters' ),
                 'blog_section_tile'     => tolstenko_get_block_defaults( 'blog_section_tile' ),
                 'blog_large_img'    => function_exists( 'tolstenko_get_blog_content_defaults' ) ? tolstenko_get_blog_content_defaults( 'blog_large_img' ) : tolstenko_get_block_defaults( 'blog_large_img' ),
-                'blog_imgs'         => function_exists( 'tolstenko_get_blog_content_defaults' ) ? tolstenko_get_blog_content_defaults( 'blog_imgs' ) : tolstenko_get_block_defaults( 'blog_imgs' ),
                 'blog_video'        => function_exists( 'tolstenko_get_blog_content_defaults' ) ? tolstenko_get_blog_content_defaults( 'blog_video' ) : tolstenko_get_block_defaults( 'blog_video' ),
                 'blog_blockquote'   => function_exists( 'tolstenko_get_blog_content_defaults' ) ? tolstenko_get_blog_content_defaults( 'blog_blockquote' ) : tolstenko_get_block_defaults( 'blog_blockquote' ),
                 'blog_number_list'  => function_exists( 'tolstenko_get_blog_content_defaults' ) ? tolstenko_get_blog_content_defaults( 'blog_number_list' ) : tolstenko_get_block_defaults( 'blog_number_list' ),
@@ -649,10 +648,6 @@ function tolstenko_get_theme_block_attributes() {
         'blog-large-img' => array(
             'block_blog_large_img_id' => array( 'type' => 'integer', 'default' => 0 ),
         ),
-        'blog-imgs' => array(
-            'block_blog_imgs_left'  => array( 'type' => 'integer', 'default' => 0 ),
-            'block_blog_imgs_right' => array( 'type' => 'integer', 'default' => 0 ),
-        ),
         'blog-video' => array(
             'block_blog_video_preview' => array( 'type' => 'integer', 'default' => 0 ),
             'block_blog_video_url'     => array( 'type' => 'string', 'default' => '' ),
@@ -723,7 +718,6 @@ function tolstenko_register_theme_blocks() {
         array( 'name' => 'blog-section', 'title' => __( 'Статьи', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'blog-section-tile', 'title' => __( 'Статьи плитка', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'blog-large-img', 'title' => __( 'Статья: крупное фото', 'tolstenko-theme' ), 'category' => $cat_new ),
-        array( 'name' => 'blog-imgs', 'title' => __( 'Статья: два фото', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'blog-video', 'title' => __( 'Статья: видео', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'blog-blockquote', 'title' => __( 'Статья: цитата', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'blog-number-list', 'title' => __( 'Статья: нумерованный список', 'tolstenko-theme' ), 'category' => $cat_new ),

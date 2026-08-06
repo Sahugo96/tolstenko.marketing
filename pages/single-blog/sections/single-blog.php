@@ -173,15 +173,26 @@ $has_sidebar = (
 						<div class="<?php echo esc_attr( $bem ); ?>__content-article br-30">
 							<div class="<?php echo esc_attr( $bem ); ?>__content-article-title line-caps-bold-16-15"><?php echo esc_html( $bem === 'single-actions' ? __( 'Содержание', 'tolstenko-theme' ) : __( 'Содержание статьи', 'tolstenko-theme' ) ); ?></div>
 							<div class="<?php echo esc_attr( $bem ); ?>__content-article-items">
-								<ul class="<?php echo esc_attr( $bem ); ?>__toc">
+								<ol class="<?php echo esc_attr( $bem ); ?>__toc">
 									<?php foreach ( $toc_items as $item ) : ?>
 										<li class="<?php echo esc_attr( $bem ); ?>__toc-item <?php echo esc_attr( $bem ); ?>__toc-item--h<?php echo (int) $item['level']; ?>">
 											<a class="<?php echo esc_attr( $bem ); ?>__toc-link paragraph-15-25" href="#<?php echo esc_attr( $item['id'] ); ?>">
 												<?php echo esc_html( $item['text'] ); ?>
 											</a>
+											<?php if ( ! empty( $item['children'] ) && is_array( $item['children'] ) ) : ?>
+												<ul class="<?php echo esc_attr( $bem ); ?>__toc-sub">
+													<?php foreach ( $item['children'] as $child ) : ?>
+														<li class="<?php echo esc_attr( $bem ); ?>__toc-item <?php echo esc_attr( $bem ); ?>__toc-item--h<?php echo (int) $child['level']; ?>">
+															<a class="<?php echo esc_attr( $bem ); ?>__toc-link paragraph-15-25" href="#<?php echo esc_attr( $child['id'] ); ?>">
+																<?php echo esc_html( $child['text'] ); ?>
+															</a>
+														</li>
+													<?php endforeach; ?>
+												</ul>
+											<?php endif; ?>
 										</li>
 									<?php endforeach; ?>
-								</ul>
+								</ol>
 							</div>
 						</div>
 					<?php endif; ?>

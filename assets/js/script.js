@@ -208,7 +208,40 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = thanksUrl;
     }, false);
 
-    // Gallery's
+    // Gutenberg gallery → Fancybox (группа на каждую .wp-block-gallery)
+    document.querySelectorAll('.wp-block-gallery').forEach(function (gallery, index) {
+        var group = 'wp-block-gallery-' + index;
+        gallery.querySelectorAll('.wp-block-image').forEach(function (figure) {
+            var img = figure.querySelector('img');
+            if (!img) return;
+
+            var full = img.getAttribute('data-full-url')
+                || img.currentSrc
+                || img.getAttribute('src')
+                || '';
+            if (!full) return;
+
+            var link = figure.querySelector('a');
+            if (link) {
+                var href = link.getAttribute('href') || '';
+                // Если ссылка не на файл картинки (страница вложения и т.п.) — берём src изображения
+                if (!/\.(jpe?g|png|gif|webp|avif|svg)(\?|#|$)/i.test(href)) {
+                    link.setAttribute('href', full);
+                }
+                link.setAttribute('data-fancybox', group);
+                if (img.alt) {
+                    link.setAttribute('data-caption', img.alt);
+                }
+            } else {
+                img.setAttribute('data-fancybox', group);
+                img.setAttribute('data-src', full);
+                if (img.alt) {
+                    img.setAttribute('data-caption', img.alt);
+                }
+            }
+        });
+    });
+
     Fancybox.bind('[data-fancybox]', {
         hideScrollbar: false,
     });
@@ -1244,25 +1277,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Single blog: видео в теле статьи (preview → play).
     (function() {
+        function withAutoplay(src) {
+            if (!src) return src;
+            try {
+                var url = new URL(src, window.location.origin);
+                url.searchParams.set('autoplay', '1');
+                return url.toString();
+            } catch (e) {
+                return src.indexOf('?') === -1 ? (src + '?autoplay=1') : (src + '&autoplay=1');
+            }
+        }
+
+        function playVideoRoot(root) {
+            if (!root || root.classList.contains('active')) return;
+
+            var embed = root.querySelector('.video__embed');
+            var iframe = root.querySelector('iframe.video__iframe, .video__embed iframe');
+            var video = root.querySelector('video.video__iframe');
+
+            if (embed) {
+                embed.hidden = false;
+            }
+
+            if (iframe) {
+                var src = iframe.getAttribute('data-src') || iframe.getAttribute('src') || '';
+                if (src && src !== 'about:blank') {
+                    iframe.setAttribute('src', withAutoplay(src));
+                    iframe.removeAttribute('data-src');
+                }
+            }
+
+            if (video) {
+                video.hidden = false;
+                if (typeof video.play === 'function') {
+                    video.play().catch(function() {});
+                }
+            }
+
+            root.classList.add('active');
+        }
+
         document.querySelectorAll('[data-tolstenko-blog-video]').forEach(function(root) {
-            var btn = root.querySelector('.video__btn');
-            if (!btn) return;
-            btn.addEventListener('click', function() {
-                var embed = root.querySelector('.video__embed');
-                var video = root.querySelector('video.video__iframe');
-                var img = root.querySelector('.video__img');
-                if (embed) {
-                    embed.hidden = false;
-                }
-                if (video) {
-                    video.hidden = false;
-                    if (typeof video.play === 'function') {
-                        video.play().catch(function() {});
-                    }
-                }
-                if (img) img.style.display = 'none';
-                btn.style.display = 'none';
-                root.classList.add('is-playing');
+            root.addEventListener('click', function(e) {
+                if (root.classList.contains('active')) return;
+                e.preventDefault();
+                playVideoRoot(root);
             });
         });
     })();

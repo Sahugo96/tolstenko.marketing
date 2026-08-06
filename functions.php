@@ -682,7 +682,7 @@ function tolstenko_register_cpts() {
         )
     );
 
-	// Кейсы (фильтр по категориям case_cat, без архива).
+	// Кейсы — данные для блока (как отзывы), без публичных URL /single.
 	register_post_type(
 		'case',
 		array(
@@ -700,19 +700,19 @@ function tolstenko_register_cpts() {
 				'all_items'          => __( 'Все кейсы', 'tolstenko-theme' ),
 				'menu_name'          => __( 'Кейсы', 'tolstenko-theme' ),
 			),
-			'public'            => true,
-			'show_ui'           => true,
-			'show_in_menu'      => true,
-			'show_in_nav_menus' => true,
-			'menu_position'     => 27,
-			'menu_icon'         => 'dashicons-awards',
-			'supports'          => array( 'title', 'editor', 'thumbnail', 'custom-fields' ),
-			'has_archive'       => false,
-			'rewrite'           => array(
-				'slug'       => 'case',
-				'with_front' => false,
-			),
-			'show_in_rest'      => true,
+			'public'              => false,
+			'show_ui'             => true,
+			'show_in_menu'        => true,
+			'publicly_queryable'  => false,
+			'exclude_from_search' => true,
+			'show_in_nav_menus'   => false,
+			'menu_position'       => 27,
+			'menu_icon'           => 'dashicons-awards',
+			'supports'            => array( 'title', 'thumbnail' ),
+			'has_archive'         => false,
+			'rewrite'             => false,
+			'query_var'           => false,
+			'show_in_rest'        => true,
 		)
 	);
 
@@ -778,6 +778,18 @@ function tolstenko_maybe_flush_review_rewrite() {
 	update_option( 'tolstenko_review_rewrite_flushed', '1', false );
 }
 add_action( 'init', 'tolstenko_maybe_flush_review_rewrite', 99 );
+
+/**
+ * Сброс rewrite после отключения публичных URL CPT case.
+ */
+function tolstenko_maybe_flush_case_rewrite() {
+	if ( get_option( 'tolstenko_case_rewrite_flushed' ) === '1' ) {
+		return;
+	}
+	flush_rewrite_rules( false );
+	update_option( 'tolstenko_case_rewrite_flushed', '1', false );
+}
+add_action( 'init', 'tolstenko_maybe_flush_case_rewrite', 99 );
 
 /**
  * Мета-поля акции для плитки (в правой панели Gutenberg).
@@ -848,6 +860,14 @@ function tolstenko_register_case_post_meta() {
 	);
 	register_post_meta(
 		'case',
+		'case_link',
+		array_merge(
+			$common_string,
+			array( 'sanitize_callback' => 'esc_url_raw' )
+		)
+	);
+	register_post_meta(
+		'case',
 		'case_service',
 		array(
 			'show_in_rest'      => true,
@@ -908,7 +928,7 @@ add_action( 'init', 'tolstenko_register_case_post_meta' );
  * Данные карточки кейса.
  *
  * @param int $post_id Post ID.
- * @return array{title:string,text:string,items:array<int,array{value:string,text:string}>,service_id:int,service_url:string,image_id:int,image_url:string,image_alt:string}
+ * @return array{title:string,text:string,link:string,items:array<int,array{value:string,text:string}>,service_id:int,service_url:string,image_id:int,image_url:string,image_alt:string}
  */
 function tolstenko_get_case_card_data( $post_id ) {
 	$post_id = (int) $post_id;
@@ -917,6 +937,7 @@ function tolstenko_get_case_card_data( $post_id ) {
 		$title = (string) get_the_title( $post_id );
 	}
 	$text       = (string) get_post_meta( $post_id, 'case_text', true );
+	$link       = (string) get_post_meta( $post_id, 'case_link', true );
 	$service_id = (int) get_post_meta( $post_id, 'case_service', true );
 	$items_raw  = get_post_meta( $post_id, 'case_items', true );
 	$items      = array();
@@ -952,6 +973,7 @@ function tolstenko_get_case_card_data( $post_id ) {
 	return array(
 		'title'       => $title,
 		'text'        => $text,
+		'link'        => $link,
 		'items'       => $items,
 		'service_id'  => $service_id,
 		'service_url' => $service_url,
@@ -1199,6 +1221,140 @@ function tolstenko_redirect_vacancy_archive_to_vacancies_page() {
 add_action( 'template_redirect', 'tolstenko_redirect_vacancy_archive_to_vacancies_page' );
 
 /**
+ * Карта CPT → slug страницы-листинга.
+ *
+ * @return array<string, string>
+ */
+function tolstenko_get_cpt_listing_page_slugs() {
+	$page_map = array(
+		'service' => 'services',
+		'vacancy' => 'vacancies',
+		'actions' => 'actions',
+		'city'    => 'city',
+		'case'    => 'cases',
+		'blog'    => 'blog',
+	);
+
+	/**
+	 * @param array<string, string> $page_map
+	 */
+	$page_map = apply_filters( 'tolstenko_cpt_listing_page_slugs', $page_map );
+
+	return is_array( $page_map ) ? $page_map : array();
+}
+
+/**
+ * ID опубликованной страницы-листинга для CPT (0 если нет).
+ *
+ * @param string $post_type Post type.
+ * @return int
+ */
+function tolstenko_get_cpt_listing_page_id( $post_type ) {
+	$post_type = sanitize_key( (string) $post_type );
+	if ( $post_type === '' ) {
+		return 0;
+	}
+
+	$map = tolstenko_get_cpt_listing_page_slugs();
+	if ( empty( $map[ $post_type ] ) ) {
+		return 0;
+	}
+
+	$page = get_page_by_path( (string) $map[ $post_type ] );
+	if ( ! ( $page instanceof WP_Post ) || $page->post_status !== 'publish' ) {
+		return 0;
+	}
+
+	return (int) $page->ID;
+}
+
+/**
+ * Страница-листинг для публичной иерархической таксономии (по object_type CPT).
+ *
+ * @param string $taxonomy Taxonomy name.
+ * @return int Page ID or 0.
+ */
+function tolstenko_get_listing_page_id_for_taxonomy( $taxonomy ) {
+	$taxonomy = sanitize_key( (string) $taxonomy );
+	if ( $taxonomy === '' || ! taxonomy_exists( $taxonomy ) ) {
+		return 0;
+	}
+
+	$tax = get_taxonomy( $taxonomy );
+	if ( ! ( $tax instanceof WP_Taxonomy ) || empty( $tax->public ) || empty( $tax->hierarchical ) ) {
+		return 0;
+	}
+	if ( empty( $tax->object_type ) || ! is_array( $tax->object_type ) ) {
+		return 0;
+	}
+
+	foreach ( $tax->object_type as $post_type ) {
+		$page_id = tolstenko_get_cpt_listing_page_id( (string) $post_type );
+		if ( $page_id > 0 ) {
+			return $page_id;
+		}
+	}
+
+	return 0;
+}
+
+/**
+ * Архив рубрики: URL в браузере остаётся (/services/{cat}/ и т.п.),
+ * контент — страница-листинг CPT. Rewrite/request одиночных записей не трогаем.
+ *
+ * @param string $template Template path.
+ * @return string
+ */
+function tolstenko_term_archive_serve_listing_page( $template ) {
+	if ( is_admin() || wp_doing_ajax() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
+		return $template;
+	}
+	if ( ! is_tax() || is_singular() || is_feed() || is_embed() ) {
+		return $template;
+	}
+
+	$term = get_queried_object();
+	if ( ! ( $term instanceof WP_Term ) || empty( $term->taxonomy ) ) {
+		return $template;
+	}
+
+	$page_id = tolstenko_get_listing_page_id_for_taxonomy( (string) $term->taxonomy );
+	if ( $page_id <= 0 ) {
+		return $template;
+	}
+
+	$page_query = new WP_Query(
+		array(
+			'page_id'            => $page_id,
+			'post_status'        => 'publish',
+			'no_found_rows'      => true,
+			'posts_per_page'     => 1,
+		)
+	);
+
+	if ( ! $page_query->have_posts() ) {
+		$page_query->reset_postdata();
+		return $template;
+	}
+
+	$GLOBALS['wp_query'] = $page_query;
+	$GLOBALS['post']     = $page_query->post;
+	setup_postdata( $page_query->post );
+
+	$custom = get_page_template_slug( $page_id );
+	if ( is_string( $custom ) && $custom !== '' ) {
+		$located = locate_template( $custom );
+		if ( $located ) {
+			return $located;
+		}
+	}
+
+	$located = locate_template( array( 'page.php', 'singular.php', 'index.php' ) );
+	return $located ? $located : $template;
+}
+add_filter( 'template_include', 'tolstenko_term_archive_serve_listing_page', 99 );
+
+/**
  * /services/{slug}/ попадает в rewrite таксономии (service_category), хотя для услуги без категории
  * нужна одиночная запись service. Если термина с таким slug нет — подменяем query на CPT.
  *
@@ -1292,6 +1448,91 @@ function tolstenko_request_single_blog_under_blog_prefix( $query_vars ) {
 	return $query_vars;
 }
 add_filter( 'request', 'tolstenko_request_single_blog_under_blog_prefix', 5 );
+
+/**
+ * Если /{cpt}/{slug}/ распознан как single, записи нет, но есть рубрика с таким slug —
+ * отдаём архив рубрики (дальше template_include покажет страницу-листинг).
+ * Нужно для blog: rewrite CPT и blog_cat оба = /blog/.
+ *
+ * @param array<string, mixed> $query_vars Query vars.
+ * @return array<string, mixed>
+ */
+function tolstenko_request_missing_single_as_term_archive( $query_vars ) {
+	if ( empty( $query_vars['name'] ) || empty( $query_vars['post_type'] ) ) {
+		return $query_vars;
+	}
+	if ( is_array( $query_vars['post_type'] ) ) {
+		return $query_vars;
+	}
+
+	$post_type = sanitize_key( (string) $query_vars['post_type'] );
+	$slug      = sanitize_title( (string) $query_vars['name'] );
+	if ( $post_type === '' || $slug === '' ) {
+		return $query_vars;
+	}
+
+	// Уже таксономия + single (/blog/{cat}/{post}/) — не трогаем.
+	$taxes = get_object_taxonomies( $post_type, 'objects' );
+	if ( empty( $taxes ) || ! is_array( $taxes ) ) {
+		return $query_vars;
+	}
+	foreach ( $taxes as $tax ) {
+		if ( ! ( $tax instanceof WP_Taxonomy ) ) {
+			continue;
+		}
+		$tax_qv = ( $tax->name === 'category' ) ? 'category_name' : $tax->name;
+		if ( ! empty( $query_vars[ $tax_qv ] ) ) {
+			return $query_vars;
+		}
+	}
+
+	$existing = get_posts(
+		array(
+			'post_type'              => $post_type,
+			'name'                   => $slug,
+			'post_status'            => 'publish',
+			'posts_per_page'         => 1,
+			'fields'                 => 'ids',
+			'no_found_rows'          => true,
+			'update_post_term_cache' => false,
+			'update_post_meta_cache' => false,
+		)
+	);
+	if ( ! empty( $existing ) ) {
+		return $query_vars;
+	}
+
+	foreach ( $taxes as $tax ) {
+		if ( ! ( $tax instanceof WP_Taxonomy ) || empty( $tax->public ) || empty( $tax->hierarchical ) ) {
+			continue;
+		}
+		if ( tolstenko_get_listing_page_id_for_taxonomy( $tax->name ) <= 0 ) {
+			continue;
+		}
+
+		$term = get_term_by( 'slug', $slug, $tax->name );
+		if ( ! ( $term instanceof WP_Term ) ) {
+			continue;
+		}
+
+		unset( $query_vars['name'], $query_vars['post_type'], $query_vars['page'], $query_vars['error'] );
+		// CPT rewrite кладёт query var с именем post_type (blog => seo).
+		if ( isset( $query_vars[ $post_type ] ) ) {
+			unset( $query_vars[ $post_type ] );
+		}
+
+		if ( $tax->name === 'category' ) {
+			$query_vars['category_name'] = $slug;
+		} else {
+			$query_vars[ $tax->name ] = $slug;
+		}
+
+		return $query_vars;
+	}
+
+	return $query_vars;
+}
+add_filter( 'request', 'tolstenko_request_missing_single_as_term_archive', 6 );
 
 /**
  * Собирает строку атрибутов для тега <a> после фильтра nav_menu_link_attributes.
@@ -2022,37 +2263,23 @@ function tolstenko_get_cpt_listing_breadcrumb( $post_type ) {
 		);
 	}
 
-	$page_map = array(
-		'service' => 'services',
-		'vacancy' => 'vacancies',
-		'actions' => 'actions',
-		'city'    => 'city',
-		'case'    => 'cases',
-		'blog'    => 'blog',
-	);
-
-	/**
-	 * Карта CPT → slug страницы-листинга (когда has_archive = false).
-	 *
-	 * @param array<string,string> $page_map
-	 */
-	$page_map = apply_filters( 'tolstenko_cpt_listing_page_slugs', $page_map );
+	$page_map = tolstenko_get_cpt_listing_page_slugs();
 
 	if ( empty( $page_map[ $post_type ] ) ) {
 		return null;
 	}
 
-	$page = get_page_by_path( (string) $page_map[ $post_type ] );
-	if ( ! ( $page instanceof WP_Post ) ) {
+	$page_id = tolstenko_get_cpt_listing_page_id( $post_type );
+	if ( $page_id <= 0 ) {
 		return null;
 	}
 
-	$url = get_permalink( $page );
+	$url = get_permalink( $page_id );
 	if ( ! $url ) {
 		return null;
 	}
 
-	$page_title = get_the_title( $page );
+	$page_title = get_the_title( $page_id );
 	return array(
 		'url'   => $url,
 		'label' => $page_title !== '' ? $page_title : ( $label !== '' ? $label : $post_type ),
@@ -2105,6 +2332,11 @@ require_once get_template_directory() . '/inc/acf-service-category-fields.php';
  */
 require_once get_template_directory() . '/inc/review-metabox.php';
 require_once get_template_directory() . '/inc/reviews-helpers.php';
+
+/**
+ * CPT «Кейсы»: нативный метабокс (как у отзывов), без публичных страниц.
+ */
+require_once get_template_directory() . '/inc/case-metabox.php';
 
 /**
  * Дефолты блоков темы: админка + helper для шаблонов.

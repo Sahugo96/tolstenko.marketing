@@ -1,0 +1,801 @@
+js:
+const sameSliders = document.querySelectorAll('.blog-section--same .blog-section__splide');
+
+sameSliders.forEach((slider) => {
+  new Splide(slider, {
+    perPage: 3,
+    perMove: 1,
+    gap: '20px',
+    pagination: false,
+    arrows: true,
+    updateOnMove: true,
+    breakpoints: {
+      991.9: {
+        perPage: 1,
+        perMove: 1,
+        gap: '20px',
+        arrows: false,
+        pagination: true,
+      },
+    },
+  }).mount();
+});
+
+if (window.innerWidth < 992) {
+  document.querySelectorAll('.blog-section__splide').forEach((slider) => {
+    if (slider.closest('.blog-section--same')) {
+      return;
+    }
+
+    new Splide(slider, {
+      perPage: 1,
+      perMove: 1,
+      gap: '20px',
+      pagination: true,
+      arrows: false,
+      updateOnMove: true,
+    }).mount();
+  });
+}
+
+
+scss:
+.blog-section {
+  width: 100%;
+
+  &__top {
+    text-align: center;
+    grid-gap: vw(15px, $mobile);
+    @media (min-width: $desk) {
+      grid-gap: vw(15px, $desktop);
+      max-width: vw(540px, $desktop);
+      margin: 0 auto;
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(15px, $desktop_large);
+      max-width: vw(540px, $desktop_large);
+      margin: 0 auto;
+    }
+  }
+  &__text {
+    color: var(--gray-50-color);
+  }
+  
+  &__right-wrapper {
+    order: 5;
+    display: flex;
+    flex-direction: column;
+    grid-gap: vw(20px, $mobile);
+    padding: vw(30px, $mobile) vw(20px, $mobile);
+    border-radius: vw(20px, $mobile);
+    background-color: var(--gray-15-color);
+    overflow: hidden;
+    @media (min-width: $desk) {
+      max-width: vw(320px, $desktop);
+      order: unset;
+      grid-gap: vw(20px, $desktop);
+      padding: vw(30px, $desktop) vw(20px, $desktop);
+      margin: 0 vw(29px, $desktop);
+      border-radius: vw(20px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(320px, $desktop_large);
+      order: unset;
+      grid-gap: vw(20px, $desktop_large);
+      padding: vw(30px, $desktop_large) vw(20px, $desktop_large);
+      margin: 0 vw(29px, $desktop_large);
+      border-radius: vw(20px, $desktop_large);
+    }
+  }
+  &__right-wrapper .socials {
+    justify-content: center;
+    grid-gap: vw(30px, $mobile);
+    @media (min-width: $desk) {
+      grid-gap: vw(30px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(30px, $desktop_large);
+    }
+  }
+  &__right-wrapper .socials img {
+    max-width: vw(40px, $mobile);
+    min-width: vw(40px, $mobile);
+    fill: none;
+    @media (min-width: $desk) {
+      max-width: vw(40px, $desktop);
+      min-width: vw(40px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(40px, $desktop_large);
+      min-width: vw(40px, $desktop_large);
+    }
+  }
+  &__right-wrapper .socials:has( > .socials__link:nth-child(5)) {
+    grid-gap: vw(15px, $mobile);
+    @media (min-width: $desk) {
+      grid-gap: vw(15px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(15px, $desktop_large);
+    }
+    img {
+      max-width: vw(32px, $mobile);
+      min-width: vw(32px, $mobile);
+      fill: none;
+      @media (min-width: $desk) {
+        max-width: vw(32px, $desktop);
+        min-width: vw(32px, $desktop);
+      }
+      @media (min-width: $desk_large) {
+        max-width: vw(32px, $desktop_large);
+        min-width: vw(32px, $desktop_large);
+      }
+    }
+  }
+  &__right-photo {
+    max-width: vw(136px, $mobile);
+    min-width: vw(136px, $mobile);
+    height: auto;
+    aspect-ratio: 1/1;
+    border-radius: 50%;
+    overflow: hidden;
+    margin: 0 auto;
+    @media (min-width: $desk) {
+      max-width: vw(136px, $desktop);
+      min-width: vw(136px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(136px, $desktop_large);
+      min-width: vw(136px, $desktop_large);
+    }
+  }
+  &__right-name {
+    text-align: center;
+    color: var(--white-color);
+    text-transform: uppercase;
+  }
+  &__right-text {
+    line-height: 1.333;
+    @include line-camp(4);
+  }
+  &__splide.splide {
+    visibility: visible;
+    display: flex;
+    flex-direction: column;
+    grid-gap: vw(20px, $mobile);
+    @media (min-width: $desk) {
+      flex-direction: row;
+      align-self: stretch;
+      grid-gap: vw(20px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      flex-direction: row;
+      align-self: stretch;
+      grid-gap: vw(20px, $desktop_large);
+    }
+  }
+  .splide__track {
+    display: flex;
+    flex-direction: column;
+    grid-gap: vw(20px, $mobile);
+    @media (min-width: $desk) {
+      width: 100%;
+      grid-gap: vw(20px, $desktop);
+      max-width: vw(580px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      width: 100%;
+      grid-gap: vw(20px, $desktop_large);
+      max-width: vw(580px, $desktop_large);
+    }
+  }
+  &__splide > .blog-card {
+    border-radius: vw(30px, $mobile);
+    @media (min-width: $desk) {
+      max-width: vw(580px, $desktop);
+      width: 100%;
+      min-height: vw(615px, $desktop);
+      border-radius: vw(30px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(580px, $desktop_large);
+      min-height: vw(615px, $desktop_large);
+      border-radius: vw(30px, $desktop_large);
+    }
+    .blog-card {
+
+      &__link {
+        flex-direction: column;
+        grid-gap: vw(20px, $mobile);
+        @media (min-width: $desk) {
+          grid-gap: vw(20px, $desktop);
+        }
+        @media (min-width: $desk_large) {
+          grid-gap: vw(20px, $desktop_large);
+        }
+      }
+      &__image {
+        height: vw(298px, $mobile);
+        @media (min-width: $desk) {
+          max-width: unset;
+          min-width: unset;
+          max-height: vw(405px, $desktop);
+          min-height: vw(405px, $desktop);
+          height: auto;
+        }
+        @media (min-width: $desk_large) {
+          max-width: unset;
+          min-width: unset;
+          max-height: vw(405px, $desktop_large);
+          min-height: vw(405px, $desktop_large);
+          height: auto;
+        }
+        svg {
+          top: vw(20px, $mobile);
+          right: vw(20px, $mobile);
+          @media (min-width: $desk) {
+            top: vw(20px, $desktop);
+            right: vw(20px, $desktop);
+          }
+          @media (min-width: $desk_large) {
+            top: vw(20px, $desktop_large);
+            right: vw(20px, $desktop_large);
+          }
+        }
+      }
+      &__title {
+        font-size: vw(20px, $mobile);
+        line-height: 1;
+        @media (min-width: $desk) {
+          font-size: vw(20px, $desktop);
+        }
+        @media (min-width: $desk_large) {
+          font-size: vw(20px, $desktop_large);
+        }
+      }
+      &__text {
+        font-size: vw(15px, $mobile);
+        line-height: 1.33;
+        margin-bottom: vw(10px, $mobile);
+        @include line-camp(3);
+        @media (min-width: $desk) {
+          font-size: vw(16px, $desktop);
+          margin-bottom: vw(10px, $desktop);
+          @include line-camp(2);
+        }
+        @media (min-width: $desk_large) {
+          font-size: vw(16px, $desktop_large);
+          margin-bottom: vw(10px, $desktop_large);
+          @include line-camp(2);
+        }
+      }
+    }
+  }
+  &__splide-list.splide__list {
+    
+    @media (min-width: $desk) {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: auto;
+      grid-gap: vw(20px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: auto;
+      grid-gap: vw(20px, $desktop_large);
+    }
+  }
+  &__item {
+
+  }
+  &__btn {
+    font-weight: 700;
+    border-radius: vw(55px, $mobile);
+    @media (min-width: $desk) {
+      margin-top: auto;
+      height: vw(45px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      margin-top: auto;
+      height: vw(45px, $desktop_large);
+    }
+  }
+  &__pagination {
+    order: 10;
+    width: 100%;
+  }
+  .splide__pagination {
+    @media (min-width: $desk) {
+      display: none;
+    }
+    @media (min-width: $desk_large) {
+      display: none;
+    }
+  }
+  &__list {
+    display: flex;
+    flex-direction: column;
+    grid-gap: vw(20px, $mobile);
+    @media (min-width: $desk) {
+      flex-direction: row;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      grid-gap: vw(20px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      flex-direction: row;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      grid-gap: vw(20px, $desktop_large);
+    }
+  }
+  &__list > .blog-card {
+    border-radius: vw(30px, $mobile);
+    @media (min-width: $desk) {
+      max-width: vw(782px, $desktop);
+      width: 100%;
+      min-height: vw(543px, $desktop);
+      border-radius: vw(30px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(782px, $desktop_large);
+      width: 100%;
+      min-height: vw(543px, $desktop_large);
+      border-radius: vw(30px, $desktop_large);
+    }
+    .blog-card {
+
+      &__link {
+        height: 100%;
+        flex-direction: column;
+        grid-gap: vw(20px, $mobile);
+        @media (min-width: $desk) {
+          min-height: vw(543px, $desktop);
+          grid-gap: vw(20px, $desktop);
+        }
+        @media (min-width: $desk_large) {
+          min-height: vw(543px, $desktop_large);
+          grid-gap: vw(20px, $desktop_large);
+        }
+      }
+      &__image {
+        height: vw(298px, $mobile);
+        @media (min-width: $desk) {
+          max-width: unset;
+          min-width: unset;
+          max-height: vw(353px, $desktop);
+          min-height: vw(353px, $desktop);
+          height: auto;
+        }
+        @media (min-width: $desk_large) {
+          max-width: unset;
+          min-width: unset;
+          max-height: vw(353px, $desktop_large);
+          min-height: vw(353px, $desktop_large);
+          height: auto;
+        }
+        svg {
+          top: vw(20px, $mobile);
+          right: vw(20px, $mobile);
+          @media (min-width: $desk) {
+            top: vw(20px, $desktop);
+            right: vw(20px, $desktop);
+          }
+          @media (min-width: $desk_large) {
+            top: vw(20px, $desktop_large);
+            right: vw(20px, $desktop_large);
+          }
+        }
+      }
+      &__title {
+        font-size: vw(20px, $mobile);
+        line-height: 1;
+        @media (min-width: $desk) {
+          font-size: vw(20px, $desktop);
+        }
+        @media (min-width: $desk_large) {
+          font-size: vw(20px, $desktop_large);
+        }
+      }
+      &__text {
+        font-size: vw(15px, $mobile);
+        line-height: 1.33;
+        margin-bottom: vw(10px, $mobile);
+        @include line-camp(3);
+        @media (min-width: $desk) {
+          font-size: vw(16px, $desktop);
+          margin-bottom: vw(10px, $desktop);
+          @include line-camp(2);
+        }
+        @media (min-width: $desk_large) {
+          font-size: vw(16px, $desktop_large);
+          margin-bottom: vw(10px, $desktop_large);
+          @include line-camp(2);
+        }
+      }
+    }
+  }
+  &__items {
+    display: flex;
+    flex-wrap: wrap;
+    grid-gap: vw(20px, $mobile);
+    @media (min-width: $desk) {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-gap: vw(20px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(20px, $desktop_large);
+    }
+  }
+  &__empty {
+    text-align: center;
+    background: #f9f9f9;
+    color: #666;
+  }
+  &__items.loading {
+    opacity: 0.6;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+
+  &--same {
+    .section-top {
+      text-align: center;
+      margin-bottom: vw(30px, $mobile);
+      @media (min-width: $desk) {
+        margin-bottom: vw(40px, $desktop);
+      }
+      @media (min-width: $desk_large) {
+        margin-bottom: vw(40px, $desktop_large);
+      }
+    }
+
+    .blog-section__title {
+      color: var(--brand-accent-yellow-color);
+      text-transform: uppercase;
+    }
+
+    .blog-section__splide.splide {
+      position: relative;
+      display: block;
+    }
+
+    .splide__track {
+      max-width: 100%;
+      width: 100%;
+    }
+
+    .blog-section__splide-list.splide__list {
+      @media (min-width: $desk) {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        height: auto;
+        grid-gap: 0;
+      }
+      @media (min-width: $desk_large) {
+        display: flex;
+        flex-direction: row;
+      }
+    }
+
+    .splide__pagination {
+      @media (min-width: $desk) {
+        display: none;
+      }
+    }
+  }
+}
+
+
+php:
+<?php
+
+/**
+ * Section template for Blog with AJAX radio filters
+ * Использование: get_template_part('sections/blog-section', null, ['section_id' => 'unique_id', 'taxonomy' => 'blog_cat', 'post_type' => 'blog'])
+ */
+
+$blog_section_data = get_query_var('blog_section_data');
+
+if (is_array($blog_section_data) && !empty($blog_section_data)) {
+  $title = $blog_section_data['title'] ?? '';
+  $text = $blog_section_data['text'] ?? '';
+} else {
+  $title = get_field('blog_section_title', OPTION_ID);
+  $text = get_field('blog_section_text', OPTION_ID);
+}
+
+// Уникальный ID для этой секции
+$section_id = isset($args['section_id']) ? $args['section_id'] : 'blog_' . uniqid();
+$taxonomy = isset($args['taxonomy']) ? $args['taxonomy'] : 'blog_cat';
+$post_type = isset($args['post_type']) ? $args['post_type'] : 'blog';
+$posts_per_page = isset($args['posts_per_page']) ? (int) $args['posts_per_page'] : 4;
+
+if ($posts_per_page < 1) {
+  $posts_per_page = 4;
+}
+
+$posts_per_page = min(4, $posts_per_page);
+
+// Получаем все рубрики
+$all_categories = get_terms([
+  'taxonomy'   => $taxonomy,
+  'hide_empty' => false,
+]);
+
+// Первоначальный запрос (без фильтрации)
+$args_query = [
+  'post_type'      => $post_type,
+  'posts_per_page' => $posts_per_page,
+  'paged'          => 1,
+  'orderby'        => 'date',
+  'order'          => 'DESC',
+];
+
+$section_query = new WP_Query($args_query);
+?>
+
+<section class="blog-section section load-on-vissible--js"
+  data-section-id="<?php echo esc_attr($section_id); ?>"
+  data-taxonomy="<?php echo esc_attr($taxonomy); ?>"
+  data-post-type="<?php echo esc_attr($post_type); ?>"
+  data-posts-per-page="<?php echo esc_attr($posts_per_page); ?>">
+  <div class="container">
+    <div class="blog-section__top section-top">
+      <h2 class="blog-section__title h2"><?= esc_html($title); ?></h2>
+
+      <?php
+      if ($text) {
+      ?>
+        <p class="blog-section__text paragraph-15-15"><?= esc_html($text); ?></p>
+      <?php
+      }
+      ?>
+    </div>
+
+    <!-- Фильтр с радиокнопками -->
+    <?php
+    if ($all_categories && !is_wp_error($all_categories)) :
+      // Фильтруем категории, оставляя только те, у которых есть хотя бы 1 запись
+      $categories_with_posts = array_filter($all_categories, function ($cat) {
+        return $cat->count > 0; // count содержит количество записей в категории
+      });
+
+      // Проверяем, есть ли хотя бы одна категория с записями
+      if (!empty($categories_with_posts)) :
+    ?>
+        <div class="blog-section__filter filter">
+          <div class="filter__form">
+            <label class="filter__radio">
+              <input type="radio"
+                name="<?php echo esc_attr($section_id); ?>_category"
+                value=""
+                data-section-id="<?php echo esc_attr($section_id); ?>"
+                class="blog-filter-radio"
+                checked>
+              <span class="filter__label">Все записи</span>
+            </label>
+
+            <?php foreach ($categories_with_posts as $cat) : ?>
+              <label class="filter__radio">
+                <input type="radio"
+                  name="<?php echo esc_attr($section_id); ?>_category"
+                  value="<?php echo esc_attr($cat->slug); ?>"
+                  data-section-id="<?php echo esc_attr($section_id); ?>"
+                  class="blog-filter-radio">
+                <span class="filter__label"><?php echo esc_html($cat->name); ?></span>
+              </label>
+            <?php endforeach; ?>
+          </div>
+        </div>
+      <?php
+      endif;
+    endif;
+    if ($section_query->have_posts()) :
+      ?>
+
+      <!-- Контейнер для постов -->
+      <div class="fade-in-container blog-section__splide splide load-on-vissible--js"
+        aria-label="Splide direction"
+        data-module="./libs/splide.min.js,./modules/blogSectionSplideInit.js"
+        data-css="<?= THEME_PATH; ?>/assets/css/libs/splide-core.min.css"
+        id="<?php echo esc_attr($section_id); ?>-container">
+        <?php
+        $index = 1;
+
+        while ($section_query->have_posts()) : $section_query->the_post(); ?>
+
+          <article class="blog-section__item blog-card fade-in-element splide__slide">
+            <a class="blog-card__link" href="<?= get_permalink(); ?>">
+              <?php if (has_post_thumbnail()) : ?>
+                <div class="blog-card__image">
+                  <?= get_the_post_thumbnail(get_the_ID()); ?>
+
+                  <svg viewBox="0 0 20 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3.17309 3.41726C3.48384 3.41726 3.73572 3.66411 3.73572 3.96866V10.1167C4.52232 9.06924 5.30923 8.02205 6.08642 6.96803C6.33162 6.63553 6.63297 6.47522 7.05752 6.47879C8.35911 6.49009 9.66102 6.47731 10.9629 6.48207C11.4561 6.48385 11.6606 6.53115 11.7425 6.77294C11.8315 6.88298 11.887 7.02037 11.887 7.17175V9.90673C11.8946 9.94866 11.9025 9.99239 11.9103 10.0403C12.6372 9.05882 13.2936 8.18057 13.9418 7.29666C14.7873 6.1442 15.6121 4.97658 16.4822 3.84226C16.6391 3.63764 16.9641 3.46573 17.2244 3.4461C17.9379 3.39256 18.6584 3.43033 19.3761 3.42795C19.7721 3.42676 19.9448 3.61147 19.9445 4.00226L19.9448 4.00165C19.9417 7.4528 19.9445 10.9043 19.9508 14.3557C19.9514 14.7632 19.7715 14.9592 19.3533 14.9633C18.6857 14.9699 18.0183 14.9933 17.3507 14.9996C16.6369 15.0061 16.5705 14.9407 16.5705 14.2534C16.5705 12.6994 16.5775 11.1457 16.5729 9.59178C16.5723 9.32768 16.528 9.06358 16.5037 8.79949C16.4403 8.78848 16.3765 8.77747 16.3131 8.76646C15.6737 9.61706 15.0282 10.4632 14.3964 11.3188C13.6162 12.3752 12.8423 13.4358 12.0773 14.5026C11.8585 14.8075 11.6117 14.9684 11.2072 14.9508C10.9514 14.9398 10.6953 14.9362 10.4388 14.9353H10.081C9.75572 14.9383 9.43009 14.9452 9.10507 14.9526C9.02465 14.9544 8.95453 14.9475 8.8908 14.9353H8.85924C8.49569 14.9353 8.20103 14.6466 8.20103 14.2903V8.89466C8.14579 8.92411 8.0948 8.95682 8.0599 9.00143C6.71947 10.7282 5.3857 12.8014 4.0568 14.5368C3.94877 14.6781 3.76939 14.9633 3.31418 14.9633C2.85898 14.9633 0.6121 14.9633 0.6121 14.9633C0.301346 14.9633 0.0494623 14.7165 0.0494623 14.4119V3.96866C0.0494623 3.66411 0.301346 3.41726 0.6121 3.41726H3.17309Z" />
+                    <path d="M19.3418 0C19.705 0 20 0.289096 20 0.645096V1.64586C20 2.00187 19.705 2.29096 19.3418 2.29096H0.658243C0.294988 2.29096 0 2.00187 0 1.64586V0.645096C0 0.289096 0.294988 0 0.658243 0H19.3418Z" />
+                  </svg>
+                </div>
+              <?php endif; ?>
+              <div class="blog-card__wrapper">
+
+                <?php
+                $post_id = get_the_ID(); // или любой другой ID
+                $tags = get_the_terms($post_id, 'blog_cat');
+
+                if ($tags && !is_wp_error($tags)) :
+
+                  $selected_category = isset($_POST['category']) ? $_POST['category'] : '';
+
+                  if (!empty($selected_category)) {
+                    $selected_term = null;
+                    $other_terms = [];
+
+                    foreach ($tags as $tag) {
+                      if ($tag->slug === $selected_category) {
+                        $selected_term = $tag;
+                      } else {
+                        $other_terms[] = $tag;
+                      }
+                    }
+
+                    if ($selected_term) {
+                      $tags = array_merge([$selected_term], $other_terms);
+                    }
+                  }
+
+                  if ($tags && !is_wp_error($tags)) :
+                    $tags = array_slice($tags, 0, 2);
+                ?>
+                    <div class="blog-card__tags">
+                      <?php foreach ($tags as $tag) : ?>
+                        <span class="blog-card__tag">
+                          <?= esc_html($tag->name); ?>
+                        </span>
+                      <?php endforeach; ?>
+
+                      <?php if ($index) {
+                        $months = [
+                          1 => 'января',
+                          2 => 'февраля',
+                          3 => 'марта',
+                          4 => 'апреля',
+                          5 => 'мая',
+                          6 => 'июня',
+                          7 => 'июля',
+                          8 => 'августа',
+                          9 => 'сентября',
+                          10 => 'октября',
+                          11 => 'ноября',
+                          12 => 'декабря'
+                        ];
+
+                        $post_date = get_the_date('j n Y');
+                        $date_parts = explode(' ', $post_date);
+                        $day = $date_parts[0];
+                        $month_num = (int)$date_parts[1];
+                        $year = $date_parts[2];
+
+                        $datee = $day . ' ' . $months[$month_num] . ', ' . $year;
+                      ?>
+                        <span class="blog-card__tag blog-card__tag--date">
+                          <?= $datee; ?>
+                        </span>
+                      <?php
+                      }
+                      ?>
+                    </div>
+                  <?php endif; ?>
+                <?php endif; ?>
+
+                <h4 class="blog-card__title"><?= get_the_title(); ?></h4>
+
+<div class="blog-card__text line-13-15"><?= get_field('blog_card_text', $post_id); ?></div>
+
+                <div class="blog-card__stats">
+                  <?php get_template_part('modules/stats/stats'); ?>
+                </div>
+              </div>
+            </a>
+          </article>
+
+
+          <?php if ($index) { ?>
+            <div class="splide__track">
+              <div class="blog-section__splide-list splide__list">
+            <?php
+            $index = 0;
+          }
+        endwhile;
+            ?>
+              </div>
+
+              <div class="splide__pagination"></div>
+
+              <a class="blog-section__btn default-btn" href="<?= get_field('blog_section_btn', OPTION_ID)['url']; ?>">
+                <?= get_field('blog_section_btn', OPTION_ID)['title']; ?>
+
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5.87524 14.1246L13.5356 6.46426M7.05376 5.875H13.2915C13.7517 5.875 14.1248 6.2481 14.1248 6.70833V12.9461" stroke="black" stroke-width="2" stroke-linecap="round" />
+                </svg>
+              </a>
+            </div>
+          <?php
+          wp_reset_postdata();
+        else : ?>
+          <?php endif; ?>
+      </div>
+  </div>
+</section>
+
+
+
+<script>
+  // Глобальная функция для фильтрации
+  document.addEventListener('DOMContentLoaded', function() {
+    // Находим все радио-кнопки фильтров на странице
+    const radioButtons = document.querySelectorAll('.blog-filter-radio');
+
+    radioButtons.forEach(radio => {
+      radio.addEventListener('change', function(e) {
+        if (!this.checked) return;
+
+        const sectionId = this.getAttribute('data-section-id');
+        const category = this.value;
+        const container = document.getElementById(sectionId + '-container');
+        const section = document.querySelector(`[data-section-id="${sectionId}"]`);
+
+        if (!container || !section) return;
+
+        // Показываем загрузку
+        container.classList.add('loading');
+
+        // Получаем параметры секции
+        const taxonomy = section.getAttribute('data-taxonomy');
+        const postType = section.getAttribute('data-post-type');
+        const postsPerPage = section.getAttribute('data-posts-per-page');
+
+        if (typeof blog_ajax === 'undefined') {
+          window.blog_ajax = {
+            ajax_url: '/wp-admin/admin-ajax.php'
+          };
+        }
+
+        // Отправляем AJAX запрос
+        const formData = new FormData();
+        formData.append('action', 'filter_blog_section');
+        formData.append('category', category);
+        formData.append('taxonomy', taxonomy);
+        formData.append('post_type', postType);
+        formData.append('posts_per_page', postsPerPage);
+        formData.append('section_id', sectionId);
+
+        fetch(typeof blog_ajax !== 'undefined' ? blog_ajax.ajax_url : '/wp-admin/admin-ajax.php', {
+            method: 'POST',
+            body: formData
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              container.innerHTML = data.data.html;
+            } else {
+              console.error('Filter error:', data.data);
+            }
+          })
+          .catch(error => {
+            console.error('AJAX error:', error);
+          })
+          .finally(() => {
+            container.classList.remove('loading');
+          });
+      });
+    });
+  });
+</script>

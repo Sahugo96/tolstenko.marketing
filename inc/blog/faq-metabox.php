@@ -108,9 +108,13 @@ function tolstenko_blog_faq_render_metabox( $post ) {
 	<style>
 		.tolstenko-blog-faq .tolstenko-bf-field{margin:0 0 12px}
 		.tolstenko-blog-faq .tolstenko-bf-field input[type=text],
-		.tolstenko-blog-faq .tolstenko-bf-field textarea{width:100%;max-width:760px}
-		.tolstenko-blog-faq .tolstenko-bf-item{border:1px solid #dcdcde;background:#fff;padding:12px;margin:0 0 10px;max-width:760px}
+		.tolstenko-blog-faq .tolstenko-bf-field textarea,
+		.tolstenko-blog-faq .tolstenko-bf-item input[type=text],
+		.tolstenko-blog-faq .tolstenko-bf-item textarea{width:100%;max-width:none;box-sizing:border-box}
+		.tolstenko-blog-faq .tolstenko-bf-item{border:1px solid #dcdcde;background:#fff;padding:12px;margin:0 0 10px;max-width:none;width:100%;box-sizing:border-box}
 		.tolstenko-blog-faq .tolstenko-bf-item label{display:block;font-weight:600;margin:0 0 4px}
+		.tolstenko-blog-faq .tolstenko-bf-item-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0 0}
+		.tolstenko-blog-faq .tolstenko-bf-item-actions .move-btn{min-width:34px;padding:0 8px}
 		.tolstenko-blog-faq .description{margin:0 0 12px}
 	</style>
 
@@ -159,18 +163,60 @@ function tolstenko_blog_faq_render_metabox( $post ) {
 		if (!root) return;
 		const list = root.querySelector('[data-bf-list]');
 		const tpl = root.querySelector('[data-bf-tpl]');
+
+		function refreshMoveButtons(){
+			if (!list) return;
+			const items = list.querySelectorAll('.tolstenko-bf-item');
+			items.forEach(function(item, index){
+				const up = item.querySelector('[data-bf-move-up]');
+				const down = item.querySelector('[data-bf-move-down]');
+				if (up) up.disabled = index === 0;
+				if (down) down.disabled = index === items.length - 1;
+			});
+		}
+
+		function moveItem(item, direction){
+			if (!list || !item) return;
+			const items = Array.prototype.slice.call(list.querySelectorAll('.tolstenko-bf-item'));
+			const index = items.indexOf(item);
+			const newIndex = index + direction;
+			if (index < 0 || newIndex < 0 || newIndex >= items.length) return;
+			if (direction > 0) {
+				list.insertBefore(item, items[newIndex].nextSibling);
+			} else {
+				list.insertBefore(item, items[newIndex]);
+			}
+			refreshMoveButtons();
+		}
+
 		root.addEventListener('click', function(e){
 			const add = e.target.closest('[data-bf-add]');
 			if (add && tpl && list) {
 				list.insertAdjacentHTML('beforeend', tpl.innerHTML.replace(/__INDEX__/g, Date.now().toString()));
+				refreshMoveButtons();
+				return;
+			}
+			const up = e.target.closest('[data-bf-move-up]');
+			if (up) {
+				e.preventDefault();
+				moveItem(up.closest('.tolstenko-bf-item'), -1);
+				return;
+			}
+			const down = e.target.closest('[data-bf-move-down]');
+			if (down) {
+				e.preventDefault();
+				moveItem(down.closest('.tolstenko-bf-item'), 1);
 				return;
 			}
 			const remove = e.target.closest('[data-bf-remove]');
 			if (remove) {
 				const row = remove.closest('.tolstenko-bf-item');
 				if (row) row.remove();
+				refreshMoveButtons();
 			}
 		});
+
+		refreshMoveButtons();
 	})();
 	</script>
 	<?php
@@ -183,12 +229,16 @@ function tolstenko_blog_faq_render_metabox( $post ) {
 function tolstenko_blog_faq_render_item_row( $index, array $item ) {
 	$base = 'tolstenko_blog_faq_items[' . $index . ']';
 	?>
-	<div class="tolstenko-bf-item">
+	<div class="tolstenko-bf-item" data-bf-item>
 		<label><?php esc_html_e( 'Вопрос', 'tolstenko-theme' ); ?></label>
 		<input type="text" name="<?php echo esc_attr( $base . '[title]' ); ?>" value="<?php echo esc_attr( (string) ( $item['title'] ?? '' ) ); ?>">
 		<label><?php esc_html_e( 'Ответ (можно HTML)', 'tolstenko-theme' ); ?></label>
 		<textarea name="<?php echo esc_attr( $base . '[redactor]' ); ?>" rows="4"><?php echo esc_textarea( (string) ( $item['redactor'] ?? '' ) ); ?></textarea>
-		<p><button type="button" class="button-link-delete" data-bf-remove><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button></p>
+		<p class="tolstenko-bf-item-actions">
+			<button type="button" class="button move-btn" data-bf-move-up title="<?php esc_attr_e( 'Вверх', 'tolstenko-theme' ); ?>">↑</button>
+			<button type="button" class="button move-btn" data-bf-move-down title="<?php esc_attr_e( 'Вниз', 'tolstenko-theme' ); ?>">↓</button>
+			<button type="button" class="button-link-delete" data-bf-remove><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button>
+		</p>
 	</div>
 	<?php
 }

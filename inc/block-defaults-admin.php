@@ -60,6 +60,7 @@ function tolstenko_block_defaults_schema() {
 			'title'          => 'Кейсы',
 			'text'           => '',
 			'posts_per_page' => 4,
+			'ids'            => array(),
 		),
 		'service_section' => array(
 			'title'          => 'Услуги',
@@ -104,10 +105,6 @@ function tolstenko_block_defaults_schema() {
 		),
 		'blog_large_img' => array(
 			'image' => 0,
-		),
-		'blog_imgs' => array(
-			'left'  => 0,
-			'right' => 0,
 		),
 		'blog_video' => array(
 			'preview' => 0,
@@ -504,12 +501,9 @@ function tolstenko_block_defaults_schema() {
 }
 
 /**
- * Нормализация ID услуг в дефолтах слайдера.
- *
- * @param mixed $raw Сырые ID (массив или строка).
- * @return int[]
+ * Нормализация ID записей для слайдеров.
  */
-function tolstenko_sanitize_service_section_ids( $raw ) {
+function tolstenko_sanitize_ids( $raw ) {
 	$ids = array();
 	if ( is_string( $raw ) ) {
 		$raw = preg_split( '/[\s,]+/', $raw, -1, PREG_SPLIT_NO_EMPTY );
@@ -527,112 +521,371 @@ function tolstenko_sanitize_service_section_ids( $raw ) {
 }
 
 /**
- * Поля дефолтов для слайдера услуг (обычный / с фильтрами).
- *
- * @param string               $key  Ключ: service_section | service_section_filters.
- * @param array<string,mixed>  $data Значения полей.
+ * Получение списка записей для select2-подобного поля.
  */
-function tolstenko_render_service_section_defaults_fields( $key, $data ) {
-	$key  = sanitize_key( $key );
-	$data = is_array( $data ) ? $data : array();
-	$ids  = tolstenko_sanitize_service_section_ids( $data['ids'] ?? array() );
-
-	$services = get_posts(
+function tolstenko_get_posts_for_select( $post_type ) {
+	$posts = get_posts(
 		array(
-			'post_type'              => 'service',
-			'post_status'            => 'publish',
-			'posts_per_page'         => -1,
-			'orderby'                => 'title',
-			'order'                  => 'ASC',
-			'no_found_rows'          => true,
-			'update_post_meta_cache' => false,
-			'update_post_term_cache' => false,
+			'post_type'      => $post_type,
+			'post_status'    => 'publish',
+			'posts_per_page' => -1,
+			'orderby'        => 'title',
+			'order'          => 'ASC',
+			'no_found_rows'  => true,
 		)
 	);
+	$result = array();
+	foreach ( $posts as $post ) {
+		$result[] = array(
+			'id'    => $post->ID,
+			'title' => get_the_title( $post ),
+		);
+	}
+	return $result;
+}
+
+/**
+ * Рендер поля мультивыбора записей (как в Gutenberg).
+ *
+ * @param string               $name         Имя input (без []).
+ * @param int[]|mixed          $selected_ids Выбранные ID.
+ * @param string               $post_type    CPT.
+ * @param string               $label        Подпись над полем.
+ * @param array<string,mixed>  $args         exclude_ids, placeholder.
+ */
+function tolstenko_render_post_select( $name, $selected_ids, $post_type, $label = '', $args = array() ) {
+	$args         = is_array( $args ) ? $args : array();
+	$exclude_ids  = array_map( 'intval', (array) ( $args['exclude_ids'] ?? array() ) );
+	$exclude_ids  = array_values( array_filter( $exclude_ids ) );
+	$all_posts    = tolstenko_get_posts_for_select( $post_type );
+	if ( $exclude_ids ) {
+		$all_posts = array_values(
+			array_filter(
+				$all_posts,
+				static function ( $p ) use ( $exclude_ids ) {
+					return ! in_array( (int) ( $p['id'] ?? 0 ), $exclude_ids, true );
+				}
+			)
+		);
+	}
+	$selected_ids = array_map( 'intval', (array) $selected_ids );
+	$selected_ids = array_values( array_filter( $selected_ids, static function ( $id ) use ( $exclude_ids ) {
+		return $id > 0 && ! in_array( $id, $exclude_ids, true );
+	} ) );
+
+	$placeholders = array(
+		'service' => 'Поиск услуг...',
+		'blog'    => 'Поиск статей...',
+		'case'    => 'Поиск кейсов...',
+		'review'  => 'Поиск отзывов...',
+		'actions' => 'Поиск акций...',
+	);
+	$placeholder = (string) ( $args['placeholder'] ?? '' );
+	if ( $placeholder === '' ) {
+		$placeholder = $placeholders[ $post_type ] ?? ( 'Поиск ' . $post_type . '...' );
+	}
+
+	$posts_json = wp_json_encode( $all_posts, JSON_UNESCAPED_UNICODE );
+	if ( ! is_string( $posts_json ) ) {
+		$posts_json = '[]';
+	}
 	?>
-	<div class="row"><textarea name="tolstenko_block_defaults[<?php echo esc_attr( $key ); ?>][title]" rows="2" style="width:100%" placeholder="Заголовок (HTML)"><?php echo esc_textarea( $data['title'] ?? '' ); ?></textarea></div>
-	<div class="row"><textarea name="tolstenko_block_defaults[<?php echo esc_attr( $key ); ?>][text]" rows="3" style="width:100%" placeholder="Текст под заголовком"><?php echo esc_textarea( $data['text'] ?? '' ); ?></textarea></div>
-	<div class="row"><input type="number" min="-1" name="tolstenko_block_defaults[<?php echo esc_attr( $key ); ?>][posts_per_page]" value="<?php echo esc_attr( (string) ( $data['posts_per_page'] ?? 6 ) ); ?>" style="width:100%" placeholder="Количество услуг, если ничего не выбрано (6, -1 = все)"></div>
-	<div class="row">
-		<div class="muted"><?php esc_html_e( 'Услуги (пусто = самые новые по количеству выше)', 'tolstenko-theme' ); ?></div>
-		<?php if ( empty( $services ) ) : ?>
-			<p class="description"><?php esc_html_e( 'Пока нет опубликованных услуг.', 'tolstenko-theme' ); ?></p>
-		<?php else : ?>
-			<div class="tolstenko-df-service-ids">
-				<?php foreach ( $services as $service ) : ?>
+	<div class="tolstenko-post-select-wrap">
+		<?php if ( $label ) : ?>
+			<div class="muted" style="margin-bottom:6px;"><?php echo esc_html( $label ); ?></div>
+		<?php endif; ?>
+		<div
+			class="tolstenko-post-select-token-field"
+			data-name="<?php echo esc_attr( $name ); ?>"
+			data-post-type="<?php echo esc_attr( $post_type ); ?>"
+			data-posts="<?php echo esc_attr( $posts_json ); ?>"
+		>
+			<div class="tolstenko-post-select-tokens">
+				<?php foreach ( $selected_ids as $id ) : ?>
 					<?php
-					if ( ! ( $service instanceof WP_Post ) ) {
-						continue;
+					$title = '';
+					foreach ( $all_posts as $p ) {
+						if ( (int) $p['id'] === $id ) {
+							$title = (string) $p['title'];
+							break;
+						}
 					}
-					$sid = (int) $service->ID;
+					if ( ! $title ) {
+						$title = get_the_title( $id );
+						$title = $title !== '' ? $title : ( '#' . $id );
+					}
 					?>
-					<label class="tolstenko-df-service-ids__item">
-						<input type="checkbox" name="tolstenko_block_defaults[<?php echo esc_attr( $key ); ?>][ids][]" value="<?php echo esc_attr( (string) $sid ); ?>" <?php checked( in_array( $sid, $ids, true ) ); ?>>
-						<span><?php echo esc_html( get_the_title( $service ) ); ?></span>
-					</label>
+					<span class="tolstenko-post-select-token" data-id="<?php echo (int) $id; ?>">
+						<span class="tolstenko-post-select-token-label"><?php echo esc_html( $title ); ?></span>
+						<button type="button" class="tolstenko-post-select-token-remove" title="Удалить">×</button>
+						<input type="hidden" name="<?php echo esc_attr( $name ); ?>[]" value="<?php echo (int) $id; ?>">
+					</span>
 				<?php endforeach; ?>
 			</div>
-		<?php endif; ?>
+			<div class="tolstenko-post-select-input-wrap">
+				<input type="text" class="tolstenko-post-select-input" placeholder="<?php echo esc_attr( $placeholder ); ?>" autocomplete="off">
+				<div class="tolstenko-post-select-suggestions" style="display:none;"></div>
+			</div>
+		</div>
 	</div>
 	<?php
 }
 
 /**
- * Поля дефолтов для слайдера статей (похожие).
+ * CSS + JS для tolstenko_render_post_select (один раз за запрос).
+ */
+function tolstenko_post_select_print_assets() {
+	static $printed = false;
+	if ( $printed ) {
+		return;
+	}
+	$printed = true;
+	?>
+	<style>
+		.tolstenko-post-select-wrap{border:1px solid #dcdcde;border-radius:4px;padding:8px;background:#fff;width:100%;box-sizing:border-box}
+		.tolstenko-post-select-tokens{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+		.tolstenko-post-select-tokens:empty{display:none;margin:0}
+		.tolstenko-post-select-token{display:inline-flex;align-items:center;background:#e5e5e5;border-radius:3px;padding:4px 8px;gap:6px;font-size:13px;max-width:100%}
+		.tolstenko-post-select-token-label{overflow:hidden;text-overflow:ellipsis}
+		.tolstenko-post-select-token-remove{background:none;border:none;color:#b32d2e;cursor:pointer;font-size:18px;line-height:1;padding:0 2px;flex-shrink:0}
+		.tolstenko-post-select-token-remove:hover{color:#7b1a1b}
+		.tolstenko-post-select-input-wrap{position:relative}
+		.tolstenko-post-select-input{width:100%;max-width:none !important;padding:6px 8px;border:1px solid #ddd;border-radius:3px;box-sizing:border-box}
+		.tolstenko-post-select-suggestions{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #ddd;border-radius:3px;max-height:240px;overflow:auto;z-index:100000;box-shadow:0 2px 6px rgba(0,0,0,0.15)}
+		.tolstenko-post-select-suggestions .suggestion{padding:6px 10px;cursor:pointer}
+		.tolstenko-post-select-suggestions .suggestion:hover{background:#f0f0f0}
+	</style>
+	<script>
+	(function(){
+		function stripHtml(s){
+			var d = document.createElement('div');
+			d.innerHTML = String(s || '');
+			return (d.textContent || d.innerText || '').trim();
+		}
+		function initPostSelect() {
+			document.querySelectorAll('.tolstenko-post-select-token-field').forEach(function(wrap) {
+				if (wrap.dataset.initialized) return;
+				wrap.dataset.initialized = '1';
+				var input = wrap.querySelector('.tolstenko-post-select-input');
+				var suggestions = wrap.querySelector('.tolstenko-post-select-suggestions');
+				var tokensContainer = wrap.querySelector('.tolstenko-post-select-tokens');
+				var name = wrap.dataset.name;
+				var postType = wrap.dataset.postType || '';
+				if (!input || !suggestions || !tokensContainer || !name) return;
+
+				var allPosts = [];
+				var isLoading = false;
+				var isLoaded = false;
+
+				try {
+					if (wrap.hasAttribute('data-posts')) {
+						var embedded = JSON.parse(wrap.getAttribute('data-posts') || '[]');
+						if (Array.isArray(embedded)) {
+							allPosts = embedded.map(function(p){
+								return { id: parseInt(p.id, 10), title: stripHtml(p.title) || ('#' + p.id) };
+							}).filter(function(p){ return p.id > 0; });
+							suggestions.dataset.posts = JSON.stringify(allPosts);
+							isLoaded = true;
+						}
+					}
+				} catch (e) {}
+
+				function loadAllPosts(cb) {
+					if (isLoaded) { if (cb) cb(); return; }
+					if (isLoading) return;
+					isLoading = true;
+
+					var existingIds = {};
+					tokensContainer.querySelectorAll('.tolstenko-post-select-token').forEach(function(token) {
+						var id = parseInt(token.dataset.id, 10);
+						existingIds[id] = true;
+						allPosts.push({
+							id: id,
+							title: stripHtml(token.querySelector('.tolstenko-post-select-token-label').textContent)
+						});
+					});
+
+					if (!postType) {
+						isLoaded = true;
+						isLoading = false;
+						suggestions.dataset.posts = JSON.stringify(allPosts);
+						if (cb) cb();
+						return;
+					}
+
+					var restRoot = (window.wpApiSettings && wpApiSettings.root) ? wpApiSettings.root : '/wp-json/';
+					fetch(restRoot + 'wp/v2/' + postType + '?per_page=100&status=publish&_fields=id,title')
+						.then(function(res) { return res.json(); })
+						.then(function(data) {
+							if (!Array.isArray(data)) data = [];
+							data.forEach(function(post) {
+								if (!existingIds[post.id]) {
+									allPosts.push({ id: post.id, title: stripHtml(post.title && post.title.rendered) || ('#' + post.id) });
+								}
+							});
+							allPosts.sort(function(a, b) { return a.title.localeCompare(b.title, 'ru'); });
+							suggestions.dataset.posts = JSON.stringify(allPosts);
+							isLoaded = true;
+							isLoading = false;
+							if (cb) cb();
+						})
+						.catch(function() {
+							isLoaded = true;
+							isLoading = false;
+							suggestions.dataset.posts = JSON.stringify(allPosts);
+							if (cb) cb();
+						});
+				}
+
+				function getSelectedIds() {
+					var ids = [];
+					tokensContainer.querySelectorAll('.tolstenko-post-select-token').forEach(function(token) {
+						ids.push(parseInt(token.dataset.id, 10));
+					});
+					return ids;
+				}
+
+				function showSuggestions(filter) {
+					var posts = [];
+					try { posts = JSON.parse(suggestions.dataset.posts || '[]'); } catch (e) { posts = []; }
+					var selectedIds = getSelectedIds();
+					var query = (filter || '').toLowerCase().trim();
+					var filtered = posts.filter(function(p) {
+						if (selectedIds.indexOf(p.id) !== -1) return false;
+						if (query) return String(p.title || '').toLowerCase().indexOf(query) !== -1;
+						return true;
+					});
+
+					if (filtered.length === 0) {
+						suggestions.style.display = 'none';
+						return;
+					}
+
+					suggestions.innerHTML = '';
+					filtered.forEach(function(post) {
+						var div = document.createElement('div');
+						div.className = 'suggestion';
+						div.textContent = post.title;
+						div.dataset.id = post.id;
+						div.addEventListener('mousedown', function(e) {
+							e.preventDefault();
+							addToken(post.id, post.title);
+							input.value = '';
+							showSuggestions('');
+						});
+						suggestions.appendChild(div);
+					});
+					suggestions.style.display = 'block';
+				}
+
+				function addToken(id, title) {
+					var existing = tokensContainer.querySelector('.tolstenko-post-select-token[data-id="' + id + '"]');
+					if (existing) return;
+					var token = document.createElement('span');
+					token.className = 'tolstenko-post-select-token';
+					token.dataset.id = String(id);
+					token.innerHTML = '<span class="tolstenko-post-select-token-label"></span>' +
+						'<button type="button" class="tolstenko-post-select-token-remove" title="Удалить">×</button>' +
+						'<input type="hidden" name="' + name + '[]" value="' + id + '">';
+					token.querySelector('.tolstenko-post-select-token-label').textContent = title;
+					tokensContainer.appendChild(token);
+					token.querySelector('.tolstenko-post-select-token-remove').addEventListener('click', function() {
+						token.remove();
+						if (document.activeElement === input) showSuggestions(input.value);
+					});
+				}
+
+				input.addEventListener('focus', function() {
+					loadAllPosts(function(){ showSuggestions(input.value); });
+				});
+				input.addEventListener('input', function() {
+					loadAllPosts(function(){ showSuggestions(input.value); });
+				});
+				input.addEventListener('blur', function() {
+					setTimeout(function(){ suggestions.style.display = 'none'; }, 180);
+				});
+				document.addEventListener('click', function(e) {
+					if (!wrap.contains(e.target)) suggestions.style.display = 'none';
+				});
+				tokensContainer.querySelectorAll('.tolstenko-post-select-token-remove').forEach(function(btn) {
+					btn.addEventListener('click', function() {
+						btn.closest('.tolstenko-post-select-token').remove();
+						if (document.activeElement === input) showSuggestions(input.value);
+					});
+				});
+			});
+		}
+
+		if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', initPostSelect);
+		} else {
+			initPostSelect();
+		}
+		if (window.MutationObserver) {
+			new MutationObserver(function(){ initPostSelect(); }).observe(document.body, { childList: true, subtree: true });
+		}
+		window.tolstenkoInitPostSelect = initPostSelect;
+	})();
+	</script>
+	<?php
+}
+
+/**
+ * Нормализация ID услуг в дефолтах слайдера.
  *
- * @param string              $key  Ключ: blog_section.
- * @param array<string,mixed> $data Значения полей.
+ * @param mixed $raw Сырые ID (массив или строка).
+ * @return int[]
+ */
+function tolstenko_sanitize_service_section_ids( $raw ) {
+	return tolstenko_sanitize_ids( $raw );
+}
+
+/**
+ * Поля дефолтов для слайдера услуг (обычный / с фильтрами).
+ */
+function tolstenko_render_service_section_defaults_fields( $key, $data ) {
+	$key  = sanitize_key( $key );
+	$data = is_array( $data ) ? $data : array();
+	$ids  = tolstenko_sanitize_service_section_ids( $data['ids'] ?? array() );
+	?>
+	<div class="row"><textarea name="tolstenko_block_defaults[<?php echo esc_attr( $key ); ?>][title]" rows="2" style="width:100%" placeholder="Заголовок (HTML)"><?php echo esc_textarea( $data['title'] ?? '' ); ?></textarea></div>
+	<div class="row"><textarea name="tolstenko_block_defaults[<?php echo esc_attr( $key ); ?>][text]" rows="3" style="width:100%" placeholder="Текст под заголовком"><?php echo esc_textarea( $data['text'] ?? '' ); ?></textarea></div>
+	<div class="row"><input type="number" min="-1" name="tolstenko_block_defaults[<?php echo esc_attr( $key ); ?>][posts_per_page]" value="<?php echo esc_attr( (string) ( $data['posts_per_page'] ?? 6 ) ); ?>" style="width:100%" placeholder="Количество услуг, если ничего не выбрано (6, -1 = все)"></div>
+	<div class="row">
+		<?php tolstenko_render_post_select( 
+			'tolstenko_block_defaults[' . $key . '][ids]',
+			$ids,
+			'service',
+			'Услуги (пусто = самые новые по количеству выше)'
+		); ?>
+	</div>
+	<?php
+}
+
+/**
+ * Поля дефолтов для слайдера статей.
  */
 function tolstenko_render_blog_section_defaults_fields( $key, $data ) {
 	$key  = sanitize_key( $key );
 	$data = is_array( $data ) ? $data : array();
 	$ids  = tolstenko_sanitize_service_section_ids( $data['ids'] ?? array() );
-
-	$posts = get_posts(
-		array(
-			'post_type'              => 'blog',
-			'post_status'            => 'publish',
-			'posts_per_page'         => -1,
-			'orderby'                => 'title',
-			'order'                  => 'ASC',
-			'no_found_rows'          => true,
-			'update_post_meta_cache' => false,
-			'update_post_term_cache' => false,
-		)
-	);
 	?>
 	<div class="row"><textarea name="tolstenko_block_defaults[<?php echo esc_attr( $key ); ?>][title]" rows="2" style="width:100%" placeholder="Заголовок (HTML)"><?php echo esc_textarea( $data['title'] ?? '' ); ?></textarea></div>
 	<div class="row"><textarea name="tolstenko_block_defaults[<?php echo esc_attr( $key ); ?>][text]" rows="3" style="width:100%" placeholder="Текст под заголовком"><?php echo esc_textarea( $data['text'] ?? '' ); ?></textarea></div>
 	<div class="row"><input type="number" min="-1" name="tolstenko_block_defaults[<?php echo esc_attr( $key ); ?>][posts_per_page]" value="<?php echo esc_attr( (string) ( $data['posts_per_page'] ?? 6 ) ); ?>" style="width:100%" placeholder="Количество статей, если ничего не выбрано (6, -1 = все)"></div>
 	<div class="row">
-		<div class="muted"><?php esc_html_e( 'Статьи (пусто = самые новые по количеству выше)', 'tolstenko-theme' ); ?></div>
-		<?php if ( empty( $posts ) ) : ?>
-			<p class="description"><?php esc_html_e( 'Пока нет опубликованных статей.', 'tolstenko-theme' ); ?></p>
-		<?php else : ?>
-			<div class="tolstenko-df-service-ids">
-				<?php foreach ( $posts as $blog_post ) : ?>
-					<?php
-					if ( ! ( $blog_post instanceof WP_Post ) ) {
-						continue;
-					}
-					$bid = (int) $blog_post->ID;
-					?>
-					<label class="tolstenko-df-service-ids__item">
-						<input type="checkbox" name="tolstenko_block_defaults[<?php echo esc_attr( $key ); ?>][ids][]" value="<?php echo esc_attr( (string) $bid ); ?>" <?php checked( in_array( $bid, $ids, true ) ); ?>>
-						<span><?php echo esc_html( get_the_title( $blog_post ) ); ?></span>
-					</label>
-				<?php endforeach; ?>
-			</div>
-		<?php endif; ?>
+		<?php tolstenko_render_post_select( 
+			'tolstenko_block_defaults[' . $key . '][ids]',
+			$ids,
+			'blog',
+			'Статьи (пусто = самые новые по количеству выше)'
+		); ?>
 	</div>
 	<?php
 }
 
 /**
  * Список ли это (0..n), а не ассоциативный массив полей.
- *
- * @param mixed $value Значение.
- * @return bool
  */
 function tolstenko_is_list_array( $value ) {
 	if ( ! is_array( $value ) ) {
@@ -646,12 +899,6 @@ function tolstenko_is_list_array( $value ) {
 
 /**
  * Склейка схемы и сохранённых дефолтов.
- * array_replace_recursive оставляет «хвост» заводских пунктов в списках,
- * если сохранённый список короче — поэтому списки берём целиком из $saved.
- *
- * @param array $base  Схема / база.
- * @param array $saved Сохранённые значения.
- * @return array
  */
 function tolstenko_merge_block_defaults_data( $base, $saved ) {
 	if ( ! is_array( $base ) ) {
@@ -666,12 +913,10 @@ function tolstenko_merge_block_defaults_data( $base, $saved ) {
 			continue;
 		}
 		$base_val = $base[ $key ] ?? null;
-		// Числовой список (пункты, карточки, FAQ-итемы) — длина только из сохранённого.
 		if ( tolstenko_is_list_array( $value ) && ( null === $base_val || tolstenko_is_list_array( $base_val ) ) ) {
 			$data[ $key ] = $value;
 			continue;
 		}
-		// Вложенные группы полей (редко) — рекурсивно поправить списки внутри.
 		if ( is_array( $base_val ) && ! tolstenko_is_list_array( $base_val ) && ! tolstenko_is_list_array( $value ) ) {
 			$data[ $key ] = tolstenko_merge_block_defaults_data( $base_val, $value );
 		}
@@ -684,7 +929,6 @@ function tolstenko_get_block_defaults( $block ) {
 	$base = isset( $schema[ $block ] ) ? $schema[ $block ] : array();
 	$saved = get_option( 'tolstenko_block_defaults', array() );
 	if ( ! is_array( $saved ) || ! isset( $saved[ $block ] ) || ! is_array( $saved[ $block ] ) ) {
-		// До первого сохранения «Слайдер услуг (фильтры)» — те же значения, что у «Слайдер услуг».
 		if ( $block === 'service_section_filters' && is_array( $saved ) && isset( $saved['service_section'] ) && is_array( $saved['service_section'] ) ) {
 			$data = tolstenko_merge_block_defaults_data( $base, $saved['service_section'] );
 			$data['ids'] = tolstenko_sanitize_service_section_ids( $data['ids'] ?? array() );
@@ -693,7 +937,7 @@ function tolstenko_get_block_defaults( $block ) {
 		return $base;
 	}
 	$data = tolstenko_merge_block_defaults_data( $base, $saved[ $block ] );
-	if ( $block === 'service_section' || $block === 'service_section_filters' || $block === 'blog_section' || $block === 'blog_section_filters' || $block === 'blog_section_tile' ) {
+	if ( $block === 'service_section' || $block === 'service_section_filters' || $block === 'blog_section' || $block === 'blog_section_filters' || $block === 'blog_section_tile' || $block === 'case_section' || $block === 'reviews' ) {
 		$data['ids'] = tolstenko_sanitize_service_section_ids( $data['ids'] ?? array() );
 	}
 	return $data;
@@ -728,13 +972,12 @@ function tolstenko_block_defaults_admin_assets( $hook ) {
 	}
 	wp_enqueue_media();
 	wp_enqueue_editor();
+	wp_enqueue_script( 'jquery' );
+	wp_enqueue_style( 'wp-components' );
 }
 
 /**
  * Визуальный редактор ответа FAQ в дефолтах блоков.
- *
- * @param string $content HTML ответа.
- * @param int    $idx     Индекс пункта.
  */
 function tolstenko_faq_answer_editor( $content, $idx ) {
 	$idx       = (int) $idx;
@@ -799,6 +1042,7 @@ function tolstenko_render_block_defaults_admin_page() {
 	.tolstenko-df .repeater-item{padding:10px;border:1px solid #ddd;background:#fafafa;margin-bottom:8px}
 	.tolstenko-df .repeater-item .cols{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 	.tolstenko-df .repeater-item .cols input[type="text"]{flex:1 1 220px}
+	.tolstenko-df .repeater-item .cols .move-btn{min-width:34px;padding:0 8px}
 	.tolstenko-df .muted{font-size:12px;color:#666}
 	.tolstenko-df .actions{margin-top:12px;display:flex;gap:8px}
 	.tolstenko-df .icon-preview img{max-width:44px;max-height:44px;display:block}
@@ -806,10 +1050,9 @@ function tolstenko_render_block_defaults_admin_page() {
 	.tolstenko-df .tolstenko-defaults-image-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 	.tolstenko-df .tolstenko-faq-editor-wrap .wp-editor-wrap{width:100%}
 	.tolstenko-df .tolstenko-faq-editor-wrap .wp-editor-area{width:100%}
-	.tolstenko-df-service-ids{max-height:280px;overflow:auto;border:1px solid #dcdcde;background:#fff;padding:8px;margin-top:6px}
-	.tolstenko-df-service-ids__item{display:flex;gap:8px;align-items:flex-start;padding:4px 2px;margin:0}
-	.tolstenko-df-service-ids__item span{line-height:1.35}
+	.tolstenko-df .repeater-item .repeater-item{margin-top:8px;background:#f5f5f5}
 	</style>
+	<?php tolstenko_post_select_print_assets(); ?>
 	<div class="tolstenko-df">
 		<div class="tolstenko-df-tabs-group is-active" data-group="main">
 			<div class="tolstenko-df-tabs-group-title"><?php esc_html_e( 'Основные блоки', 'tolstenko-theme' ); ?></div>
@@ -901,6 +1144,8 @@ function tolstenko_render_block_defaults_admin_page() {
 						<div class="repeater-item" data-repeater-item>
 							<div class="cols">
 								<textarea name="tolstenko_block_defaults[main_hero][items][<?php echo (int) $idx; ?>]" rows="2" style="width:100%"><?php echo esc_textarea( $item_val ); ?></textarea>
+								<button type="button" class="button move-btn" data-move-up title="Вверх">↑</button>
+								<button type="button" class="button move-btn" data-move-down title="Вниз">↓</button>
 								<button type="button" class="button" data-remove-item><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button>
 							</div>
 						</div>
@@ -929,15 +1174,6 @@ function tolstenko_render_block_defaults_admin_page() {
 			$rv      = $all['reviews'] ?? array();
 			$rv_ids  = isset( $rv['ids'] ) && is_array( $rv['ids'] ) ? array_map( 'intval', $rv['ids'] ) : array();
 			$rv_cards = isset( $rv['cards'] ) && is_array( $rv['cards'] ) ? $rv['cards'] : array();
-			$all_reviews = get_posts(
-				array(
-					'post_type'      => 'review',
-					'post_status'    => 'publish',
-					'posts_per_page' => 200,
-					'orderby'        => 'title',
-					'order'          => 'ASC',
-				)
-			);
 			?>
 			<div class="row"><textarea name="tolstenko_block_defaults[reviews][title]" rows="2" style="width:100%" placeholder="Заголовок (HTML)"><?php echo esc_textarea( $rv['title'] ?? '' ); ?></textarea></div>
 			<div class="row"><textarea name="tolstenko_block_defaults[reviews][text]" rows="3" style="width:100%" placeholder="Текст под заголовком"><?php echo esc_textarea( $rv['text'] ?? '' ); ?></textarea></div>
@@ -948,16 +1184,12 @@ function tolstenko_render_block_defaults_admin_page() {
 				</label>
 			</div>
 			<div class="row">
-				<div class="muted"><?php esc_html_e( 'Отзывы в блоке (пусто = все)', 'tolstenko-theme' ); ?></div>
-				<?php foreach ( $all_reviews as $rp ) : ?>
-					<label style="display:block;margin:4px 0;">
-						<input type="checkbox" name="tolstenko_block_defaults[reviews][ids][]" value="<?php echo (int) $rp->ID; ?>" <?php checked( in_array( (int) $rp->ID, $rv_ids, true ) ); ?>>
-						<?php echo esc_html( get_the_title( $rp ) ); ?>
-					</label>
-				<?php endforeach; ?>
-				<?php if ( empty( $all_reviews ) ) : ?>
-					<p class="description"><?php esc_html_e( 'Пока нет опубликованных отзывов.', 'tolstenko-theme' ); ?></p>
-				<?php endif; ?>
+				<?php tolstenko_render_post_select( 
+					'tolstenko_block_defaults[reviews][ids]',
+					$rv_ids,
+					'review',
+					'Отзывы (пусто = все)'
+				); ?>
 			</div>
 			<div class="row">
 				<div class="muted"><?php esc_html_e( 'Карточки рейтингов (reviews__items)', 'tolstenko-theme' ); ?></div>
@@ -974,6 +1206,8 @@ function tolstenko_render_block_defaults_admin_page() {
 								<input type="text" name="tolstenko_block_defaults[reviews][cards][<?php echo (int) $idx; ?>][title]" value="<?php echo esc_attr( $c_title ); ?>" placeholder="Название (Яндекс, 2ГИС…)" style="flex:1">
 								<input type="url" name="tolstenko_block_defaults[reviews][cards][<?php echo (int) $idx; ?>][url]" value="<?php echo esc_attr( $c_url ); ?>" placeholder="Ссылка" style="flex:1">
 								<input type="number" min="1" max="5" name="tolstenko_block_defaults[reviews][cards][<?php echo (int) $idx; ?>][rating]" value="<?php echo (int) $c_rating; ?>" style="width:80px" title="Рейтинг">
+								<button type="button" class="button move-btn" data-move-up title="Вверх">↑</button>
+								<button type="button" class="button move-btn" data-move-down title="Вниз">↓</button>
 								<button type="button" class="button" data-remove-item><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button>
 							</div>
 						</div>
@@ -1001,6 +1235,8 @@ function tolstenko_render_block_defaults_admin_page() {
 								<input type="text" name="tolstenko_block_defaults[certificates][items][<?php echo (int) $idx; ?>][title]" value="<?php echo esc_attr( $img_title ); ?>" placeholder="Подпись / alt">
 								<input type="hidden" class="tolstenko-defaults-icon-id" name="tolstenko_block_defaults[certificates][items][<?php echo (int) $idx; ?>][image]" value="<?php echo (int) $img_id; ?>">
 								<button type="button" class="button tolstenko-defaults-pick-icon"><?php esc_html_e( 'Выбрать изображение', 'tolstenko-theme' ); ?></button>
+								<button type="button" class="button move-btn" data-move-up title="Вверх">↑</button>
+								<button type="button" class="button move-btn" data-move-down title="Вниз">↓</button>
 								<button type="button" class="button" data-remove-item><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button>
 							</div>
 							<div class="icon-preview cert-preview" style="margin-top:8px;">
@@ -1052,6 +1288,8 @@ function tolstenko_render_block_defaults_admin_page() {
 										<option value="<?php echo (int) $ap->ID; ?>" <?php selected( $aid, (int) $ap->ID ); ?>><?php echo esc_html( get_the_title( $ap ) ); ?></option>
 									<?php endforeach; ?>
 								</select>
+								<button type="button" class="button move-btn" data-move-up title="Вверх">↑</button>
+								<button type="button" class="button move-btn" data-move-down title="Вниз">↓</button>
 								<button type="button" class="button" data-remove-item><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button>
 							</div>
 						</div>
@@ -1066,6 +1304,7 @@ function tolstenko_render_block_defaults_admin_page() {
 			<div class="row"><textarea name="tolstenko_block_defaults[actions_section][text]" rows="3" placeholder="Текст под заголовком"><?php echo esc_textarea( $all['actions_section']['text'] ?? '' ); ?></textarea></div>
 			<p class="muted"><?php esc_html_e( 'Карточки берутся из записей «Акции» (миниатюра + мета-поля).', 'tolstenko-theme' ); ?></p>
 		</div>
+
 		<div class="tolstenko-df-panel" data-panel="city">
 			<div class="row"><input type="text" name="tolstenko_block_defaults[city][title]" value="<?php echo esc_attr( $all['city']['title'] ?? '' ); ?>" style="width:100%" placeholder="Заголовок"></div>
 			<div class="row"><textarea name="tolstenko_block_defaults[city][text]" rows="3" placeholder="Текст под заголовком"><?php echo esc_textarea( $all['city']['text'] ?? '' ); ?></textarea></div>
@@ -1230,6 +1469,8 @@ function tolstenko_render_block_defaults_admin_page() {
 						<div class="repeater-item" data-repeater-item>
 							<div class="cols">
 								<input type="text" name="tolstenko_block_defaults[free_audit][items][<?php echo (int) $idx; ?>]" value="<?php echo esc_attr( is_array( $txt ) ? ( $txt['text'] ?? '' ) : (string) $txt ); ?>" placeholder="Текст пункта">
+								<button type="button" class="button move-btn" data-move-up title="Вверх">↑</button>
+								<button type="button" class="button move-btn" data-move-down title="Вниз">↓</button>
 								<button type="button" class="button" data-remove-item><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button>
 							</div>
 						</div>
@@ -1253,6 +1494,8 @@ function tolstenko_render_block_defaults_admin_page() {
 						<div class="repeater-item" data-repeater-item>
 							<div class="cols">
 								<textarea name="tolstenko_block_defaults[solution][items][<?php echo (int) $idx; ?>]" rows="2" style="width:100%" placeholder="Текст пункта (HTML)"><?php echo esc_textarea( is_array( $txt ) ? (string) ( $txt['text'] ?? '' ) : (string) $txt ); ?></textarea>
+								<button type="button" class="button move-btn" data-move-up title="Вверх">↑</button>
+								<button type="button" class="button move-btn" data-move-down title="Вниз">↓</button>
 								<button type="button" class="button" data-remove-item><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button>
 							</div>
 						</div>
@@ -1269,6 +1512,8 @@ function tolstenko_render_block_defaults_admin_page() {
 						<div class="repeater-item" data-repeater-item>
 							<div class="cols">
 								<textarea name="tolstenko_block_defaults[solution][items_second][<?php echo (int) $idx; ?>]" rows="2" style="width:100%" placeholder="Текст пункта (HTML)"><?php echo esc_textarea( is_array( $txt ) ? (string) ( $txt['text'] ?? '' ) : (string) $txt ); ?></textarea>
+								<button type="button" class="button move-btn" data-move-up title="Вверх">↑</button>
+								<button type="button" class="button move-btn" data-move-down title="Вниз">↓</button>
 								<button type="button" class="button" data-remove-item><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button>
 							</div>
 						</div>
@@ -1293,6 +1538,8 @@ function tolstenko_render_block_defaults_admin_page() {
 							<div class="cols">
 								<input type="text" name="tolstenko_block_defaults[one_team][items][<?php echo (int) $idx; ?>][value]" value="<?php echo esc_attr( $it['value'] ?? '' ); ?>" placeholder="Значение (10+)">
 								<input type="text" name="tolstenko_block_defaults[one_team][items][<?php echo (int) $idx; ?>][text]" value="<?php echo esc_attr( $it['text'] ?? '' ); ?>" placeholder="Подпись">
+								<button type="button" class="button move-btn" data-move-up title="Вверх">↑</button>
+								<button type="button" class="button move-btn" data-move-down title="Вниз">↓</button>
 								<button type="button" class="button" data-remove-item><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button>
 							</div>
 						</div>
@@ -1324,6 +1571,8 @@ function tolstenko_render_block_defaults_admin_page() {
 						<div class="repeater-item" data-repeater-item>
 							<div class="cols">
 								<input type="text" name="tolstenko_block_defaults[author][list][<?php echo (int) $idx; ?>][text]" value="<?php echo esc_attr( is_array( $txt ) ? (string) ( $txt['text'] ?? '' ) : (string) $txt ); ?>" placeholder="Пункт списка" style="width:100%">
+								<button type="button" class="button move-btn" data-move-up title="Вверх">↑</button>
+								<button type="button" class="button move-btn" data-move-down title="Вниз">↓</button>
 								<button type="button" class="button" data-remove-item><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button>
 							</div>
 						</div>
@@ -1340,6 +1589,8 @@ function tolstenko_render_block_defaults_admin_page() {
 							<div class="cols">
 								<input type="text" name="tolstenko_block_defaults[author][items][<?php echo (int) $idx; ?>][value]" value="<?php echo esc_attr( $it['value'] ?? '' ); ?>" placeholder="Значение">
 								<input type="text" name="tolstenko_block_defaults[author][items][<?php echo (int) $idx; ?>][text]" value="<?php echo esc_attr( $it['text'] ?? '' ); ?>" placeholder="Подпись">
+								<button type="button" class="button move-btn" data-move-up title="Вверх">↑</button>
+								<button type="button" class="button move-btn" data-move-down title="Вниз">↓</button>
 								<button type="button" class="button" data-remove-item><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button>
 							</div>
 						</div>
@@ -1363,6 +1614,8 @@ function tolstenko_render_block_defaults_admin_page() {
 								<input type="url" name="tolstenko_block_defaults[author][links][<?php echo (int) $idx; ?>][url]" value="<?php echo esc_attr( $it['url'] ?? '' ); ?>" placeholder="URL">
 								<input type="hidden" class="tolstenko-defaults-icon-id" name="tolstenko_block_defaults[author][links][<?php echo (int) $idx; ?>][icon]" value="<?php echo (int) $icon_id; ?>">
 								<button type="button" class="button tolstenko-defaults-pick-icon"><?php esc_html_e( 'Иконка', 'tolstenko-theme' ); ?></button>
+								<button type="button" class="button move-btn" data-move-up title="Вверх">↑</button>
+								<button type="button" class="button move-btn" data-move-down title="Вниз">↓</button>
 								<button type="button" class="button" data-remove-item><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button>
 							</div>
 							<div class="icon-preview" style="margin-top:8px;"><?php if ( $icon_url ) : ?><img src="<?php echo esc_url( $icon_url ); ?>" alt=""><?php endif; ?></div>
@@ -1387,6 +1640,8 @@ function tolstenko_render_block_defaults_admin_page() {
 						<div class="repeater-item" data-repeater-item>
 							<div class="cols">
 								<input type="text" name="tolstenko_block_defaults[author][sublist][<?php echo (int) $idx; ?>][text]" value="<?php echo esc_attr( is_array( $txt ) ? (string) ( $txt['text'] ?? '' ) : (string) $txt ); ?>" placeholder="Пункт" style="width:100%">
+								<button type="button" class="button move-btn" data-move-up title="Вверх">↑</button>
+								<button type="button" class="button move-btn" data-move-down title="Вниз">↓</button>
 								<button type="button" class="button" data-remove-item><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button>
 							</div>
 						</div>
@@ -1427,6 +1682,8 @@ function tolstenko_render_block_defaults_admin_page() {
 								<input type="text" name="tolstenko_block_defaults[author][speeches][<?php echo (int) $idx; ?>][text]" value="<?php echo esc_attr( $it['text'] ?? '' ); ?>" placeholder="Подпись" style="flex:1 1 220px">
 								<input type="hidden" class="tolstenko-defaults-icon-id" name="tolstenko_block_defaults[author][speeches][<?php echo (int) $idx; ?>][image]" value="<?php echo (int) $img_id; ?>">
 								<button type="button" class="button tolstenko-defaults-pick-icon"><?php esc_html_e( 'Фото', 'tolstenko-theme' ); ?></button>
+								<button type="button" class="button move-btn" data-move-up title="Вверх">↑</button>
+								<button type="button" class="button move-btn" data-move-down title="Вниз">↓</button>
 								<button type="button" class="button" data-remove-item><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button>
 							</div>
 							<div class="icon-preview" style="margin-top:8px;"><?php if ( $img_url ) : ?><img src="<?php echo esc_url( $img_url ); ?>" alt=""><?php endif; ?></div>
@@ -1440,9 +1697,21 @@ function tolstenko_render_block_defaults_admin_page() {
 		</div>
 
 		<div class="tolstenko-df-panel" data-panel="case_section" data-group="post_sliders">
-			<div class="row"><textarea name="tolstenko_block_defaults[case_section][title]" rows="2" style="width:100%" placeholder="Заголовок (HTML)"><?php echo esc_textarea( $all['case_section']['title'] ?? '' ); ?></textarea></div>
-			<div class="row"><textarea name="tolstenko_block_defaults[case_section][text]" rows="3" style="width:100%" placeholder="Текст под заголовком"><?php echo esc_textarea( $all['case_section']['text'] ?? '' ); ?></textarea></div>
-			<div class="row"><input type="number" min="-1" name="tolstenko_block_defaults[case_section][posts_per_page]" value="<?php echo esc_attr( (string) ( $all['case_section']['posts_per_page'] ?? 4 ) ); ?>" style="width:100%" placeholder="Количество кейсов (4, -1 = все)"></div>
+			<?php
+			$cs = $all['case_section'] ?? array();
+			$cs_ids = isset( $cs['ids'] ) && is_array( $cs['ids'] ) ? array_map( 'intval', $cs['ids'] ) : array();
+			?>
+			<div class="row"><textarea name="tolstenko_block_defaults[case_section][title]" rows="2" style="width:100%" placeholder="Заголовок (HTML)"><?php echo esc_textarea( $cs['title'] ?? '' ); ?></textarea></div>
+			<div class="row"><textarea name="tolstenko_block_defaults[case_section][text]" rows="3" style="width:100%" placeholder="Текст под заголовком"><?php echo esc_textarea( $cs['text'] ?? '' ); ?></textarea></div>
+			<div class="row"><input type="number" min="-1" name="tolstenko_block_defaults[case_section][posts_per_page]" value="<?php echo esc_attr( (string) ( $cs['posts_per_page'] ?? 4 ) ); ?>" style="width:100%" placeholder="Количество кейсов (4, -1 = все)"></div>
+			<div class="row">
+				<?php tolstenko_render_post_select( 
+					'tolstenko_block_defaults[case_section][ids]',
+					$cs_ids,
+					'case',
+					'Кейсы (пусто = все)'
+				); ?>
+			</div>
 		</div>
 
 		<div class="tolstenko-df-panel" data-panel="service_section" data-group="post_sliders">
@@ -1511,6 +1780,8 @@ function tolstenko_render_block_defaults_admin_page() {
 						<div class="repeater-item" data-repeater-item>
 							<div class="cols">
 								<input type="text" name="tolstenko_block_defaults[different_experiences][items][<?php echo (int) $idx; ?>]" value="<?php echo esc_attr( is_array( $txt ) ? ( $txt['text'] ?? '' ) : (string) $txt ); ?>" placeholder="Текст пункта">
+								<button type="button" class="button move-btn" data-move-up title="Вверх">↑</button>
+								<button type="button" class="button move-btn" data-move-down title="Вниз">↓</button>
 								<button type="button" class="button" data-remove-item><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button>
 							</div>
 						</div>
@@ -1518,7 +1789,7 @@ function tolstenko_render_block_defaults_admin_page() {
 				</div>
 				<div class="actions">
 					<button type="button" class="button" data-add-item="different-experiences-list"><?php esc_html_e( 'Добавить пункт', 'tolstenko-theme' ); ?></button>
-			</div>
+				</div>
 			</div>
 			<div class="row"><input type="text" name="tolstenko_block_defaults[different_experiences][tg_text]" value="<?php echo esc_attr( $de['tg_text'] ?? '' ); ?>" style="width:100%" placeholder="Текст кнопки Telegram"></div>
 			<div class="row"><input type="url" name="tolstenko_block_defaults[different_experiences][tg_url]" value="<?php echo esc_attr( $de['tg_url'] ?? '' ); ?>" style="width:100%" placeholder="Ссылка Telegram (пусто = из шапки/подвала)"></div>
@@ -1543,6 +1814,8 @@ function tolstenko_render_block_defaults_admin_page() {
 								<input type="text" name="tolstenko_block_defaults[partners][items][<?php echo (int) $idx; ?>][title]" value="<?php echo esc_attr( $it['title'] ?? '' ); ?>" placeholder="Название / alt">
 								<input type="hidden" class="tolstenko-defaults-icon-id" name="tolstenko_block_defaults[partners][items][<?php echo (int) $idx; ?>][image]" value="<?php echo (int) $img_id; ?>">
 								<button type="button" class="button tolstenko-defaults-pick-icon"><?php esc_html_e( 'Выбрать логотип', 'tolstenko-theme' ); ?></button>
+								<button type="button" class="button move-btn" data-move-up title="Вверх">↑</button>
+								<button type="button" class="button move-btn" data-move-down title="Вниз">↓</button>
 								<button type="button" class="button" data-remove-item><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button>
 							</div>
 							<div class="icon-preview" style="margin-top:8px;"><?php if ( $img_url ) : ?><img src="<?php echo esc_url( $img_url ); ?>" alt=""><?php endif; ?></div>
@@ -1583,6 +1856,8 @@ function tolstenko_render_block_defaults_admin_page() {
 						<div class="repeater-item" data-repeater-item>
 							<div class="cols">
 								<input type="text" name="tolstenko_block_defaults[strategy][items][<?php echo (int) $idx; ?>]" value="<?php echo esc_attr( is_array( $txt ) ? ( $txt['text'] ?? '' ) : (string) $txt ); ?>" placeholder="Текст пункта">
+								<button type="button" class="button move-btn" data-move-up title="Вверх">↑</button>
+								<button type="button" class="button move-btn" data-move-down title="Вниз">↓</button>
 								<button type="button" class="button" data-remove-item><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button>
 							</div>
 						</div>
@@ -1640,6 +1915,8 @@ function tolstenko_render_block_defaults_admin_page() {
 								<input type="url" name="tolstenko_block_defaults[team_cards][items][<?php echo (int) $idx; ?>][btn_url]" value="<?php echo esc_attr( $it['btn_url'] ?? '' ); ?>" placeholder="Ссылка кнопки">
 								<input type="hidden" class="tolstenko-defaults-icon-id" name="tolstenko_block_defaults[team_cards][items][<?php echo (int) $idx; ?>][image]" value="<?php echo (int) $img_id; ?>">
 								<button type="button" class="button tolstenko-defaults-pick-icon"><?php esc_html_e( 'Фото', 'tolstenko-theme' ); ?></button>
+								<button type="button" class="button move-btn" data-move-up title="Вверх">↑</button>
+								<button type="button" class="button move-btn" data-move-down title="Вниз">↓</button>
 								<button type="button" class="button" data-remove-item><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button>
 							</div>
 							<div class="icon-preview" style="margin-top:8px;"><?php if ( $img_url ) : ?><img src="<?php echo esc_url( $img_url ); ?>" alt=""><?php endif; ?></div>
@@ -1660,6 +1937,8 @@ function tolstenko_render_block_defaults_admin_page() {
 						<div class="repeater-item" data-repeater-item>
 							<div class="cols">
 								<input type="text" name="tolstenko_block_defaults[tg_channel][items][<?php echo (int) $idx; ?>]" value="<?php echo esc_attr( is_array( $txt ) ? ( $txt['text'] ?? '' ) : (string) $txt ); ?>" placeholder="Текст пункта">
+								<button type="button" class="button move-btn" data-move-up title="Вверх">↑</button>
+								<button type="button" class="button move-btn" data-move-down title="Вниз">↓</button>
 								<button type="button" class="button" data-remove-item><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button>
 							</div>
 						</div>
@@ -1689,6 +1968,8 @@ function tolstenko_render_block_defaults_admin_page() {
 						<div class="repeater-item" data-repeater-item>
 							<div class="cols">
 								<input type="text" name="tolstenko_block_defaults[three_steps][items][<?php echo (int) $idx; ?>]" value="<?php echo esc_attr( is_array( $txt ) ? ( $txt['text'] ?? '' ) : (string) $txt ); ?>" placeholder="Текст шага">
+								<button type="button" class="button move-btn" data-move-up title="Вверх">↑</button>
+								<button type="button" class="button move-btn" data-move-down title="Вниз">↓</button>
 								<button type="button" class="button" data-remove-item><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button>
 							</div>
 						</div>
@@ -1709,6 +1990,8 @@ function tolstenko_render_block_defaults_admin_page() {
 						<div class="repeater-item" data-repeater-item>
 							<div class="cols">
 								<input type="text" name="tolstenko_block_defaults[faq][items][<?php echo (int) $idx; ?>][title]" value="<?php echo esc_attr( $it['title'] ?? '' ); ?>" placeholder="Вопрос" style="width:100%">
+								<button type="button" class="button move-btn" data-move-up title="Вверх">↑</button>
+								<button type="button" class="button move-btn" data-move-down title="Вниз">↓</button>
 								<button type="button" class="button" data-remove-item><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button>
 							</div>
 							<div class="row tolstenko-faq-editor-wrap">
@@ -1790,7 +2073,7 @@ function tolstenko_render_block_defaults_admin_page() {
 			vacancies_section: 'vacancies'
 		};
 
-		// Разложить панели по группам: поля сразу под табами своей группы.
+		// Разложить панели по группам
 		root.querySelectorAll('.tolstenko-df-panel').forEach(function(panel){
 			var key = panel.getAttribute('data-panel');
 			var group = panel.getAttribute('data-group') || panelGroupMap[key];
@@ -1800,6 +2083,169 @@ function tolstenko_render_block_defaults_admin_page() {
 		});
 		var source = root.querySelector('.tolstenko-df-panels-source');
 		if (source) source.remove();
+
+		// Функция переиндексации элементов репитера
+		function reindexRepeater(listEl, namePrefix) {
+			var items = listEl.querySelectorAll('[data-repeater-item]');
+			items.forEach(function(item, idx){
+				var inputs = item.querySelectorAll('[name]');
+				inputs.forEach(function(input){
+					var name = input.getAttribute('name');
+					var regex = new RegExp('\\' + namePrefix + '\\[\\d+\\]');
+					if (regex.test(name)) {
+						input.setAttribute('name', name.replace(regex, namePrefix + '[' + idx + ']'));
+					}
+				});
+				// Обновляем data-атрибуты для кнопок перемещения
+				var upBtn = item.querySelector('[data-move-up]');
+				var downBtn = item.querySelector('[data-move-down]');
+				if (upBtn) upBtn.dataset.index = idx;
+				if (downBtn) downBtn.dataset.index = idx;
+			});
+		}
+
+		// Функция перемещения элемента
+		function moveItem(item, direction) {
+			var list = item.parentElement;
+			var items = list.querySelectorAll('[data-repeater-item]');
+			var index = Array.from(items).indexOf(item);
+			var newIndex = index + direction;
+			if (newIndex < 0 || newIndex >= items.length) return;
+			
+			var namePrefix = '';
+			var nameInputs = item.querySelectorAll('[name]');
+			if (nameInputs.length > 0) {
+				var name = nameInputs[0].getAttribute('name');
+				var match = name.match(/^([^\[]+\[[^\]]+\])\[/);
+				if (match) namePrefix = match[1];
+			}
+			if (!namePrefix) {
+				// Пробуем найти через data-repeater-list
+				var listKey = list.getAttribute('data-repeater-list');
+				if (listKey) {
+					var panel = list.closest('.tolstenko-df-panel');
+					if (panel) {
+						var panelKey = panel.getAttribute('data-panel');
+						if (panelKey) {
+							namePrefix = panelKey + '[' + listKey.replace(/-list$/, '') + ']';
+						}
+					}
+				}
+			}
+			
+			if (newIndex > index) {
+				item.parentElement.insertBefore(item, items[newIndex + 1] || null);
+			} else {
+				item.parentElement.insertBefore(item, items[newIndex]);
+			}
+			
+			if (namePrefix) {
+				reindexRepeater(list, namePrefix);
+			}
+		}
+
+		// Обработка кликов по кнопкам перемещения и удаления
+		document.addEventListener('click', function(e){
+			var target = e.target;
+			if (target.closest && target.closest('[data-move-up]')) {
+				e.preventDefault();
+				var btn = target.closest('[data-move-up]');
+				var item = btn.closest('[data-repeater-item]');
+				if (item) moveItem(item, -1);
+				return;
+			}
+			if (target.closest && target.closest('[data-move-down]')) {
+				e.preventDefault();
+				var btn = target.closest('[data-move-down]');
+				var item = btn.closest('[data-repeater-item]');
+				if (item) moveItem(item, 1);
+				return;
+			}
+			var removeBtn = target.closest && target.closest('[data-remove-item]');
+			if (removeBtn) {
+				e.preventDefault();
+				var item = removeBtn.closest('[data-repeater-item]');
+				if (!item) return;
+				var area = item.querySelector('textarea.wp-editor-area');
+				if (area && area.id && window.wp && wp.editor && typeof wp.editor.remove === 'function') {
+					try { wp.editor.remove(area.id); } catch (err) {}
+				}
+				item.remove();
+				return;
+			}
+			var addBtn = target.closest && target.closest('[data-add-item]');
+			if (addBtn) {
+				e.preventDefault();
+				var key = addBtn.getAttribute('data-add-item');
+				var panel = addBtn.closest('.tolstenko-df-panel') || document;
+				var list = panel.querySelector('[data-repeater-list="' + key + '"]') || document.querySelector('[data-repeater-list="' + key + '"]');
+				if (!list) return;
+				var directItems = list.querySelectorAll('[data-repeater-item]');
+				var idx = directItems.length;
+				var html = '';
+				if (key === 'main-hero-list') {
+					html = '<div class="repeater-item" data-repeater-item><div class="cols"><textarea name="tolstenko_block_defaults[main_hero][items][' + idx + ']" rows="2" style="width:100%"></textarea><button type="button" class="button move-btn" data-move-up title="Вверх">↑</button><button type="button" class="button move-btn" data-move-down title="Вниз">↓</button><button type="button" class="button" data-remove-item>Удалить</button></div></div>';
+				} else if (key === 'reviews-cards-list') {
+					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[reviews][cards][' + idx + '][title]" placeholder="Название (Яндекс, 2ГИС…)" style="flex:1"><input type="url" name="tolstenko_block_defaults[reviews][cards][' + idx + '][url]" placeholder="Ссылка" style="flex:1"><input type="number" min="1" max="5" name="tolstenko_block_defaults[reviews][cards][' + idx + '][rating]" value="5" style="width:80px" title="Рейтинг"><button type="button" class="button move-btn" data-move-up title="Вверх">↑</button><button type="button" class="button move-btn" data-move-down title="Вниз">↓</button><button type="button" class="button" data-remove-item>Удалить</button></div></div>';
+				} else if (key === 'certificates-list') {
+					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[certificates][items][' + idx + '][title]" placeholder="Подпись / alt"><input type="hidden" class="tolstenko-defaults-icon-id" name="tolstenko_block_defaults[certificates][items][' + idx + '][image]" value="0"><button type="button" class="button tolstenko-defaults-pick-icon">Выбрать изображение</button><button type="button" class="button move-btn" data-move-up title="Вверх">↑</button><button type="button" class="button move-btn" data-move-down title="Вниз">↓</button><button type="button" class="button" data-remove-item>Удалить</button></div><div class="icon-preview cert-preview" style="margin-top:8px;"></div></div>';
+				} else if (key === 'free-audit-list') {
+					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[free_audit][items][' + idx + ']" placeholder="Текст пункта"><button type="button" class="button move-btn" data-move-up title="Вверх">↑</button><button type="button" class="button move-btn" data-move-down title="Вниз">↓</button><button type="button" class="button" data-remove-item>Удалить</button></div></div>';
+				} else if (key === 'solution-list') {
+					html = '<div class="repeater-item" data-repeater-item><div class="cols"><textarea name="tolstenko_block_defaults[solution][items][' + idx + ']" rows="2" style="width:100%" placeholder="Текст пункта (HTML)"></textarea><button type="button" class="button move-btn" data-move-up title="Вверх">↑</button><button type="button" class="button move-btn" data-move-down title="Вниз">↓</button><button type="button" class="button" data-remove-item>Удалить</button></div></div>';
+				} else if (key === 'solution-list-second') {
+					html = '<div class="repeater-item" data-repeater-item><div class="cols"><textarea name="tolstenko_block_defaults[solution][items_second][' + idx + ']" rows="2" style="width:100%" placeholder="Текст пункта (HTML)"></textarea><button type="button" class="button move-btn" data-move-up title="Вверх">↑</button><button type="button" class="button move-btn" data-move-down title="Вниз">↓</button><button type="button" class="button" data-remove-item>Удалить</button></div></div>';
+				} else if (key === 'one-team-list') {
+					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[one_team][items][' + idx + '][value]" placeholder="Значение (10+)"><input type="text" name="tolstenko_block_defaults[one_team][items][' + idx + '][text]" placeholder="Подпись"><button type="button" class="button move-btn" data-move-up title="Вверх">↑</button><button type="button" class="button move-btn" data-move-down title="Вниз">↓</button><button type="button" class="button" data-remove-item>Удалить</button></div></div>';
+				} else if (key === 'author-list' || key === 'author-sublist') {
+					var ak = key === 'author-list' ? 'list' : 'sublist';
+					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[author][' + ak + '][' + idx + '][text]" placeholder="Пункт списка" style="width:100%"><button type="button" class="button move-btn" data-move-up title="Вверх">↑</button><button type="button" class="button move-btn" data-move-down title="Вниз">↓</button><button type="button" class="button" data-remove-item>Удалить</button></div></div>';
+				} else if (key === 'author-items') {
+					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[author][items][' + idx + '][value]" placeholder="Значение"><input type="text" name="tolstenko_block_defaults[author][items][' + idx + '][text]" placeholder="Подпись"><button type="button" class="button move-btn" data-move-up title="Вверх">↑</button><button type="button" class="button move-btn" data-move-down title="Вниз">↓</button><button type="button" class="button" data-remove-item>Удалить</button></div></div>';
+				} else if (key === 'author-links') {
+					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[author][links][' + idx + '][title]" placeholder="Текст ссылки"><input type="url" name="tolstenko_block_defaults[author][links][' + idx + '][url]" placeholder="URL"><input type="hidden" class="tolstenko-defaults-icon-id" name="tolstenko_block_defaults[author][links][' + idx + '][icon]" value="0"><button type="button" class="button tolstenko-defaults-pick-icon">Иконка</button><button type="button" class="button move-btn" data-move-up title="Вверх">↑</button><button type="button" class="button move-btn" data-move-down title="Вниз">↓</button><button type="button" class="button" data-remove-item>Удалить</button></div><div class="icon-preview" style="margin-top:8px;"></div></div>';
+				} else if (key === 'author-speeches') {
+					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[author][speeches][' + idx + '][text]" placeholder="Подпись" style="flex:1 1 220px"><input type="hidden" class="tolstenko-defaults-icon-id" name="tolstenko_block_defaults[author][speeches][' + idx + '][image]" value="0"><button type="button" class="button tolstenko-defaults-pick-icon">Фото</button><button type="button" class="button move-btn" data-move-up title="Вверх">↑</button><button type="button" class="button move-btn" data-move-down title="Вниз">↓</button><button type="button" class="button" data-remove-item>Удалить</button></div><div class="icon-preview" style="margin-top:8px;"></div></div>';
+				} else if (key === 'different-experiences-list') {
+					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[different_experiences][items][' + idx + ']" placeholder="Текст пункта"><button type="button" class="button move-btn" data-move-up title="Вверх">↑</button><button type="button" class="button move-btn" data-move-down title="Вниз">↓</button><button type="button" class="button" data-remove-item>Удалить</button></div></div>';
+				} else if (key === 'partners-list') {
+					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[partners][items][' + idx + '][title]" placeholder="Название / alt"><input type="hidden" class="tolstenko-defaults-icon-id" name="tolstenko_block_defaults[partners][items][' + idx + '][image]" value="0"><button type="button" class="button tolstenko-defaults-pick-icon">Выбрать логотип</button><button type="button" class="button move-btn" data-move-up title="Вверх">↑</button><button type="button" class="button move-btn" data-move-down title="Вниз">↓</button><button type="button" class="button" data-remove-item>Удалить</button></div><div class="icon-preview" style="margin-top:8px;"></div></div>';
+				} else if (key === 'strategy-list' || key === 'tg-channel-list' || key === 'three-steps-list') {
+					var map = { 'strategy-list': 'strategy', 'tg-channel-list': 'tg_channel', 'three-steps-list': 'three_steps' };
+					var k = map[key];
+					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[' + k + '][items][' + idx + ']" placeholder="Текст"><button type="button" class="button move-btn" data-move-up title="Вверх">↑</button><button type="button" class="button move-btn" data-move-down title="Вниз">↓</button><button type="button" class="button" data-remove-item>Удалить</button></div></div>';
+				} else if (key === 'actions-list') {
+					var actionOpts = <?php
+					$opt_html = '<option value="0">— Без ссылки —</option>';
+					foreach ( $action_posts as $ap ) {
+						$opt_html .= '<option value="' . (int) $ap->ID . '">' . esc_html( get_the_title( $ap ) ) . '</option>';
+					}
+					echo wp_json_encode( $opt_html );
+					?>;
+					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[actions][items][' + idx + '][type]" placeholder="Тип / метка"><input type="text" name="tolstenko_block_defaults[actions][items][' + idx + '][title]" placeholder="Заголовок карточки"></div><div class="row"><textarea name="tolstenko_block_defaults[actions][items][' + idx + '][text]" rows="2" placeholder="Текст карточки"></textarea></div><div class="cols"><select name="tolstenko_block_defaults[actions][items][' + idx + '][action_id]" style="min-width:220px">' + actionOpts + '</select><button type="button" class="button move-btn" data-move-up title="Вверх">↑</button><button type="button" class="button move-btn" data-move-down title="Вниз">↓</button><button type="button" class="button" data-remove-item>Удалить</button></div></div>';
+				} else if (key === 'team-cards-list') {
+					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[team_cards][items][' + idx + '][name]" placeholder="Имя"><input type="text" name="tolstenko_block_defaults[team_cards][items][' + idx + '][position]" placeholder="Должность"><input type="text" name="tolstenko_block_defaults[team_cards][items][' + idx + '][exp]" placeholder="Опыт"></div><div class="row"><textarea name="tolstenko_block_defaults[team_cards][items][' + idx + '][text]" rows="2" placeholder="Описание"></textarea></div><div class="cols"><input type="text" name="tolstenko_block_defaults[team_cards][items][' + idx + '][btn_text]" placeholder="Текст кнопки"><input type="url" name="tolstenko_block_defaults[team_cards][items][' + idx + '][btn_url]" placeholder="Ссылка кнопки"><input type="hidden" class="tolstenko-defaults-icon-id" name="tolstenko_block_defaults[team_cards][items][' + idx + '][image]" value="0"><button type="button" class="button tolstenko-defaults-pick-icon">Фото</button><button type="button" class="button move-btn" data-move-up title="Вверх">↑</button><button type="button" class="button move-btn" data-move-down title="Вниз">↓</button><button type="button" class="button" data-remove-item>Удалить</button></div><div class="icon-preview" style="margin-top:8px;"></div></div>';
+				} else if (key === 'faq-list') {
+					var editorId = 'tolstenko_faq_redactor_' + idx + '_' + Date.now();
+					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[faq][items][' + idx + '][title]" placeholder="Вопрос" style="width:100%"><button type="button" class="button move-btn" data-move-up title="Вверх">↑</button><button type="button" class="button move-btn" data-move-down title="Вниз">↓</button><button type="button" class="button" data-remove-item>Удалить</button></div><div class="row tolstenko-faq-editor-wrap"><p class="description" style="margin:0 0 6px;">Ответ</p><textarea id="' + editorId + '" name="tolstenko_block_defaults[faq][items][' + idx + '][redactor]" rows="8" class="wp-editor-area"></textarea></div></div>';
+					list.insertAdjacentHTML('beforeend', html);
+					if (window.wp && wp.editor && typeof wp.editor.initialize === 'function') {
+						wp.editor.initialize(editorId, {
+							tinymce: {
+								wpautop: true,
+								plugins: 'charmap colorpicker hr lists paste tabfocus textcolor wordpress wpautoresize wpeditimage wpemoji wpgallery wplink wptextpattern',
+								toolbar1: 'formatselect,bold,italic,bullist,numlist,blockquote,alignleft,aligncenter,alignright,link,unlink,wp_adv',
+								toolbar2: 'strikethrough,hr,forecolor,pastetext,removeformat,charmap,outdent,indent,undo,redo'
+							},
+							quicktags: true,
+							mediaButtons: true
+						});
+					}
+					html = '';
+				}
+				if (html) list.insertAdjacentHTML('beforeend', html);
+			}
+		});
 
 		function refreshFaqEditors(){
 			if (typeof tinymce === 'undefined') return;
@@ -1820,14 +2266,14 @@ function tolstenko_render_block_defaults_admin_page() {
 
 		function activateTab(tab){
 			if (!tab) return;
-				var target = tab.getAttribute('data-panel');
+			var target = tab.getAttribute('data-panel');
 			var group = tab.getAttribute('data-group') || panelGroupMap[target] || '';
 			root.querySelectorAll('.tolstenko-df-tab').forEach(function(t){ t.classList.remove('active'); });
 			root.querySelectorAll('.tolstenko-df-panel').forEach(function(p){ p.classList.remove('active'); });
 			root.querySelectorAll('.tolstenko-df-tabs-group').forEach(function(g){ g.classList.remove('is-active'); });
-				tab.classList.add('active');
+			tab.classList.add('active');
 			var panel = root.querySelector('.tolstenko-df-panel[data-panel="' + target + '"]');
-				if (panel) panel.classList.add('active');
+			if (panel) panel.classList.add('active');
 			var groupEl = root.querySelector('.tolstenko-df-tabs-group[data-group="' + group + '"]');
 			if (groupEl) {
 				groupEl.classList.add('is-active');
@@ -1844,117 +2290,6 @@ function tolstenko_render_block_defaults_admin_page() {
 
 		var initial = root.querySelector('.tolstenko-df-tab.active') || root.querySelector('.tolstenko-df-tab');
 		activateTab(initial);
-		function reindex(listEl, prefix, mode){
-			var items = listEl.querySelectorAll('[data-repeater-item]');
-			items.forEach(function(item, idx){
-				var inputs = item.querySelectorAll('[name]');
-				inputs.forEach(function(input){
-					var name = input.getAttribute('name');
-					if (mode === 'simple') {
-						var rx = new RegExp(prefix + '\\\\[\\d+\\\\]');
-						input.setAttribute('name', name.replace(rx, prefix + '[' + idx + ']'));
-					} else {
-						var rxObj = new RegExp(prefix + '\\\\[\\d+\\\\]');
-						input.setAttribute('name', name.replace(rxObj, prefix + '[' + idx + ']'));
-					}
-				});
-			});
-		}
-		document.addEventListener('click', function(e){
-			var removeBtn = e.target && e.target.closest ? e.target.closest('[data-remove-item]') : null;
-			if (removeBtn) {
-				e.preventDefault();
-				var item = removeBtn.closest('[data-repeater-item]');
-				if (!item) return;
-				var area = item.querySelector('textarea.wp-editor-area');
-				if (area && area.id && window.wp && wp.editor && typeof wp.editor.remove === 'function') {
-					try { wp.editor.remove(area.id); } catch (err) {}
-				}
-				item.remove();
-				return;
-			}
-			var addBtn = e.target && e.target.closest ? e.target.closest('[data-add-item]') : null;
-			if (addBtn) {
-				e.preventDefault();
-				var key = addBtn.getAttribute('data-add-item');
-				var panel = addBtn.closest('.tolstenko-df-panel') || document;
-				var list;
-				if (key === 'benefits-cooperation-list') {
-					var colWrap = addBtn.closest('.benefits-col-lists') || addBtn.closest('[data-repeater-item]');
-					list = colWrap ? colWrap.querySelector('[data-repeater-list="benefits-cooperation-list"]') : null;
-				} else {
-					list = panel.querySelector('[data-repeater-list="' + key + '"]') || document.querySelector('[data-repeater-list="' + key + '"]');
-				}
-				if (!list) return;
-				var directItems = [];
-				Array.prototype.forEach.call(list.children || [], function(node){
-					if (node.matches && node.matches('[data-repeater-item]')) directItems.push(node);
-				});
-				var idx = directItems.length;
-				var html = '';
-				if (key === 'main-hero-list') {
-					html = '<div class="repeater-item" data-repeater-item><div class="cols"><textarea name="tolstenko_block_defaults[main_hero][items][' + idx + ']" rows="2" style="width:100%"></textarea><button type="button" class="button" data-remove-item>Удалить</button></div></div>';
-				} else if (key === 'reviews-cards-list') {
-					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[reviews][cards][' + idx + '][title]" placeholder="Название (Яндекс, 2ГИС…)" style="flex:1"><input type="url" name="tolstenko_block_defaults[reviews][cards][' + idx + '][url]" placeholder="Ссылка" style="flex:1"><input type="number" min="1" max="5" name="tolstenko_block_defaults[reviews][cards][' + idx + '][rating]" value="5" style="width:80px" title="Рейтинг"><button type="button" class="button" data-remove-item>Удалить</button></div></div>';
-				} else if (key === 'certificates-list') {
-					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[certificates][items][' + idx + '][title]" placeholder="Подпись / alt"><input type="hidden" class="tolstenko-defaults-icon-id" name="tolstenko_block_defaults[certificates][items][' + idx + '][image]" value="0"><button type="button" class="button tolstenko-defaults-pick-icon">Выбрать изображение</button><button type="button" class="button" data-remove-item>Удалить</button></div><div class="icon-preview cert-preview" style="margin-top:8px;"></div></div>';
-				} else if (key === 'free-audit-list') {
-					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[free_audit][items][' + idx + ']" placeholder="Текст пункта"><button type="button" class="button" data-remove-item>Удалить</button></div></div>';
-				} else if (key === 'solution-list') {
-					html = '<div class="repeater-item" data-repeater-item><div class="cols"><textarea name="tolstenko_block_defaults[solution][items][' + idx + ']" rows="2" style="width:100%" placeholder="Текст пункта (HTML)"></textarea><button type="button" class="button" data-remove-item>Удалить</button></div></div>';
-				} else if (key === 'solution-list-second') {
-					html = '<div class="repeater-item" data-repeater-item><div class="cols"><textarea name="tolstenko_block_defaults[solution][items_second][' + idx + ']" rows="2" style="width:100%" placeholder="Текст пункта (HTML)"></textarea><button type="button" class="button" data-remove-item>Удалить</button></div></div>';
-				} else if (key === 'one-team-list') {
-					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[one_team][items][' + idx + '][value]" placeholder="Значение (10+)"><input type="text" name="tolstenko_block_defaults[one_team][items][' + idx + '][text]" placeholder="Подпись"><button type="button" class="button" data-remove-item>Удалить</button></div></div>';
-				} else if (key === 'author-list' || key === 'author-sublist') {
-					var ak = key === 'author-list' ? 'list' : 'sublist';
-					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[author][' + ak + '][' + idx + '][text]" placeholder="Пункт списка" style="width:100%"><button type="button" class="button" data-remove-item>Удалить</button></div></div>';
-				} else if (key === 'author-items') {
-					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[author][items][' + idx + '][value]" placeholder="Значение"><input type="text" name="tolstenko_block_defaults[author][items][' + idx + '][text]" placeholder="Подпись"><button type="button" class="button" data-remove-item>Удалить</button></div></div>';
-				} else if (key === 'author-links') {
-					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[author][links][' + idx + '][title]" placeholder="Текст ссылки"><input type="url" name="tolstenko_block_defaults[author][links][' + idx + '][url]" placeholder="URL"><input type="hidden" class="tolstenko-defaults-icon-id" name="tolstenko_block_defaults[author][links][' + idx + '][icon]" value="0"><button type="button" class="button tolstenko-defaults-pick-icon">Иконка</button><button type="button" class="button" data-remove-item>Удалить</button></div><div class="icon-preview" style="margin-top:8px;"></div></div>';
-				} else if (key === 'author-speeches') {
-					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[author][speeches][' + idx + '][text]" placeholder="Подпись" style="flex:1 1 220px"><input type="hidden" class="tolstenko-defaults-icon-id" name="tolstenko_block_defaults[author][speeches][' + idx + '][image]" value="0"><button type="button" class="button tolstenko-defaults-pick-icon">Фото</button><button type="button" class="button" data-remove-item>Удалить</button></div><div class="icon-preview" style="margin-top:8px;"></div></div>';
-				} else if (key === 'different-experiences-list') {
-					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[different_experiences][items][' + idx + ']" placeholder="Текст пункта"><button type="button" class="button" data-remove-item>Удалить</button></div></div>';
-				} else if (key === 'partners-list') {
-					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[partners][items][' + idx + '][title]" placeholder="Название / alt"><input type="hidden" class="tolstenko-defaults-icon-id" name="tolstenko_block_defaults[partners][items][' + idx + '][image]" value="0"><button type="button" class="button tolstenko-defaults-pick-icon">Выбрать логотип</button><button type="button" class="button" data-remove-item>Удалить</button></div><div class="icon-preview" style="margin-top:8px;"></div></div>';
-				} else if (key === 'strategy-list' || key === 'tg-channel-list' || key === 'three-steps-list') {
-					var map = { 'strategy-list': 'strategy', 'tg-channel-list': 'tg_channel', 'three-steps-list': 'three_steps' };
-					var k = map[key];
-					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[' + k + '][items][' + idx + ']" placeholder="Текст"><button type="button" class="button" data-remove-item>Удалить</button></div></div>';
-				} else if (key === 'actions-list') {
-					var actionOpts = <?php
-					$opt_html = '<option value="0">— Без ссылки —</option>';
-					foreach ( $action_posts as $ap ) {
-						$opt_html .= '<option value="' . (int) $ap->ID . '">' . esc_html( get_the_title( $ap ) ) . '</option>';
-					}
-					echo wp_json_encode( $opt_html );
-					?>;
-					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[actions][items][' + idx + '][type]" placeholder="Тип / метка"><input type="text" name="tolstenko_block_defaults[actions][items][' + idx + '][title]" placeholder="Заголовок карточки"></div><div class="row"><textarea name="tolstenko_block_defaults[actions][items][' + idx + '][text]" rows="2" placeholder="Текст карточки"></textarea></div><div class="cols"><select name="tolstenko_block_defaults[actions][items][' + idx + '][action_id]" style="min-width:220px">' + actionOpts + '</select><button type="button" class="button" data-remove-item>Удалить</button></div></div>';
-				} else if (key === 'team-cards-list') {
-					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[team_cards][items][' + idx + '][name]" placeholder="Имя"><input type="text" name="tolstenko_block_defaults[team_cards][items][' + idx + '][position]" placeholder="Должность"><input type="text" name="tolstenko_block_defaults[team_cards][items][' + idx + '][exp]" placeholder="Опыт"></div><div class="row"><textarea name="tolstenko_block_defaults[team_cards][items][' + idx + '][text]" rows="2" placeholder="Описание"></textarea></div><div class="cols"><input type="text" name="tolstenko_block_defaults[team_cards][items][' + idx + '][btn_text]" placeholder="Текст кнопки"><input type="url" name="tolstenko_block_defaults[team_cards][items][' + idx + '][btn_url]" placeholder="Ссылка кнопки"><input type="hidden" class="tolstenko-defaults-icon-id" name="tolstenko_block_defaults[team_cards][items][' + idx + '][image]" value="0"><button type="button" class="button tolstenko-defaults-pick-icon">Фото</button><button type="button" class="button" data-remove-item>Удалить</button></div><div class="icon-preview" style="margin-top:8px;"></div></div>';
-				} else if (key === 'faq-list') {
-					var editorId = 'tolstenko_faq_redactor_' + idx + '_' + Date.now();
-					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[faq][items][' + idx + '][title]" placeholder="Вопрос" style="width:100%"><button type="button" class="button" data-remove-item>Удалить</button></div><div class="row tolstenko-faq-editor-wrap"><p class="description" style="margin:0 0 6px;">Ответ</p><textarea id="' + editorId + '" name="tolstenko_block_defaults[faq][items][' + idx + '][redactor]" rows="8" class="wp-editor-area"></textarea></div></div>';
-					list.insertAdjacentHTML('beforeend', html);
-					if (window.wp && wp.editor && typeof wp.editor.initialize === 'function') {
-						wp.editor.initialize(editorId, {
-							tinymce: {
-								wpautop: true,
-								plugins: 'charmap colorpicker hr lists paste tabfocus textcolor wordpress wpautoresize wpeditimage wpemoji wpgallery wplink wptextpattern',
-								toolbar1: 'formatselect,bold,italic,bullist,numlist,blockquote,alignleft,aligncenter,alignright,link,unlink,wp_adv',
-								toolbar2: 'strikethrough,hr,forecolor,pastetext,removeformat,charmap,outdent,indent,undo,redo'
-							},
-							quicktags: true,
-							mediaButtons: true
-						});
-					}
-					html = '';
-				}
-				if (html) list.insertAdjacentHTML('beforeend', html);
-			}
-		});
 
 		var defaultsForm = root.closest('form');
 		if (defaultsForm) {
@@ -1964,6 +2299,7 @@ function tolstenko_render_block_defaults_admin_page() {
 				}
 			});
 		}
+
 		function bindIconPicker(scope){
 			scope.querySelectorAll('.tolstenko-defaults-pick-icon').forEach(function(btn){
 				if (btn.dataset.bound) return;
@@ -1991,7 +2327,7 @@ function tolstenko_render_block_defaults_admin_page() {
 		bindIconPicker(document);
 		document.addEventListener('click', function(e){
 			var btn = e.target;
-			if (btn.matches('[data-add-item]')) {
+			if (btn.matches && btn.matches('[data-add-item]')) {
 				setTimeout(function(){ bindIconPicker(document); }, 0);
 			}
 		});
@@ -2048,18 +2384,9 @@ function tolstenko_save_block_defaults_from_request() {
 		'title'      => tolstenko_kses_html( $raw['reviews']['title'] ?? '' ),
 		'text'       => tolstenko_kses_html( $raw['reviews']['text'] ?? '' ),
 		'show_items' => ! empty( $raw['reviews']['show_items'] ),
-		'ids'        => array(),
+		'ids'        => tolstenko_sanitize_ids( $raw['reviews']['ids'] ?? array() ),
 		'cards'      => array(),
 	);
-	if ( isset( $raw['reviews']['ids'] ) && is_array( $raw['reviews']['ids'] ) ) {
-		foreach ( $raw['reviews']['ids'] as $rid ) {
-			$rid = (int) $rid;
-			if ( $rid > 0 ) {
-				$out['reviews']['ids'][] = $rid;
-			}
-		}
-		$out['reviews']['ids'] = array_values( array_unique( $out['reviews']['ids'] ) );
-	}
 	if ( isset( $raw['reviews']['cards'] ) && is_array( $raw['reviews']['cards'] ) ) {
 		foreach ( $raw['reviews']['cards'] as $card ) {
 			if ( ! is_array( $card ) ) {
@@ -2156,6 +2483,7 @@ function tolstenko_save_block_defaults_from_request() {
 		'title'          => tolstenko_kses_html( $raw['case_section']['title'] ?? '' ),
 		'text'           => tolstenko_kses_html( $raw['case_section']['text'] ?? '' ),
 		'posts_per_page' => isset( $raw['case_section']['posts_per_page'] ) ? (int) $raw['case_section']['posts_per_page'] : 4,
+		'ids'            => tolstenko_sanitize_ids( $raw['case_section']['ids'] ?? array() ),
 	);
 
 	$out['service_section'] = array(
@@ -2595,4 +2923,3 @@ function tolstenko_save_block_defaults_from_request() {
 
 	update_option( 'tolstenko_block_defaults', $out, false );
 }
-
