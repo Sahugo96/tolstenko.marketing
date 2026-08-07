@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="tests/bootstrap.php"
+         colors="true"
+         cacheDirectory=".phpunit.cache"
+         failOnWarning="true"
+         failOnRisky="true">
+    <testsuites>
+        <testsuite name="unit">
+            <directory>tests/unit</directory>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <file>inc/blog/allowed-blocks.php</file>
+            <file>inc/blog/content-blocks.php</file>
+            <file>inc/blog/helpers.php</file>
+            <file>inc/blog/plugins-display.php</file>
+            <file>inc/blog/reading-time.php</file>
+            <file>inc/compat-koritan-rename.php</file>
+            <file>inc/rest-posts-filter.php</file>
+            <file>inc/reviews-helpers.php</file>
+        </include>
+    </source>
+</phpunit>
