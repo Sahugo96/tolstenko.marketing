@@ -381,22 +381,6 @@
         grid-gap: vw(60px, $desktop_large);
       }
     }
-    &--table {
-      overflow-x: auto;
-      scrollbar-width: none;
-      &::-webkit-scrollbar {
-        display: none;
-      }
-    
-      padding: vw(50px, $mobile) vw(20px, $mobile);
-    
-      @media (min-width: $desk) {
-        padding: vw(50px, $desktop) vw(20px, $desktop);
-      }
-      @media (min-width: $desk_large) {
-        padding: vw(50px, $desktop_large) vw(20px, $desktop_large);
-      }
-    }
   }
   &__warnings {
     display: flex;
@@ -553,113 +537,6 @@
     }
     @media (min-width: $desk_large) {
       height: vw(65px, $desktop_large);
-    }
-  }
-  &__content-table {
-    text-transform: uppercase;
-    border-collapse: collapse;
-  }
-  &__content-table-head {
-    border-radius: vw(50px, $mobile);
-    background-color: var(--brand-accent-yellow-color);
-
-    th {
-      user-select: none;
-      padding: vw(10px, $mobile) vw(9px, $mobile);
-      min-width: vw(188px, $mobile);
-      max-width: vw(280px, $mobile);
-      background-color: var(--brand-accent-yellow-color);
-      color: var(--gray-15-color);
-      @media (min-width: $desk) {
-        padding: vw(10px, $desktop) vw(9px, $desktop);
-        min-width: vw(188px, $desktop);
-        max-width: vw(280px, $desktop);
-      }
-      @media (min-width: $desk_large) {
-        padding: vw(10px, $desktop_large) vw(9px, $desktop_large);
-        min-width: vw(188px, $desktop_large);
-        max-width: vw(280px, $desktop_large);
-      }
-      &:first-child {
-        padding-left: vw(25px, $mobile);
-        border-radius: vw(50px, $mobile) 0 0 vw(50px, $mobile);
-        @media (min-width: $desk) {
-          padding-left: vw(30px, $desktop);
-        }
-        @media (min-width: $desk_large) {
-          padding-left: vw(30px, $desktop_large);
-        }
-      }
-      &:last-child {
-        padding-right: vw(25px, $mobile);
-        border-radius: 0 vw(50px, $mobile) vw(50px, $mobile) 0;
-        @media (min-width: $desk) {
-          padding-right: vw(30px, $desktop);
-        }
-        @media (min-width: $desk_large) {
-          padding-right: vw(30px, $desktop_large);
-        }
-      }
-    }
-  }
-  &__content-table-body {
-    
-    tr {
-      user-select: none;
-      padding: 0 vw(15px, $mobile);
-      border-bottom: 1px solid rgba(#fff, .5);
-      @media (min-width: $desk) {
-        padding: 0 vw(15px, $desktop);
-      }
-      @media (min-width: $desk_large) {
-        padding: 0 vw(15px, $desktop_large);
-      }
-
-      &:first-child {
-        height: vw(10px, $mobile);
-        border: 0;
-        @media (min-width: $desk) {
-          height: vw(10px, $desktop);
-        }
-        @media (min-width: $desk_large) {
-          height: vw(10px, $desktop_large);
-        }
-      }
-      &:nth-child(2) td {
-        &:first-child {
-          border-top-left-radius: vw(10px, $mobile);
-          @media (min-width: $desk) {
-            border-top-left-radius: vw(10px, $desktop);
-          }
-          @media (min-width: $desk_large) {
-            border-top-left-radius: vw(10px, $desktop_large);
-          }
-        }
-        &:last-child {
-          border-top-right-radius: vw(10px, $mobile);
-          @media (min-width: $desk) {
-            border-top-right-radius: vw(10px, $desktop);
-          }
-          @media (min-width: $desk_large) {
-            border-top-right-radius: vw(10px, $desktop_large);
-          }
-        }
-      }
-      &:has( td:hover) td {
-        background-color: var(--gray-25-color);
-      }
-    }
-    td {
-      user-select: none;
-      color: var(--white-color);
-      padding: vw(10px, $mobile) 0;
-      transition: all .3s linear;
-      @media (min-width: $desk) {
-        padding: vw(10px, $desktop) vw(9px, $desktop);
-      }
-      @media (min-width: $desk_large) {
-        padding: vw(10px, $desktop_large) vw(9px, $desktop_large);
-      }
     }
   }
   &__right {

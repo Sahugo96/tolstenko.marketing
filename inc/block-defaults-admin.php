@@ -90,7 +90,6 @@ function tolstenko_block_defaults_schema() {
 			'posts_per_page' => 4,
 			'ids'            => array(),
 			'btn_text'       => 'Все статьи',
-			'btn_url'        => '',
 		),
 		'blog_section_tile' => array(
 			'title'            => 'Статьи',
@@ -131,11 +130,6 @@ function tolstenko_block_defaults_schema() {
 			'title'   => 'Нужна помощь с продвижением?',
 			'btn'     => 'Получить консультацию',
 			'btn_url' => '',
-		),
-		'blog_table' => array(
-			'use_header' => true,
-			'header'     => array(),
-			'rows'       => array(),
 		),
 		'consultation_whatsapp' => array(
 			'title'       => 'Напишите нам в WhatsApp',
@@ -1744,8 +1738,7 @@ function tolstenko_render_block_defaults_admin_page() {
 			tolstenko_render_blog_section_defaults_fields( 'blog_section_filters', $bsf );
 			?>
 			<div class="row"><input type="text" name="tolstenko_block_defaults[blog_section_filters][btn_text]" value="<?php echo esc_attr( $bsf['btn_text'] ?? '' ); ?>" style="width:100%" placeholder="Текст кнопки под списком (Все статьи)"></div>
-			<div class="row"><input type="url" name="tolstenko_block_defaults[blog_section_filters][btn_url]" value="<?php echo esc_attr( $bsf['btn_url'] ?? '' ); ?>" style="width:100%" placeholder="Ссылка кнопки (пусто = архив статей)"></div>
-			<p class="description"><?php esc_html_e( 'Слайдер с фильтром по рубрикам blog_cat.', 'tolstenko-theme' ); ?></p>
+			<p class="description"><?php esc_html_e( 'Слайдер с фильтром по рубрикам blog_cat. Кнопка всегда ведёт на страницу блога.', 'tolstenko-theme' ); ?></p>
 		</div>
 
 		<div class="tolstenko-df-panel" data-panel="blog_section_tile" data-group="post_sliders">
@@ -2518,7 +2511,6 @@ function tolstenko_save_block_defaults_from_request() {
 		'posts_per_page' => isset( $raw['blog_section_filters']['posts_per_page'] ) ? (int) $raw['blog_section_filters']['posts_per_page'] : 4,
 		'ids'            => tolstenko_sanitize_service_section_ids( $raw['blog_section_filters']['ids'] ?? array() ),
 		'btn_text'       => sanitize_text_field( $raw['blog_section_filters']['btn_text'] ?? '' ),
-		'btn_url'        => esc_url_raw( $raw['blog_section_filters']['btn_url'] ?? '' ),
 	);
 
 	$out['blog_section_tile'] = array(

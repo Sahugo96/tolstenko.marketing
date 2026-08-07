@@ -92,9 +92,8 @@ function tolstenko_hf_social_rows_from_contact( $rows ) {
 			continue;
 		}
 		$icon_raw = isset( $row['icon'] ) ? trim( (string) $row['icon'] ) : '';
-		$icon     = function_exists( 'tolstenko_contact_resolve_icon_url' )
-			? tolstenko_contact_resolve_icon_url( $icon_raw )
-			: $icon_raw;
+		// Оставляем ID/исходный путь — URL резолвится при рендере (иначе SVG → img).
+		$icon = $icon_raw;
 		$link = isset( $row['link'] ) ? trim( (string) $row['link'] ) : '';
 		$text = isset( $row['text'] ) ? trim( (string) $row['text'] ) : '';
 		if ( $icon === '' && $link === '' && $text === '' ) {

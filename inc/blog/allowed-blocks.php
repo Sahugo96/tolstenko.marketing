@@ -75,7 +75,6 @@ function tolstenko_get_blog_theme_blocks_catalog() {
 		'tolstenko/blog-number-list' => __( 'Нумерованный список', 'tolstenko-theme' ),
 		'tolstenko/blog-warning'     => __( 'Предупреждения', 'tolstenko-theme' ),
 		'tolstenko/blog-seo'         => __( 'SEO / CTA', 'tolstenko-theme' ),
-		'tolstenko/blog-table'       => __( 'Таблица', 'tolstenko-theme' ),
 		'tolstenko/consultation-whatsapp' => __( 'Консультация WhatsApp', 'tolstenko-theme' ),
 		'tolstenko/consultation-tg'       => __( 'Консультация Telegram', 'tolstenko-theme' ),
 	);
@@ -198,11 +197,6 @@ function tolstenko_blog_content_defaults_schema() {
 			'btn'     => 'Получить консультацию',
 			'btn_url' => '',
 		),
-		'blog_table' => array(
-			'use_header' => true,
-			'header'     => array(),
-			'rows'       => array(),
-		),
 	);
 }
 
@@ -296,18 +290,9 @@ function tolstenko_render_blog_content_defaults_admin_page() {
 	$nl   = $all['blog_number_list'];
 	$wn   = $all['blog_warning'];
 	$seo  = $all['blog_seo'];
-	$tbl  = $all['blog_table'];
 
 	$nl_items = ! empty( $nl['items'] ) && is_array( $nl['items'] ) ? $nl['items'] : array( array( 'text' => '' ) );
 	$wn_items = ! empty( $wn['items'] ) && is_array( $wn['items'] ) ? $wn['items'] : array( array( 'type' => 'warn', 'text' => '', 'icon' => 0 ) );
-	$header   = is_array( $tbl['header'] ?? null ) ? $tbl['header'] : array();
-	$rows     = is_array( $tbl['rows'] ?? null ) ? $tbl['rows'] : array();
-	if ( ! $header ) {
-		$header = array( '', '' );
-	}
-	if ( ! $rows ) {
-		$rows = array( array( 'cells' => array( '', '' ) ) );
-	}
 	?>
 	<div class="wrap">
 		<h1><?php esc_html_e( 'Блоки для статей', 'tolstenko-theme' ); ?></h1>
@@ -340,7 +325,6 @@ function tolstenko_render_blog_content_defaults_admin_page() {
 					'blog_blockquote'  => __( 'Цитата', 'tolstenko-theme' ),
 					'blog_number_list' => __( 'Список', 'tolstenko-theme' ),
 					'blog_warning'     => __( 'Предупреждения', 'tolstenko-theme' ),
-					'blog_table'       => __( 'Таблица', 'tolstenko-theme' ),
 					'blog_large_img'   => __( 'Крупное фото', 'tolstenko-theme' ),
 					'blog_video'       => __( 'Видео', 'tolstenko-theme' ),
 				);
@@ -434,34 +418,6 @@ function tolstenko_render_blog_content_defaults_admin_page() {
 						<p><button type="button" class="button-link-delete" data-bcd-remove><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button></p>
 					</div>
 				</template>
-			</div>
-
-			<div class="tolstenko-bcd-panel" data-bcd-panel="blog_table" hidden>
-				<h2><?php esc_html_e( 'Таблица', 'tolstenko-theme' ); ?></h2>
-				<div class="row">
-					<label>
-						<input type="hidden" name="tolstenko_block_defaults[blog_table][use_header]" value="0">
-						<input type="checkbox" name="tolstenko_block_defaults[blog_table][use_header]" value="1" <?php checked( ! empty( $tbl['use_header'] ) ); ?>>
-						<?php esc_html_e( 'Показывать шапку', 'tolstenko-theme' ); ?>
-					</label>
-				</div>
-				<p class="description"><?php esc_html_e( 'Шапка: ячейки через | . Строки: одна строка = ряд, ячейки через | .', 'tolstenko-theme' ); ?></p>
-				<div class="row">
-					<input type="text" name="tolstenko_block_defaults[blog_table][header_raw]" value="<?php echo esc_attr( implode( ' | ', array_map( 'strval', $header ) ) ); ?>" placeholder="Колонка 1 | Колонка 2">
-				</div>
-				<div class="row">
-					<textarea name="tolstenko_block_defaults[blog_table][rows_raw]" rows="6" placeholder="яч1 | яч2"><?php
-					$lines = array();
-					foreach ( $rows as $row ) {
-						$cells = is_array( $row ) ? ( $row['cells'] ?? $row ) : array();
-						if ( ! is_array( $cells ) ) {
-							continue;
-						}
-						$lines[] = implode( ' | ', array_map( 'strval', $cells ) );
-					}
-					echo esc_textarea( implode( "\n", $lines ) );
-					?></textarea>
-				</div>
 			</div>
 
 			<div class="tolstenko-bcd-panel" data-bcd-panel="blog_large_img" hidden>
@@ -608,26 +564,6 @@ function tolstenko_save_blog_content_defaults_from_request() {
 		'title'   => isset( $seo['title'] ) ? ( function_exists( 'tolstenko_kses_html' ) ? tolstenko_kses_html( (string) $seo['title'] ) : sanitize_text_field( (string) $seo['title'] ) ) : '',
 		'btn'     => isset( $seo['btn'] ) ? sanitize_text_field( (string) $seo['btn'] ) : '',
 		'btn_url' => isset( $seo['btn_url'] ) ? esc_url_raw( (string) $seo['btn_url'] ) : '',
-	);
-
-	$tbl        = isset( $raw_all['blog_table'] ) && is_array( $raw_all['blog_table'] ) ? $raw_all['blog_table'] : array();
-	$header_raw = isset( $tbl['header_raw'] ) ? (string) $tbl['header_raw'] : '';
-	$rows_raw   = isset( $tbl['rows_raw'] ) ? (string) $tbl['rows_raw'] : '';
-	$header     = array_map( 'trim', $header_raw === '' ? array() : explode( '|', $header_raw ) );
-	$header     = array_map( 'sanitize_text_field', $header );
-	$body_rows  = array();
-	foreach ( preg_split( '/\r\n|\r|\n/', $rows_raw ) as $line ) {
-		$line = trim( (string) $line );
-		if ( $line === '' ) {
-			continue;
-		}
-		$cells = array_map( 'sanitize_text_field', array_map( 'trim', explode( '|', $line ) ) );
-		$body_rows[] = array( 'cells' => $cells );
-	}
-	$saved['blog_table'] = array(
-		'use_header' => ! empty( $tbl['use_header'] ),
-		'header'     => $header,
-		'rows'       => $body_rows,
 	);
 
 	update_option( 'tolstenko_block_defaults', $saved, false );

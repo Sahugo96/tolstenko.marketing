@@ -40,6 +40,55 @@ function tolstenko_get_posts_filter_card_renderers() {
 }
 
 /**
+ * Активный slug таксономии из текущего URL (для предвыбора фильтра).
+ * Пример: /blog/seo/ → «seo» для taxonomy blog_cat.
+ *
+ * @param string $taxonomy Taxonomy key.
+ * @return string Term slug or empty.
+ */
+function tolstenko_get_filter_active_term_slug( $taxonomy ) {
+	$taxonomy = sanitize_key( (string) $taxonomy );
+	if ( $taxonomy === '' || ! taxonomy_exists( $taxonomy ) ) {
+		return '';
+	}
+	if ( ! is_tax( $taxonomy ) ) {
+		return '';
+	}
+	$term = get_queried_object();
+	if ( ! ( $term instanceof WP_Term ) || $term->taxonomy !== $taxonomy ) {
+		return '';
+	}
+	$slug = sanitize_title( (string) $term->slug );
+	return $slug !== '' ? $slug : '';
+}
+
+/**
+ * Гарантирует, что активный термин есть в списке фильтров.
+ *
+ * @param array<int, WP_Term> $categories Categories.
+ * @param string              $taxonomy   Taxonomy.
+ * @param string              $active_slug Active slug.
+ * @return array<int, WP_Term>
+ */
+function tolstenko_ensure_filter_term_in_categories( $categories, $taxonomy, $active_slug ) {
+	$categories  = is_array( $categories ) ? $categories : array();
+	$active_slug = sanitize_title( (string) $active_slug );
+	if ( $active_slug === '' ) {
+		return $categories;
+	}
+	foreach ( $categories as $cat ) {
+		if ( $cat instanceof WP_Term && $cat->slug === $active_slug ) {
+			return $categories;
+		}
+	}
+	$term = get_term_by( 'slug', $active_slug, sanitize_key( (string) $taxonomy ) );
+	if ( $term instanceof WP_Term ) {
+		$categories[] = $term;
+	}
+	return $categories;
+}
+
+/**
  * Карточка вакансии для фильтра (через vacancy-card.php).
  *
  * @param WP_Post $post Post.
@@ -138,10 +187,14 @@ function tolstenko_get_blog_section_filters_button() {
 		: array();
 
 	$text = trim( (string) ( $defaults['btn_text'] ?? '' ) );
-	$url  = trim( (string) ( $defaults['btn_url'] ?? '' ) );
 
+	$blog_page = get_page_by_path( 'blog' );
+	$url       = ( $blog_page instanceof WP_Post ) ? (string) get_permalink( $blog_page ) : '';
 	if ( $url === '' && post_type_exists( 'blog' ) ) {
 		$url = (string) get_post_type_archive_link( 'blog' );
+	}
+	if ( $url === '' ) {
+		$url = home_url( '/blog/' );
 	}
 
 	if ( $text === '' || $url === '' ) {

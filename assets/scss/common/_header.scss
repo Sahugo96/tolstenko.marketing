@@ -444,6 +444,14 @@
     border: 1px solid var(--gray-25-color);
     @media (min-width: $desk) {
       display: none;
+      max-width: vw(35px, $desktop);
+      min-width: vw(35px, $desktop);
+      height: vw(30px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(35px, $desktop_large);
+      min-width: vw(35px, $desktop_large);
+      height: vw(30px, $desktop_large);
     }
     &--tel {
       max-width: vw(135px, $mobile);
@@ -782,5 +790,8 @@
       padding-bottom: 0;
       overflow: hidden;
     }
+    // &:not(.active) .header__bottom-btn:not(.header__bottom-btn--tel) {
+    //   display: flex;
+    // }
   }
 }

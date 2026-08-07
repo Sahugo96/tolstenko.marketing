@@ -1,7 +1,7 @@
 <?php
 /**
- * Архив категории услуг: /services/{category}/.
- * Контент — Gutenberg-блоки страницы /services/, фильтр предвыбирает рубрику.
+ * Архив категории вакансий: /vacancies/{category}/.
+ * Контент — Gutenberg-блоки страницы /vacancies/, фильтр предвыбирает рубрику.
  */
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -13,8 +13,8 @@ if ( ! ( $term instanceof WP_Term ) ) {
 	return;
 }
 
-$services_page = get_page_by_path( 'services' );
-if ( ! ( $services_page instanceof WP_Post ) || $services_page->post_status !== 'publish' ) {
+$vacancies_page = get_page_by_path( 'vacancies' );
+if ( ! ( $vacancies_page instanceof WP_Post ) || $vacancies_page->post_status !== 'publish' ) {
 	include get_template_directory() . '/index.php';
 	return;
 }
@@ -29,7 +29,7 @@ get_header();
 	}
 
 	// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Gutenberg via the_content.
-	echo apply_filters( 'the_content', $services_page->post_content );
+	echo apply_filters( 'the_content', $vacancies_page->post_content );
 	?>
 </main>
 

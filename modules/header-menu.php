@@ -27,7 +27,11 @@ if ( ! empty( $contact['phone_href'] ) && $phone === (string) ( $contact['phone'
 
 $logo_url       = $theme_uri . '/assets/img/logo.svg';
 $logo_short_url       = $theme_uri . '/assets/img/logo_short.svg';
-$contacts_url   = get_permalink( get_page_by_path( 'contacts' ) ) ?: home_url( '/' );
+$contacts_page  = get_page_by_path( 'contacts' );
+$contacts_url   = ( $contacts_page instanceof WP_Post ) ? (string) get_permalink( $contacts_page ) : home_url( '/' );
+if ( $contacts_url === '' ) {
+	$contacts_url = home_url( '/' );
+}
 
 // Кнопки справа от телефона (иконки): socials_header_2 или первые 2 из contact socials.
 $quick_socials = array();
@@ -58,29 +62,34 @@ $header_service_menu = wp_nav_menu(
 );
 
 /**
- * Рендер иконки соцсети (inline SVG при возможности).
+ * Рендер иконки соцсети (inline SVG).
  *
  * @param array{icon?: string, link?: string, text?: string} $social Social item.
+ * @param string                                            $btn_class CSS class for the link.
  */
-$render_quick_social = static function ( $social ) {
+$render_quick_social = static function ( $social, $btn_class = 'header__top-btn' ) {
 	$link = isset( $social['link'] ) ? trim( (string) $social['link'] ) : '';
 	$icon = isset( $social['icon'] ) ? trim( (string) $social['icon'] ) : '';
 	$text = isset( $social['text'] ) ? trim( (string) $social['text'] ) : '';
 	if ( $link === '' ) {
 		return;
 	}
-	$svg_path = function_exists( 'tolstenko_contact_resolve_svg_path' ) ? tolstenko_contact_resolve_svg_path( $icon ) : '';
-	$icon_url = function_exists( 'tolstenko_contact_resolve_icon_url' ) ? tolstenko_contact_resolve_icon_url( $icon ) : $icon;
-	?>
-	<a class="header__top-btn default-btn" href="<?php echo esc_url( $link ); ?>" target="_blank" rel="noopener noreferrer"<?php echo $text !== '' ? ' title="' . esc_attr( $text ) . '"' : ''; ?>>
-		<?php
+	$svg = function_exists( 'tolstenko_contact_get_inline_svg' )
+		? tolstenko_contact_get_inline_svg( $icon )
+		: '';
+	if ( $svg === '' && function_exists( 'tolstenko_contact_resolve_svg_path' ) ) {
+		$svg_path = tolstenko_contact_resolve_svg_path( $icon );
 		if ( $svg_path !== '' ) {
-			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			echo file_get_contents( $svg_path );
-		} elseif ( $icon_url !== '' ) {
-			?>
-			<img src="<?php echo esc_url( $icon_url ); ?>" alt="<?php echo esc_attr( $text !== '' ? $text : 'Social' ); ?>">
-			<?php
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- local SVG.
+			$svg = (string) file_get_contents( $svg_path );
+		}
+	}
+	?>
+	<a class="<?php echo esc_attr( $btn_class ); ?> default-btn" href="<?php echo esc_url( $link ); ?>" target="_blank" rel="noopener noreferrer"<?php echo $text !== '' ? ' title="' . esc_attr( $text ) . '"' : ''; ?>>
+		<?php
+		if ( $svg !== '' ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- local SVG from media/theme.
+			echo $svg;
 		} else {
 			echo esc_html( $text !== '' ? $text : '•' );
 		}
@@ -199,28 +208,9 @@ $render_quick_social = static function ( $social ) {
 
 			<?php
 			foreach ( array_slice( $quick_socials, 0, 2 ) as $social ) {
-				$link = is_array( $social ) ? trim( (string) ( $social['link'] ?? '' ) ) : '';
-				$icon = is_array( $social ) ? trim( (string) ( $social['icon'] ?? '' ) ) : '';
-				$text = is_array( $social ) ? trim( (string) ( $social['text'] ?? '' ) ) : '';
-				if ( $link === '' ) {
-					continue;
+				if ( is_array( $social ) ) {
+					$render_quick_social( $social, 'header__bottom-btn' );
 				}
-				$svg_path = function_exists( 'tolstenko_contact_resolve_svg_path' ) ? tolstenko_contact_resolve_svg_path( $icon ) : '';
-				$icon_url = function_exists( 'tolstenko_contact_resolve_icon_url' ) ? tolstenko_contact_resolve_icon_url( $icon ) : $icon;
-				?>
-				<a class="header__bottom-btn default-btn" href="<?php echo esc_url( $link ); ?>" target="_blank" rel="noopener noreferrer"<?php echo $text !== '' ? ' title="' . esc_attr( $text ) . '"' : ''; ?>>
-					<?php
-					if ( $svg_path !== '' ) {
-						// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-						echo file_get_contents( $svg_path );
-					} elseif ( $icon_url !== '' ) {
-						?>
-						<img src="<?php echo esc_url( $icon_url ); ?>" alt="<?php echo esc_attr( $text !== '' ? $text : 'Social' ); ?>">
-						<?php
-					}
-					?>
-				</a>
-				<?php
 			}
 			?>
 

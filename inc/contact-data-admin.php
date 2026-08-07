@@ -207,7 +207,7 @@ function tolstenko_contact_resolve_icon_url( $icon_raw, $size = 'full' ) {
 /**
  * Локальный путь к SVG для inline-вывода.
  *
- * @param string $icon_raw ID или URL.
+ * @param string $icon_raw ID, URL темы или uploads.
  * @return string
  */
 function tolstenko_contact_resolve_svg_path( $icon_raw ) {
@@ -215,20 +215,58 @@ function tolstenko_contact_resolve_svg_path( $icon_raw ) {
 	if ( $icon_raw === '' ) {
 		return '';
 	}
+
+	$path = '';
+
 	if ( ctype_digit( $icon_raw ) ) {
-		$path = get_attached_file( (int) $icon_raw );
-		return ( is_string( $path ) && $path !== '' && is_readable( $path ) ) ? $path : '';
-	}
-	$theme_uri = get_template_directory_uri();
-	$theme_dir = get_template_directory();
-	if ( strpos( $icon_raw, $theme_uri ) === 0 ) {
-		$rel = substr( $icon_raw, strlen( $theme_uri ) );
-		$path = $theme_dir . $rel;
-		if ( is_readable( $path ) ) {
-			return $path;
+		$attached = get_attached_file( (int) $icon_raw );
+		$path     = is_string( $attached ) ? $attached : '';
+	} else {
+		$theme_uri = get_template_directory_uri();
+		$theme_dir = get_template_directory();
+		if ( strpos( $icon_raw, $theme_uri ) === 0 ) {
+			$path = $theme_dir . substr( $icon_raw, strlen( $theme_uri ) );
+		} else {
+			$attachment_id = function_exists( 'attachment_url_to_postid' )
+				? (int) attachment_url_to_postid( $icon_raw )
+				: 0;
+			if ( $attachment_id > 0 ) {
+				$attached = get_attached_file( $attachment_id );
+				$path     = is_string( $attached ) ? $attached : '';
+			} else {
+				$uploads = wp_get_upload_dir();
+				if ( ! empty( $uploads['baseurl'] ) && ! empty( $uploads['basedir'] ) && strpos( $icon_raw, (string) $uploads['baseurl'] ) === 0 ) {
+					$path = (string) $uploads['basedir'] . substr( $icon_raw, strlen( (string) $uploads['baseurl'] ) );
+				}
+			}
 		}
 	}
-	return '';
+
+	$path = wp_normalize_path( $path );
+	if ( $path === '' || ! is_readable( $path ) ) {
+		return '';
+	}
+	if ( ! preg_match( '/\.svg$/i', $path ) ) {
+		return '';
+	}
+
+	return $path;
+}
+
+/**
+ * Inline SVG markup for contact/header icons (empty if not SVG).
+ *
+ * @param string $icon_raw ID или URL.
+ * @return string
+ */
+function tolstenko_contact_get_inline_svg( $icon_raw ) {
+	$path = tolstenko_contact_resolve_svg_path( $icon_raw );
+	if ( $path === '' ) {
+		return '';
+	}
+	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- local SVG only.
+	$svg = file_get_contents( $path );
+	return is_string( $svg ) ? $svg : '';
 }
 
 add_action( 'admin_menu', 'tolstenko_register_contact_data_admin_page', 11 );

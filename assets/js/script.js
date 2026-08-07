@@ -51,6 +51,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     })();
 
+    (function () {
+        var header = document.querySelector('.header');
+        if (!header) return;
+
+        function onScroll() {
+            header.classList.toggle('scroll', window.scrollY >= 50);
+        }
+
+        onScroll();
+        window.addEventListener('scroll', onScroll, { passive: true });
+    })();
+
     // services panel (marketing markup)
     (function () {
         var trigger = document.querySelector('.header__bottom-service[aria-controls="header-services-panel"]');
@@ -1445,5 +1457,98 @@ document.addEventListener('DOMContentLoaded', () => {
                 activateTab(checked.getAttribute('data-tab-index'));
             }
         });
+    })();
+
+    // Drag-to-scroll для широких таблиц в статье (скроллбар скрыт в CSS)
+    (function () {
+        var containers = document.querySelectorAll(
+            '.single-blog .wp-block-table, .single-actions .wp-block-table'
+        );
+        if (!containers.length) return;
+
+        containers.forEach(function (container) {
+            var isDown = false;
+            var startX = 0;
+            var scrollLeft = 0;
+
+            container.style.cursor = 'grab';
+
+            container.addEventListener('mousedown', function (e) {
+                if (e.button !== 0) return;
+                isDown = true;
+                container.style.cursor = 'grabbing';
+                startX = e.pageX - container.offsetLeft;
+                scrollLeft = container.scrollLeft;
+            });
+
+            container.addEventListener('mouseleave', function () {
+                isDown = false;
+                container.style.cursor = 'grab';
+            });
+
+            container.addEventListener('mouseup', function () {
+                isDown = false;
+                container.style.cursor = 'grab';
+            });
+
+            container.addEventListener('mousemove', function (e) {
+                if (!isDown) return;
+                e.preventDefault();
+                var x = e.pageX - container.offsetLeft;
+                var walk = (x - startX) * 1.5;
+                container.scrollLeft = scrollLeft - walk;
+            });
+        });
+    })();
+
+    // Fade-in секций: один раз, когда верх секции выше линии триггера.
+    (function () {
+        var sections = document.querySelectorAll('.main .section');
+        if (!sections.length) return;
+
+        var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (reduceMotion) {
+            sections.forEach(function (el) {
+                el.classList.add('anim');
+            });
+            return;
+        }
+
+        function topAboveCenter(el) {
+            return el.getBoundingClientRect().top <= window.innerHeight * (window.innerWidth >= 992 ? 0.7 : 1 / 1.5);
+        }
+
+        function activate(el, observer) {
+            if (el.classList.contains('anim')) return;
+            el.classList.add('anim');
+            if (observer) observer.unobserve(el);
+        }
+
+        function checkAll(observer) {
+            sections.forEach(function (el) {
+                if (topAboveCenter(el)) activate(el, observer);
+            });
+        }
+
+        if (!('IntersectionObserver' in window)) {
+            window.addEventListener('scroll', function () { checkAll(); }, { passive: true });
+            checkAll();
+            return;
+        }
+
+        var observer = new IntersectionObserver(
+            function (entries) {
+                entries.forEach(function (entry) {
+                    if (!entry.isIntersecting) return;
+                    if (!topAboveCenter(entry.target)) return;
+                    activate(entry.target, observer);
+                });
+            },
+            { root: null, rootMargin: '0px', threshold: 0 }
+        );
+
+        sections.forEach(function (el) { observer.observe(el); });
+        checkAll(observer);
+        window.addEventListener('scroll', function () { checkAll(observer); }, { passive: true });
     })();
 })

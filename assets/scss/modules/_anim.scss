@@ -14,16 +14,27 @@
   animation: fadeInUp 0.5s ease forwards;
 }
 
-.section {
-  // transform: translateY(15px);
-  // opacity: 0;
-  // transition: all .7s linear;
-  // &.anim {
-  //   transform: translateY(0);
-  //   opacity: 1;
-  // }
-}
-
 .fade-in-container {
   animation: fadeInUp 0.5s ease forwards;
+}
+
+// Секции Gutenberg: скрыты до появления в зоне триггера (верх выше центра экрана).
+.main .section {
+  opacity: 0;
+  transform: translateY(20px);
+
+  &.anim {
+    animation: fadeInUp 0.5s ease forwards;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .main .section {
+    opacity: 1;
+    transform: none;
+
+    &.anim {
+      animation: none;
+    }
+  }
 }

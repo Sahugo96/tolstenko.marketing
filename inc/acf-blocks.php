@@ -200,7 +200,6 @@ function tolstenko_enqueue_editor_blocks() {
                 'blog_number_list'  => function_exists( 'tolstenko_get_blog_content_defaults' ) ? tolstenko_get_blog_content_defaults( 'blog_number_list' ) : tolstenko_get_block_defaults( 'blog_number_list' ),
                 'blog_warning'      => function_exists( 'tolstenko_get_blog_content_defaults' ) ? tolstenko_get_blog_content_defaults( 'blog_warning' ) : tolstenko_get_block_defaults( 'blog_warning' ),
                 'blog_seo'          => function_exists( 'tolstenko_get_blog_content_defaults' ) ? tolstenko_get_blog_content_defaults( 'blog_seo' ) : tolstenko_get_block_defaults( 'blog_seo' ),
-                'blog_table'        => function_exists( 'tolstenko_get_blog_content_defaults' ) ? tolstenko_get_blog_content_defaults( 'blog_table' ) : tolstenko_get_block_defaults( 'blog_table' ),
                 'consultation_whatsapp' => tolstenko_get_block_defaults( 'consultation_whatsapp' ),
                 'consultation_tg'       => tolstenko_get_block_defaults( 'consultation_tg' ),
                 'consultation_tel'      => tolstenko_get_block_defaults( 'consultation_tel' ),
@@ -680,11 +679,6 @@ function tolstenko_get_theme_block_attributes() {
             'block_blog_seo_btn'     => array( 'type' => 'string', 'default' => '' ),
             'block_blog_seo_btn_url' => array( 'type' => 'string', 'default' => '' ),
         ),
-        'blog-table' => array(
-            'block_blog_table_use_header' => array( 'type' => 'boolean', 'default' => true ),
-            'block_blog_table_header'     => array( 'type' => 'array', 'default' => array() ),
-            'block_blog_table_rows'       => array( 'type' => 'array', 'default' => array() ),
-        ),
     );
 }
 
@@ -723,7 +717,6 @@ function tolstenko_register_theme_blocks() {
         array( 'name' => 'blog-number-list', 'title' => __( 'Статья: нумерованный список', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'blog-warning', 'title' => __( 'Статья: предупреждения', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'blog-seo', 'title' => __( 'Статья: SEO / CTA', 'tolstenko-theme' ), 'category' => $cat_new ),
-        array( 'name' => 'blog-table', 'title' => __( 'Статья: таблица', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'consultation-whatsapp', 'title' => __( 'Консультация WhatsApp', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'consultation-tg', 'title' => __( 'Консультация Telegram', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'consultation-tel', 'title' => __( 'Консультация телефон', 'tolstenko-theme' ), 'category' => $cat_new ),

@@ -80,12 +80,19 @@ if ( ! is_wp_error( $all_categories ) && is_array( $all_categories ) ) {
 	}
 }
 
+$active_term = function_exists( 'tolstenko_get_filter_active_term_slug' )
+	? tolstenko_get_filter_active_term_slug( $taxonomy )
+	: '';
+if ( function_exists( 'tolstenko_ensure_filter_term_in_categories' ) ) {
+	$categories_with_posts = tolstenko_ensure_filter_term_in_categories( $categories_with_posts, $taxonomy, $active_term );
+}
+
 $payload = function_exists( 'tolstenko_render_filtered_posts_payload' )
 	? tolstenko_render_filtered_posts_payload(
 		array(
 			'post_type'      => $post_type,
 			'taxonomy'       => $taxonomy,
-			'term'           => '',
+			'term'           => $active_term,
 			'posts_per_page' => $posts_per_page,
 			'card'           => 'blog_slider',
 			'post_ids'       => $post_ids,
@@ -129,7 +136,7 @@ if ( $title === '' && $text === '' && $items_html === '' && empty( $categories_w
 							value=""
 							data-section-id="<?php echo esc_attr( $section_id ); ?>"
 							class="tolstenko-filter-radio"
-							checked
+							<?php checked( $active_term, '' ); ?>
 						>
 						<span class="filter__label"><?php esc_html_e( 'Все записи', 'tolstenko-theme' ); ?></span>
 					</label>
@@ -141,6 +148,7 @@ if ( $title === '' && $text === '' && $items_html === '' && empty( $categories_w
 								value="<?php echo esc_attr( $cat->slug ); ?>"
 								data-section-id="<?php echo esc_attr( $section_id ); ?>"
 								class="tolstenko-filter-radio"
+								<?php checked( $active_term, $cat->slug ); ?>
 							>
 							<span class="filter__label"><?php echo esc_html( $cat->name ); ?></span>
 						</label>
