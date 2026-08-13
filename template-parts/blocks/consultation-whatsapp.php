@@ -1,6 +1,6 @@
 <?php
 /**
- * Блок «Консультация WhatsApp».
+ * Блок «Забронируйте место» (slug: consultation-whatsapp).
  * Разметка/классы — как в tolstenko (BEM с __).
  */
 if ( ! defined( 'ABSPATH' ) ) {

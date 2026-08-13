@@ -28,6 +28,20 @@ $subtitle = ! empty( $block_attrs['block_clients_subtitle'] )
 	? (string) $block_attrs['block_clients_subtitle']
 	: (string) ( $defaults['subtitle'] ?? '' );
 
+$show_top = true;
+if ( array_key_exists( 'block_clients_show_top', $block_attrs ) ) {
+	$show_top = (bool) $block_attrs['block_clients_show_top'];
+} elseif ( array_key_exists( 'show_top', $defaults ) ) {
+	$show_top = (bool) $defaults['show_top'];
+}
+
+$show_bottom = true;
+if ( array_key_exists( 'block_clients_show_bottom', $block_attrs ) ) {
+	$show_bottom = (bool) $block_attrs['block_clients_show_bottom'];
+} elseif ( array_key_exists( 'show_bottom', $defaults ) ) {
+	$show_bottom = (bool) $defaults['show_bottom'];
+}
+
 $normalize_logo = static function ( $raw_list ) {
 	$out = array();
 	foreach ( (array) $raw_list as $it ) {
@@ -67,7 +81,10 @@ $smi = $normalize_logo(
 		: ( $defaults['smi'] ?? array() )
 );
 
-if ( $title === '' && $text === '' && empty( $items ) && $subtitle === '' && empty( $smi ) ) {
+$has_top_content    = $show_top && ( $title !== '' || $text !== '' || ! empty( $items ) );
+$has_bottom_content = $show_bottom && ( $subtitle !== '' || ! empty( $smi ) );
+
+if ( ! $has_top_content && ! $has_bottom_content ) {
 	return;
 }
 
@@ -122,24 +139,28 @@ $render_splide = static function ( $root_class, $list_class, $item_class, $rows,
 <section class="clients section">
 	<div class="container">
 		<div class="clients__inner br-30">
-			<?php if ( $title !== '' || $text !== '' ) : ?>
-				<div class="clients__top section-top">
-					<?php if ( $title !== '' ) : ?>
-						<<?php echo esc_attr( $title_tag ); ?> class="clients__title h2"><?php echo tolstenko_kses_html( $title ); ?></<?php echo esc_attr( $title_tag ); ?>>
-					<?php endif; ?>
-					<?php if ( $text !== '' ) : ?>
-						<p class="clients__text paragraph-15-15"><?php echo tolstenko_kses_html( $text ); ?></p>
-					<?php endif; ?>
-				</div>
+			<?php if ( $show_top ) : ?>
+				<?php if ( $title !== '' || $text !== '' ) : ?>
+					<div class="clients__top section-top">
+						<?php if ( $title !== '' ) : ?>
+							<<?php echo esc_attr( $title_tag ); ?> class="clients__title h2"><?php echo tolstenko_kses_html( $title ); ?></<?php echo esc_attr( $title_tag ); ?>>
+						<?php endif; ?>
+						<?php if ( $text !== '' ) : ?>
+							<p class="clients__text paragraph-15-15"><?php echo tolstenko_kses_html( $text ); ?></p>
+						<?php endif; ?>
+					</div>
+				<?php endif; ?>
+
+				<?php $render_splide( 'clients__splide', 'clients__list', 'clients__list-item', $items, false ); ?>
 			<?php endif; ?>
 
-			<?php $render_splide( 'clients__splide', 'clients__list', 'clients__list-item', $items, false ); ?>
+			<?php if ( $show_bottom ) : ?>
+				<?php if ( $subtitle !== '' ) : ?>
+					<h2 class="clients__subtitle h2"><?php echo tolstenko_kses_html( $subtitle ); ?></h2>
+				<?php endif; ?>
 
-			<?php if ( $subtitle !== '' ) : ?>
-				<h2 class="clients__subtitle h2"><?php echo tolstenko_kses_html( $subtitle ); ?></h2>
+				<?php $render_splide( 'clients__smi-splide', 'clients__smi-list', 'clients__smi-item', $smi, true ); ?>
 			<?php endif; ?>
-
-			<?php $render_splide( 'clients__smi-splide', 'clients__smi-list', 'clients__smi-item', $smi, true ); ?>
 		</div>
 	</div>
 </section>

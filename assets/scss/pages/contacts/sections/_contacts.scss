@@ -19,32 +19,54 @@
 
   &__tabs {
     width: 100%;
-    padding: 0;
-    background-color: transparent;
-    background-color: var(--gray-12-color);
-    padding: vw(10px, $mobile) vw(20px, $mobile);
-    @media (min-width: $desk) {
-      padding: vw(20px, $desktop) vw(37px, $desktop);
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+
+    &.tabs {
+      background-color: var(--gray-12-color);
+      padding: vw(10px, $mobile) vw(20px, $mobile);
+      overflow: hidden;
+
+      @media (min-width: $desk) {
+        padding: vw(20px, $desktop) vw(37px, $desktop);
+      }
+
+      @media (min-width: $desk_large) {
+        padding: vw(20px, $desktop_large) vw(37px, $desktop_large);
+      }
     }
-    @media (min-width: $desk_large) {
-      padding: vw(20px, $desktop_large) vw(37px, $desktop_large);
+  }
+
+  &__tabs-track {
+    overflow: visible;
+
+    &.swiper {
+      // overflow: hidden;
+      margin: 0;
+    }
+
+    .swiper-wrapper {
+      align-items: center;
+      margin: 0;
     }
   }
 
   &__labels {
-    grid-gap: vw(10px, $mobile);
-    @media (min-width: $desk) {
-      width: 100%;
-      grid-gap: vw(10px, $desktop);
-    }
-    @media (min-width: $desk_large) {
-      grid-gap: vw(10px, $desktop_large);
-    }
+    grid-gap: 0;
   }
 
   &__label {
+    width: auto;
+    max-width: none;
+    flex-shrink: 0;
+
+    &.swiper-slide {
+      width: auto;
+      height: auto;
+    }
+
     @media (min-width: $desk) {
-      flex: 1 1 0;
       justify-content: center;
       text-align: center;
     }
@@ -210,8 +232,8 @@
   &__info-text {
     color: var(--gray-45-color);
     a {
-      color: inherit;
-      text-decoration: none;
+      color: var(--gray-70-color);
+      text-decoration: underline;
       transition: color .3s linear;
       @media (any-hover: hover) {
         &:hover {

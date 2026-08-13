@@ -268,16 +268,19 @@
     flex: 0 0 auto;
     width: vw(52px, $mobile);
     height: vw(52px, $mobile);
+    padding: vw(4px, $mobile);
     border-radius: 50%;
     overflow: hidden;
     background-color: var(--gray-20-color);
     @media (min-width: $desk) {
       width: vw(52px, $desktop);
       height: vw(52px, $desktop);
+      padding: vw(4px, $desktop);
     }
     @media (min-width: $desk_large) {
       width: vw(52px, $desktop_large);
       height: vw(52px, $desktop_large);
+      padding: vw(4px, $desktop_large);
     }
     img {
       width: 100%;

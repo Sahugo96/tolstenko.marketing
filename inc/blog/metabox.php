@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 add_action( 'add_meta_boxes', 'tolstenko_blog_add_metabox' );
 add_action( 'save_post_blog', 'tolstenko_blog_save_metabox', 10, 2 );
 add_action( 'save_post_actions', 'tolstenko_blog_save_metabox', 10, 2 );
+add_action( 'save_post_case', 'tolstenko_blog_save_metabox', 10, 2 );
 add_action( 'admin_enqueue_scripts', 'tolstenko_blog_metabox_assets' );
 
 /**
@@ -29,9 +30,13 @@ function tolstenko_blog_add_metabox() {
 		? tolstenko_get_content_body_post_types()
 		: array( 'blog', 'actions' );
 	foreach ( $types as $pt ) {
-		$title = ( $pt === 'actions' )
-			? __( 'Поля акции', 'tolstenko-theme' )
-			: __( 'Статья блога', 'tolstenko-theme' );
+		if ( $pt === 'actions' ) {
+			$title = __( 'Поля акции', 'tolstenko-theme' );
+		} elseif ( $pt === 'case' ) {
+			$title = __( 'Поля кейса', 'tolstenko-theme' );
+		} else {
+			$title = __( 'Статья блога', 'tolstenko-theme' );
+		}
 		add_meta_box(
 			'tolstenko_blog_fields',
 			$title,
@@ -79,9 +84,10 @@ function tolstenko_blog_render_metabox( $post ) {
 	}
 
 	$exclude_ids = ( $post->post_type === 'actions' ) ? array( (int) $post->ID ) : array();
-	$author_label = ( $post->post_type === 'actions' )
-		? __( 'Автор', 'tolstenko-theme' )
-		: __( 'Автор статьи', 'tolstenko-theme' );
+	$author_label = ( $post->post_type === 'blog' )
+		? __( 'Автор статьи', 'tolstenko-theme' )
+		: __( 'Автор', 'tolstenko-theme' );
+	$show_comments_ui = ( $post->post_type !== 'case' );
 
 	if ( function_exists( 'tolstenko_post_select_print_assets' ) ) {
 		tolstenko_post_select_print_assets();
@@ -128,7 +134,7 @@ function tolstenko_blog_render_metabox( $post ) {
 				tolstenko_render_blog_author_select(
 					'tolstenko_blog_author',
 					$author,
-					__( 'По умолчанию (из шаблона вакансии / без автора)', 'tolstenko-theme' ),
+					__( 'Главный автор (по умолчанию)', 'tolstenko-theme' ),
 					'tolstenko_blog_author'
 				);
 				?>
@@ -157,11 +163,12 @@ function tolstenko_blog_render_metabox( $post ) {
 				}
 				?>
 				<p class="description" style="margin:6px 0 0;">
-					<?php esc_html_e( 'Начните ввод или кликните в поле — откроется список. Уже выбранные акции в подсказках не показываются.', 'tolstenko-theme' ); ?>
+					<?php esc_html_e( 'Начните ввод или кликните в поле — откроется список. Уже выбранные акции в подсказках не показываются. Если ничего не выбрать — в сайдбаре покажутся последние 5 акций.', 'tolstenko-theme' ); ?>
 				</p>
 			</div>
 		</div>
 
+		<?php if ( $show_comments_ui ) : ?>
 		<div class="tolstenko-blog-section">
 			<h3><?php esc_html_e( 'Кураторские комментарии', 'tolstenko-theme' ); ?></h3>
 			<p class="description"><?php esc_html_e( 'Показываются вместе с нативными комментариями WordPress.', 'tolstenko-theme' ); ?></p>
@@ -181,8 +188,10 @@ function tolstenko_blog_render_metabox( $post ) {
 				<?php tolstenko_blog_render_comment_admin_row( '__INDEX__', array(), true ); ?>
 			</template>
 		</div>
+		<?php endif; ?>
 	</div>
 
+	<?php if ( $show_comments_ui ) : ?>
 	<script>
 	(function(){
 		const root = document.getElementById('tolstenko-blog-box');
@@ -248,6 +257,7 @@ function tolstenko_blog_render_metabox( $post ) {
 		});
 	})();
 	</script>
+	<?php endif; ?>
 	<?php
 }
 
@@ -359,10 +369,13 @@ function tolstenko_blog_save_metabox( $post_id, $post ) {
 	}
 	update_post_meta( $post_id, 'blog_actions', array_values( array_unique( $actions ) ) );
 
-	$comments_raw = isset( $_POST['tolstenko_blog_comments'] ) && is_array( $_POST['tolstenko_blog_comments'] )
-		? wp_unslash( $_POST['tolstenko_blog_comments'] ) // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		: array();
-	update_post_meta( $post_id, 'blog_comments', tolstenko_blog_sanitize_comments( $comments_raw ) );
+	// У кейсов комментарии не используются — не затираем meta пустым массивом.
+	if ( ! ( $post instanceof WP_Post ) || $post->post_type !== 'case' ) {
+		$comments_raw = isset( $_POST['tolstenko_blog_comments'] ) && is_array( $_POST['tolstenko_blog_comments'] )
+			? wp_unslash( $_POST['tolstenko_blog_comments'] ) // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			: array();
+		update_post_meta( $post_id, 'blog_comments', tolstenko_blog_sanitize_comments( $comments_raw ) );
+	}
 }
 
 /**

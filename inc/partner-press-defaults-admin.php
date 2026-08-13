@@ -474,11 +474,13 @@ function tolstenko_sanitize_partner_press_defaults_from_raw( $raw ) {
 	}
 
 	$patch['clients'] = array(
-		'title'    => tolstenko_kses_html( $raw['clients']['title'] ?? '' ),
-		'text'     => tolstenko_kses_html( $raw['clients']['text'] ?? '' ),
-		'subtitle' => tolstenko_kses_html( $raw['clients']['subtitle'] ?? '' ),
-		'items'    => array(),
-		'smi'      => array(),
+		'title'       => tolstenko_kses_html( $raw['clients']['title'] ?? '' ),
+		'text'        => tolstenko_kses_html( $raw['clients']['text'] ?? '' ),
+		'show_top'    => ! empty( $raw['clients']['show_top'] ),
+		'subtitle'    => tolstenko_kses_html( $raw['clients']['subtitle'] ?? '' ),
+		'items'       => array(),
+		'smi'         => array(),
+		'show_bottom' => ! empty( $raw['clients']['show_bottom'] ),
 	);
 	if ( isset( $raw['clients']['items'] ) && is_array( $raw['clients']['items'] ) ) {
 		foreach ( $raw['clients']['items'] as $it ) {
@@ -830,6 +832,12 @@ function tolstenko_render_press_defaults_panels( $all ) {
 		</div>
 
 		<div class="tolstenko-df-panel" data-panel="clients" data-group="press">
+			<div class="row">
+				<label>
+					<input type="checkbox" name="tolstenko_block_defaults[clients][show_top]" value="1" <?php checked( ! isset( $cl['show_top'] ) || ! empty( $cl['show_top'] ) ); ?>>
+					<?php esc_html_e( 'Показывать верхний блок', 'tolstenko-theme' ); ?>
+				</label>
+			</div>
 			<div class="row"><input type="text" name="tolstenko_block_defaults[clients][title]" value="<?php echo esc_attr( $cl['title'] ?? '' ); ?>" style="width:100%" placeholder="Заголовок"></div>
 			<div class="row"><textarea name="tolstenko_block_defaults[clients][text]" rows="2" placeholder="Текст"><?php echo esc_textarea( $cl['text'] ?? '' ); ?></textarea></div>
 			<div class="row">
@@ -853,6 +861,13 @@ function tolstenko_render_press_defaults_panels( $all ) {
 					<?php endforeach; ?>
 				</div>
 				<div class="actions"><button type="button" class="button" data-add-item="clients-items"><?php esc_html_e( 'Добавить логотип', 'tolstenko-theme' ); ?></button></div>
+			</div>
+			<hr>
+			<div class="row">
+				<label>
+					<input type="checkbox" name="tolstenko_block_defaults[clients][show_bottom]" value="1" <?php checked( ! isset( $cl['show_bottom'] ) || ! empty( $cl['show_bottom'] ) ); ?>>
+					<?php esc_html_e( 'Показывать нижний блок', 'tolstenko-theme' ); ?>
+				</label>
 			</div>
 			<div class="row"><input type="text" name="tolstenko_block_defaults[clients][subtitle]" value="<?php echo esc_attr( $cl['subtitle'] ?? '' ); ?>" style="width:100%" placeholder="Подзаголовок (СМИ)"></div>
 			<div class="row">

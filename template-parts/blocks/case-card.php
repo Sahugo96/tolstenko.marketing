@@ -25,15 +25,18 @@ $image_url   = (string) ( $data['image_url'] ?? '' );
 $image_alt   = (string) ( $data['image_alt'] ?? $title );
 $service_url = (string) ( $data['service_url'] ?? '' );
 $link        = (string) ( $data['link'] ?? '' );
-$extra_class = (string) get_query_var( 'tolstenko_case_card_class', 'case-section__item case-card fade-in-element splide__slide swiper-slide' );
-$has_btns    = ( $link !== '' || $service_url !== '' );
+$extra_class      = (string) get_query_var( 'tolstenko_case_card_class', 'case-section__item case-card fade-in-element splide__slide swiper-slide' );
+$has_btns         = ( $link !== '' || $service_url !== '' );
+$is_placeholder   = ( $image_url === '' );
+if ( $is_placeholder ) {
+	$image_url = tolstenko_get_card_placeholder_image_url( 'large' );
+	$image_alt = $title;
+}
 ?>
 <article class="<?php echo esc_attr( $extra_class ); ?>">
-	<?php if ( $image_url !== '' ) : ?>
-		<div class="case-card__image">
-			<img src="<?php echo esc_url( $image_url ); ?>" alt="<?php echo esc_attr( $image_alt ); ?>" loading="lazy">
-		</div>
-	<?php endif; ?>
+	<div class="case-card__image<?php echo $is_placeholder ? ' case-card__image--placeholder' : ''; ?>">
+		<img src="<?php echo esc_url( $image_url ); ?>" alt="<?php echo esc_attr( $image_alt ); ?>" loading="lazy">
+	</div>
 
 	<div class="case-card__wrapper">
 		<?php if ( $title !== '' ) : ?>

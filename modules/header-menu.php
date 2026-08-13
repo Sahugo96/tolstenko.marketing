@@ -234,7 +234,15 @@ $render_quick_social = static function ( $social, $btn_class = 'header__top-btn'
 					</form>
 				</div>
 
-				<?php echo $header_service_menu ? $header_service_menu : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				<?php echo $header_service_menu ? $header_service_menu : ''; ?>
+
+				<?php
+				foreach ( array_slice( $quick_socials, 0, 2 ) as $social ) {
+					if ( is_array( $social ) ) {
+						$render_quick_social( $social, 'header__bottom-btn' );
+					}
+				}
+				?>
 
 				<a class="header__modal-btn" href="#modal">
 					<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">

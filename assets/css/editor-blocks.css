@@ -1,0 +1,15 @@
+/**
+ * Общие стили RichText в Gutenberg-блоках темы.
+ */
+
+.editor-styles-wrapper .tolstenko-richtext-editor,
+.tolstenko-block-edit .tolstenko-richtext-editor,
+.tolstenko-richtext-editor {
+	box-sizing: border-box;
+	border: 1px solid #c3c4c7;
+	padding-top: 5px;
+	padding-bottom: 5px;
+	padding-left: 8px;
+	padding-right: 8px;
+	background: #fff;
+}

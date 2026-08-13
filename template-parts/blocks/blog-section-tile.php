@@ -2,6 +2,7 @@
 /**
  * Блок «Статьи плитка» — разметка как marketing blog-archive:
  * первая крупная карточка + сайдбар + сетка остальных + пагинация.
+ * Табы: «Все записи» → /blog/, рубрики → /blog/{cat}/ (не AJAX).
  */
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -61,6 +62,14 @@ $section_id = 'blog_tile_' . wp_unique_id();
 $taxonomy   = 'blog_cat';
 $post_type  = 'blog';
 $card       = 'blog_tile';
+
+$all_url = home_url( '/blog/' );
+if ( function_exists( 'tolstenko_get_cpt_listing_breadcrumb' ) ) {
+	$listing = tolstenko_get_cpt_listing_breadcrumb( 'blog' );
+	if ( is_array( $listing ) && ! empty( $listing['url'] ) ) {
+		$all_url = (string) $listing['url'];
+	}
+}
 
 $all_categories = taxonomy_exists( $taxonomy )
 	? get_terms(
@@ -125,6 +134,7 @@ if ( $title === '' && $text === '' && $items_html === '' && empty( $categories_w
 	data-posts-per-page="<?php echo esc_attr( (string) $posts_per_page ); ?>"
 	data-card="<?php echo esc_attr( $card ); ?>"
 	data-post-ids="<?php echo esc_attr( implode( ',', $post_ids ) ); ?>"
+	data-active-term="<?php echo esc_attr( $active_term ); ?>"
 	data-page="1"
 >
 	<div class="container">
@@ -140,29 +150,27 @@ if ( $title === '' && $text === '' && $items_html === '' && empty( $categories_w
 		<?php if ( ! empty( $categories_with_posts ) ) : ?>
 			<div class="blog-section__filter filter filter--blog">
 				<div class="filter__form">
-					<label class="filter__radio">
-						<input
-							type="radio"
-							name="<?php echo esc_attr( $section_id ); ?>_category"
-							value=""
-							data-section-id="<?php echo esc_attr( $section_id ); ?>"
-							class="tolstenko-filter-radio"
-							<?php checked( $active_term, '' ); ?>
-						>
+					<a
+						class="filter__link<?php echo $active_term === '' ? ' active' : ''; ?>"
+						href="<?php echo esc_url( $all_url ); ?>"
+						data-term=""
+					>
 						<span class="filter__label"><?php esc_html_e( 'Все записи', 'tolstenko-theme' ); ?></span>
-					</label>
+					</a>
 					<?php foreach ( $categories_with_posts as $cat ) : ?>
-						<label class="filter__radio">
-							<input
-								type="radio"
-								name="<?php echo esc_attr( $section_id ); ?>_category"
-								value="<?php echo esc_attr( $cat->slug ); ?>"
-								data-section-id="<?php echo esc_attr( $section_id ); ?>"
-								class="tolstenko-filter-radio"
-								<?php checked( $active_term, $cat->slug ); ?>
-							>
+						<?php
+						$term_url = get_term_link( $cat );
+						if ( is_wp_error( $term_url ) || ! $term_url ) {
+							continue;
+						}
+						?>
+						<a
+							class="filter__link<?php echo $active_term === $cat->slug ? ' active' : ''; ?>"
+							href="<?php echo esc_url( $term_url ); ?>"
+							data-term="<?php echo esc_attr( $cat->slug ); ?>"
+						>
 							<span class="filter__label"><?php echo esc_html( $cat->name ); ?></span>
-						</label>
+						</a>
 					<?php endforeach; ?>
 				</div>
 			</div>

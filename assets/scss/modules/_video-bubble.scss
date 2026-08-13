@@ -1,0 +1,171 @@
+.video-bubble {
+  position: fixed;
+  z-index: 18;
+  bottom: vw(16px, $mobile);
+  left: vw(12px, $mobile);
+  right: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: vw(10px, $mobile);
+  width: vw(140px, $mobile);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px);
+  transition: opacity .35s ease, transform .35s ease;
+
+  @media (min-width: $desk) {
+    bottom: vw(28px, $desktop);
+    left: vw(24px, $desktop);
+    width: vw(180px, $desktop);
+    gap: vw(12px, $desktop);
+  }
+  @media (min-width: $desk_large) {
+    bottom: vw(28px, $desktop_large);
+    left: vw(24px, $desktop_large);
+    width: vw(180px, $desktop_large);
+    gap: vw(12px, $desktop_large);
+  }
+
+  &--right {
+    left: auto;
+    right: vw(12px, $mobile);
+    @media (min-width: $desk) {
+      right: vw(24px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      right: vw(24px, $desktop_large);
+    }
+  }
+
+  &.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  &__close {
+    position: absolute;
+    z-index: 3;
+    top: vw(-8px, $mobile);
+    right: vw(-8px, $mobile);
+    width: vw(28px, $mobile);
+    height: vw(28px, $mobile);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 50%;
+    background: var(--gray-15-color);
+    color: var(--white-color);
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+    @media (min-width: $desk) {
+      top: vw(-10px, $desktop);
+      right: vw(-10px, $desktop);
+      width: vw(32px, $desktop);
+      height: vw(32px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      top: vw(-10px, $desktop_large);
+      right: vw(-10px, $desktop_large);
+      width: vw(32px, $desktop_large);
+      height: vw(32px, $desktop_large);
+    }
+    @media (any-hover: hover) {
+      transition: background .2s linear, color .2s linear;
+      &:hover {
+        background: var(--brand-accent-red-m-color);
+        color: var(--white-color);
+      }
+    }
+  }
+
+  &__media {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 9 / 16;
+    border-radius: vw(18px, $mobile);
+    background: var(--gray-15-color);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    @media (min-width: $desk) {
+      border-radius: vw(22px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      border-radius: vw(22px, $desktop_large);
+    }
+  }
+
+  &__time {
+    position: absolute;
+    z-index: 2;
+    top: vw(10px, $mobile);
+    left: vw(10px, $mobile);
+    padding: vw(4px, $mobile) vw(8px, $mobile);
+    border-radius: vw(999px, $mobile);
+    background: rgba(0, 0, 0, 0.55);
+    color: var(--white-color);
+    font-size: vw(11px, $mobile);
+    line-height: 1.2;
+    font-weight: 600;
+    pointer-events: none;
+    @media (min-width: $desk) {
+      top: vw(12px, $desktop);
+      left: vw(12px, $desktop);
+      padding: vw(4px, $desktop) vw(8px, $desktop);
+      font-size: vw(12px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      top: vw(12px, $desktop_large);
+      left: vw(12px, $desktop_large);
+      padding: vw(4px, $desktop_large) vw(8px, $desktop_large);
+      font-size: vw(12px, $desktop_large);
+    }
+  }
+
+  &__video,
+  &__iframe-wrap,
+  &__iframe-wrap iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border: 0;
+    display: block;
+  }
+
+  &__hit {
+    position: absolute;
+    z-index: 2;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  &.is-engaged &__hit {
+    display: none;
+  }
+
+  &__btn {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+    min-height: vw(40px, $mobile);
+    font-size: vw(12px, $mobile);
+    @media (min-width: $desk) {
+      min-height: vw(44px, $desktop);
+      font-size: vw(13px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      min-height: vw(44px, $desktop_large);
+      font-size: vw(13px, $desktop_large);
+    }
+  }
+}

@@ -9,9 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $post_id = (int) get_the_ID();
 $pt      = $post_id ? (string) get_post_type( $post_id ) : '';
-$ok_pt   = function_exists( 'tolstenko_is_content_body_post_type' )
-	? tolstenko_is_content_body_post_type( $pt )
-	: in_array( $pt, array( 'blog', 'actions' ), true );
+// Кейсы без комментариев, даже если CPT в content body.
+$ok_pt = in_array( $pt, array( 'blog', 'actions' ), true );
 if ( ! $post_id || ! $ok_pt ) {
 	return;
 }
@@ -31,7 +30,6 @@ if ( ! function_exists( 'tolstenko_render_blog_comment_item' ) ) {
 		$photo = function_exists( 'tolstenko_get_image_attrs' ) ? tolstenko_get_image_attrs( $item['photo'] ?? array(), 'thumbnail' ) : null;
 		$name  = trim( (string) ( $item['name'] ?? '' ) );
 		$date  = trim( (string) ( $item['date'] ?? '' ) );
-		$time  = trim( (string) ( $item['time'] ?? '' ) );
 		$text  = trim( (string) ( $item['text'] ?? '' ) );
 		?>
 		<li class="comments__item">
@@ -54,16 +52,14 @@ if ( ! function_exists( 'tolstenko_render_blog_comment_item' ) ) {
 							<div class="comments__author line-caps-bold-13-15"><?php echo esc_html( $name ); ?></div>
 						<?php endif; ?>
 
-						<?php if ( $date !== '' || $time !== '' ) : ?>
+						<?php if ( $date !== '' ) : ?>
 							<div class="comments__date-time">
-								<?php if ( $time !== '' ) : ?>
-									<span class="comments__time">
-										<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-											<path d="M8 4V8L10.667 9.333M14.667 8C14.667 11.682 11.682 14.667 8 14.667C4.318 14.667 1.333 11.682 1.333 8C1.333 4.318 4.318 1.333 8 1.333C11.682 1.333 14.667 4.318 14.667 8Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
-										</svg>
-										<?php echo esc_html( $time ); ?>
-									</span>
-								<?php endif; ?>
+								<span class="comments__date">
+									<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+										<path d="M5.333 1.333V3.333M10.667 1.333V3.333M2.667 6.667H13.333M3.333 2.667H12.667C13.403 2.667 14 3.264 14 4V13.333C14 14.069 13.403 14.667 12.667 14.667H3.333C2.597 14.667 2 14.069 2 13.333V4C2 3.264 2.597 2.667 3.333 2.667Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"></path>
+									</svg>
+									<?php echo esc_html( $date ); ?>
+								</span>
 							</div>
 						<?php endif; ?>
 					</div>

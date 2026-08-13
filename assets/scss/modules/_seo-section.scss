@@ -1,5 +1,5 @@
 .seo-section {
-  padding: vw(40px, $mobile) 0;
+  padding: vw(25px, $mobile) 0;
   @media (min-width: $desk) {
     padding: vw(60px, $desktop) 0;
   }
@@ -156,6 +156,12 @@
     aspect-ratio: 16 / 10;
     object-fit: cover;
     filter: grayscale(100%);
+    transition: filter 0.3s linear; 
+    @media (any-hover: hover) {
+      &:hover {
+        filter: grayscale(0);
+      }
+    }
   }
 
   &__content {
@@ -285,16 +291,15 @@
 
   &__gallery-image {
     aspect-ratio: 1 / 1;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    display: block;
+    cursor: pointer;
   }
 
   &__block--text {
-    max-width: vw(980px, $mobile);
+    max-width: vw(400px, $mobile);
     margin: 0 auto;
-    @media (min-width: $desk) {
-      max-width: vw(980px, $desktop);
-    }
-    @media (min-width: $desk_large) {
-      max-width: vw(980px, $desktop_large);
-    }
   }
 }

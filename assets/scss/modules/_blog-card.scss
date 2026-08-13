@@ -40,7 +40,8 @@
 
   &__image {
     width: 100%;
-    height: vw(130px, $mobile);
+    max-height: vw(130px, $mobile);
+    min-height: vw(130px, $mobile);
     width: 100%;
     overflow: hidden;
     position: relative;
@@ -70,6 +71,9 @@
       transform: translate(-50%, -50%);
       filter: grayscale(1);
       transition: all 0.3s linear;
+    }
+    &--placeholder img {
+      filter: grayscale(0);
     }
     svg {
       position: absolute;

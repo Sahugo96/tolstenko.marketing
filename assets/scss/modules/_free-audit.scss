@@ -1,5 +1,5 @@
 .free-audit {
-  padding: vw(40px, $mobile) 0;
+  padding: vw(40px, $mobile) 0 vw(25px, $mobile);
   @media (min-width: $desk) {
     padding: vw(50px, $desktop) 0;
   }

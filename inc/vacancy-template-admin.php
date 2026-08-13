@@ -212,7 +212,7 @@ function tolstenko_render_vacancy_template_admin_page() {
 						tolstenko_render_blog_author_select(
 							'tolstenko_vacancy_template[vacancy_content][sidebar_author]',
 							$sidebar_author,
-							__( 'Не выбран', 'tolstenko-theme' ),
+							__( 'Главный автор (по умолчанию)', 'tolstenko-theme' ),
 							'tolstenko_vacancy_template_sidebar_author'
 						);
 						?>
@@ -221,7 +221,7 @@ function tolstenko_render_vacancy_template_admin_page() {
 							<a href="<?php echo esc_url( admin_url( 'admin.php?page=tolstenko-blog-authors' ) ); ?>">
 								<?php esc_html_e( 'Настройки сайта → Авторы статей', 'tolstenko-theme' ); ?>
 							</a>.
-							<?php esc_html_e( 'Пусто = из «Шаблон вакансии» или из блока «Контент вакансии».', 'tolstenko-theme' ); ?>
+							<?php esc_html_e( 'Пусто = главный автор из «Авторы статей».', 'tolstenko-theme' ); ?>
 						</p>
 					</div>
 					<div class="row"><input type="text" name="tolstenko_vacancy_template[vacancy_content][sidebar_btn]" value="<?php echo esc_attr( $content['sidebar_btn'] ?? '' ); ?>" style="width:100%" placeholder="<?php esc_attr_e( 'Текст кнопки сайдбара', 'tolstenko-theme' ); ?>"></div>

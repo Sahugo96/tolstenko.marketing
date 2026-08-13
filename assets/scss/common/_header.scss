@@ -538,6 +538,11 @@
     @media (min-width: $desk_large) {
       grid-gap: vw(5px, $desktop_large);
     }
+    .header__bottom-btn:not(.header__bottom-btn--tel) {
+      @media (max-width: $desk) {
+        display: none;
+      }
+    }
   }
   // Поиск сразу после «услуги»; .active — на всю ширину .header__bottom-tools
   &__search {
@@ -790,8 +795,11 @@
       padding-bottom: 0;
       overflow: hidden;
     }
-    // &:not(.active) .header__bottom-btn:not(.header__bottom-btn--tel) {
-    //   display: flex;
-    // }
+    &:not(.active) .header__bottom-tools .header__bottom-btn:not(.header__bottom-btn--tel) {
+      display: none;
+      @media (min-width: $desk_large) {
+        display: flex;
+      }
+    }
   }
 }

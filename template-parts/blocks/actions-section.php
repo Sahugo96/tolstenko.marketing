@@ -75,16 +75,16 @@ if ( ! $query->have_posts() && $title === '' && $text === '' ) {
 					$cost        = function_exists( 'tolstenko_get_action_field' ) ? tolstenko_get_action_field( $action_id, 'action_cost' ) : (string) get_post_meta( $action_id, 'action_cost', true );
 					?>
 					<article class="actions-section__item">
-						<a class="actions-section__link" href="<?php echo esc_url( $permalink ); ?>">
-							<div class="actions-section__img">
+						<div class="actions-section__link">
+							<a class="actions-section__img" href="<?php echo esc_url( $permalink ); ?>">
 								<?php
 								if ( has_post_thumbnail() ) {
 									the_post_thumbnail( 'full' );
 								}
 								?>
-							</div>
+							</a>
 							<div class="actions-section__wrapper">
-								<span class="actions-section__title"><?php the_title(); ?></span>
+								<a class="actions-section__title" href="<?php echo esc_url( $permalink ); ?>"><?php the_title(); ?></a>
 								<?php if ( $description !== '' ) : ?>
 									<div class="actions-section__text"><?php echo tolstenko_kses_html( $description ); ?></div>
 								<?php endif; ?>
@@ -103,7 +103,15 @@ if ( ! $query->have_posts() && $title === '' && $text === '' ) {
 									</div>
 								<?php endif; ?>
 							</div>
-						</a>
+							<div class="actions-section__btns">
+								<a class="actions-section__btn default-btn" href="<?php echo esc_url( $permalink ); ?>">
+									<?php esc_html_e( 'Подробнее', 'tolstenko-theme' ); ?>
+								</a>
+								<a class="actions-section__btn default-btn" href="#modal">
+									<?php esc_html_e( 'Консультация', 'tolstenko-theme' ); ?>
+								</a>
+							</div>
+						</div>
 					</article>
 					<?php
 				endwhile;

@@ -1,6 +1,8 @@
 <?php
 /**
  * Настройки сайта → Авторы статей (без ACF Pro).
+ * Главный автор — fallback, если в записи автор не выбран.
+ * Список «Другие авторы» — для выбора в статье / вакансии.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -8,9 +10,48 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 define( 'TOLSTENKO_BLOG_AUTHORS_OPTION', 'tolstenko_blog_authors' );
+define( 'TOLSTENKO_BLOG_MAIN_AUTHOR_OPTION', 'tolstenko_blog_main_author' );
 
 add_action( 'admin_menu', 'tolstenko_register_blog_authors_admin_page', 21 );
 add_action( 'admin_enqueue_scripts', 'tolstenko_blog_authors_admin_assets' );
+
+/**
+ * Нормализация строки автора.
+ *
+ * @param mixed $row Raw row.
+ * @return array{photo:int,name:string,job_title:string,position:string,description:string}|null
+ */
+function tolstenko_normalize_blog_author_row( $row ) {
+	if ( ! is_array( $row ) ) {
+		return null;
+	}
+	$author = array(
+		'photo'       => (int) ( $row['photo'] ?? 0 ),
+		'name'        => trim( (string) ( $row['name'] ?? '' ) ),
+		'job_title'   => trim( (string) ( $row['job_title'] ?? '' ) ),
+		'position'    => trim( (string) ( $row['position'] ?? '' ) ),
+		'description' => trim( (string) ( $row['description'] ?? '' ) ),
+	);
+	if (
+		$author['name'] === ''
+		&& $author['job_title'] === ''
+		&& $author['position'] === ''
+		&& $author['description'] === ''
+		&& ! $author['photo']
+	) {
+		return null;
+	}
+	return $author;
+}
+
+/**
+ * Главный автор (показывается, если в записи автор не выбран).
+ *
+ * @return array{photo:int,name:string,job_title:string,position:string,description:string}|null
+ */
+function tolstenko_get_blog_main_author() {
+	return tolstenko_normalize_blog_author_row( get_option( TOLSTENKO_BLOG_MAIN_AUTHOR_OPTION, array() ) );
+}
 
 /**
  * @return array<int, array{photo:int,name:string,job_title:string,position:string,description:string}>
@@ -23,16 +64,10 @@ function tolstenko_get_blog_authors_list() {
 
 	$out = array();
 	foreach ( $list as $row ) {
-		if ( ! is_array( $row ) ) {
-			continue;
+		$author = tolstenko_normalize_blog_author_row( $row );
+		if ( $author ) {
+			$out[] = $author;
 		}
-		$out[] = array(
-			'photo'       => (int) ( $row['photo'] ?? 0 ),
-			'name'        => trim( (string) ( $row['name'] ?? '' ) ),
-			'job_title'   => trim( (string) ( $row['job_title'] ?? '' ) ),
-			'position'    => trim( (string) ( $row['position'] ?? '' ) ),
-			'description' => trim( (string) ( $row['description'] ?? '' ) ),
-		);
 	}
 
 	return $out;
@@ -96,7 +131,8 @@ function tolstenko_render_blog_author_select( $field_name, $selected, $empty_lab
 }
 
 /**
- * Персона в сайдбаре вакансии: индекс автора блока → дефолт шаблона → legacy-поля.
+ * Персона в сайдбаре вакансии:
+ * индекс автора блока → дефолт шаблона → главный автор → legacy-поля.
  *
  * @param string|null $author_index Индекс из block_vacancy_content_sidebar_author.
  * @return array{photo_id:int,name:string,text:string}
@@ -113,6 +149,9 @@ function tolstenko_get_vacancy_sidebar_person( $author_index = null ) {
 	}
 
 	$author = tolstenko_get_blog_author_by_index( $author_index );
+	if ( ! is_array( $author ) ) {
+		$author = tolstenko_get_blog_main_author();
+	}
 	if ( is_array( $author ) ) {
 		return array(
 			'photo_id' => (int) ( $author['photo'] ?? 0 ),
@@ -155,6 +194,28 @@ function tolstenko_render_blog_authors_admin_page() {
 		isset( $_POST['tolstenko_blog_authors_nonce'] )
 		&& wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['tolstenko_blog_authors_nonce'] ) ), 'tolstenko_blog_authors_save' )
 	) {
+		$main_raw = isset( $_POST['tolstenko_blog_main_author'] ) && is_array( $_POST['tolstenko_blog_main_author'] )
+			? wp_unslash( $_POST['tolstenko_blog_main_author'] ) // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			: array();
+		$main_save = array(
+			'photo'       => (int) ( $main_raw['photo'] ?? 0 ),
+			'name'        => sanitize_text_field( (string) ( $main_raw['name'] ?? '' ) ),
+			'job_title'   => sanitize_text_field( (string) ( $main_raw['job_title'] ?? '' ) ),
+			'position'    => sanitize_text_field( (string) ( $main_raw['position'] ?? '' ) ),
+			'description' => sanitize_textarea_field( (string) ( $main_raw['description'] ?? '' ) ),
+		);
+		if (
+			$main_save['name'] === ''
+			&& $main_save['job_title'] === ''
+			&& $main_save['position'] === ''
+			&& $main_save['description'] === ''
+			&& ! $main_save['photo']
+		) {
+			delete_option( TOLSTENKO_BLOG_MAIN_AUTHOR_OPTION );
+		} else {
+			update_option( TOLSTENKO_BLOG_MAIN_AUTHOR_OPTION, $main_save, false );
+		}
+
 		$raw  = isset( $_POST['tolstenko_blog_authors'] ) && is_array( $_POST['tolstenko_blog_authors'] )
 			? wp_unslash( $_POST['tolstenko_blog_authors'] ) // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			: array();
@@ -163,10 +224,10 @@ function tolstenko_render_blog_authors_admin_page() {
 			if ( ! is_array( $row ) ) {
 				continue;
 			}
-			$name = sanitize_text_field( (string) ( $row['name'] ?? '' ) );
-			$job  = sanitize_text_field( (string) ( $row['job_title'] ?? '' ) );
-			$pos  = sanitize_text_field( (string) ( $row['position'] ?? '' ) );
-			$desc = sanitize_textarea_field( (string) ( $row['description'] ?? '' ) );
+			$name  = sanitize_text_field( (string) ( $row['name'] ?? '' ) );
+			$job   = sanitize_text_field( (string) ( $row['job_title'] ?? '' ) );
+			$pos   = sanitize_text_field( (string) ( $row['position'] ?? '' ) );
+			$desc  = sanitize_textarea_field( (string) ( $row['description'] ?? '' ) );
 			$photo = (int) ( $row['photo'] ?? 0 );
 			if ( $name === '' && $job === '' && $pos === '' && $desc === '' && ! $photo ) {
 				continue;
@@ -181,6 +242,17 @@ function tolstenko_render_blog_authors_admin_page() {
 		}
 		update_option( TOLSTENKO_BLOG_AUTHORS_OPTION, $save, false );
 		echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Авторы сохранены.', 'tolstenko-theme' ) . '</p></div>';
+	}
+
+	$main_author = tolstenko_get_blog_main_author();
+	if ( ! is_array( $main_author ) ) {
+		$main_author = array(
+			'photo'       => 0,
+			'name'        => '',
+			'job_title'   => '',
+			'position'    => '',
+			'description' => '',
+		);
 	}
 
 	$authors = tolstenko_get_blog_authors_list();
@@ -198,7 +270,9 @@ function tolstenko_render_blog_authors_admin_page() {
 	?>
 	<div class="wrap">
 		<h1><?php esc_html_e( 'Авторы статей', 'tolstenko-theme' ); ?></h1>
-		<p class="description"><?php esc_html_e( 'Список авторов для блока в шапке статьи (CPT «Статьи»).', 'tolstenko-theme' ); ?></p>
+		<p class="description">
+			<?php esc_html_e( 'Главный автор показывается в статье и сайдбаре, если в записи автор не выбран. Остальные авторы — для выбора в карточке статьи / акции / вакансии.', 'tolstenko-theme' ); ?>
+		</p>
 
 		<form method="post">
 			<?php wp_nonce_field( 'tolstenko_blog_authors_save', 'tolstenko_blog_authors_nonce' ); ?>
@@ -206,13 +280,37 @@ function tolstenko_render_blog_authors_admin_page() {
 			<div id="tolstenko-blog-authors" class="tolstenko-ba">
 				<style>
 					.tolstenko-ba .tolstenko-ba-row{border:1px solid #dcdcde;background:#fff;padding:12px;margin:0 0 12px;max-width:720px}
+					.tolstenko-ba .tolstenko-ba-row--main{border-color:#2271b1;box-shadow:0 0 0 1px #2271b1}
+					.tolstenko-ba .tolstenko-ba-section-title{margin:24px 0 8px;font-size:15px}
+					.tolstenko-ba .tolstenko-ba-section-title:first-child{margin-top:8px}
 					.tolstenko-ba .tolstenko-ba-grid{display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:start}
 					.tolstenko-ba .tolstenko-ba-fields label{display:block;font-weight:600;margin:0 0 4px}
 					.tolstenko-ba .tolstenko-ba-fields input,
 					.tolstenko-ba .tolstenko-ba-fields textarea{width:100%;margin:0 0 8px}
 					.tolstenko-ba .tolstenko-ba-preview img{max-width:100px;height:auto;display:block;margin-bottom:8px}
 					.tolstenko-ba .tolstenko-ba-actions{margin-top:8px}
+					.tolstenko-ba .tolstenko-ba-badge{display:inline-block;margin:0 0 10px;padding:2px 8px;border-radius:3px;background:#2271b1;color:#fff;font-size:11px;line-height:1.6;font-weight:600}
 				</style>
+
+				<h2 class="tolstenko-ba-section-title"><?php esc_html_e( 'Главный автор', 'tolstenko-theme' ); ?></h2>
+				<p class="description" style="margin-top:0;max-width:720px;">
+					<?php esc_html_e( 'Используется по умолчанию, когда в статье / акции автор не выбран.', 'tolstenko-theme' ); ?>
+				</p>
+				<?php
+				tolstenko_render_blog_author_admin_row(
+					'main',
+					$main_author,
+					array(
+						'field_name' => 'tolstenko_blog_main_author',
+						'is_main'    => true,
+					)
+				);
+				?>
+
+				<h2 class="tolstenko-ba-section-title"><?php esc_html_e( 'Другие авторы', 'tolstenko-theme' ); ?></h2>
+				<p class="description" style="margin-top:0;max-width:720px;">
+					<?php esc_html_e( 'Этих авторов можно выбрать в карточке записи.', 'tolstenko-theme' ); ?>
+				</p>
 
 				<div data-ba-list>
 					<?php foreach ( $authors as $i => $author ) : ?>
@@ -294,15 +392,23 @@ function tolstenko_render_blog_authors_admin_page() {
 }
 
 /**
- * @param string $index Row index.
- * @param array  $author Author data.
+ * @param string               $index   Row index.
+ * @param array                $author  Author data.
+ * @param array<string, mixed> $options Optional: field_name, is_main.
  */
-function tolstenko_render_blog_author_admin_row( $index, array $author ) {
-	$photo = (int) ( $author['photo'] ?? 0 );
-	$url   = $photo ? (string) wp_get_attachment_image_url( $photo, 'thumbnail' ) : '';
-	$name  = 'tolstenko_blog_authors[' . $index . ']';
+function tolstenko_render_blog_author_admin_row( $index, array $author, $options = array() ) {
+	$photo      = (int) ( $author['photo'] ?? 0 );
+	$url        = $photo ? (string) wp_get_attachment_image_url( $photo, 'thumbnail' ) : '';
+	$field_name = ! empty( $options['field_name'] )
+		? (string) $options['field_name']
+		: ( 'tolstenko_blog_authors[' . $index . ']' );
+	$is_main = ! empty( $options['is_main'] );
+	$row_class = 'tolstenko-ba-row' . ( $is_main ? ' tolstenko-ba-row--main' : '' );
 	?>
-	<div class="tolstenko-ba-row">
+	<div class="<?php echo esc_attr( $row_class ); ?>">
+		<?php if ( $is_main ) : ?>
+			<span class="tolstenko-ba-badge"><?php esc_html_e( 'Главный', 'tolstenko-theme' ); ?></span>
+		<?php endif; ?>
 		<div class="tolstenko-ba-grid">
 			<div>
 				<div class="tolstenko-ba-preview" data-ba-preview>
@@ -310,22 +416,24 @@ function tolstenko_render_blog_author_admin_row( $index, array $author ) {
 						<img src="<?php echo esc_url( $url ); ?>" alt="">
 					<?php endif; ?>
 				</div>
-				<input type="hidden" data-ba-photo name="<?php echo esc_attr( $name . '[photo]' ); ?>" value="<?php echo (int) $photo; ?>">
+				<input type="hidden" data-ba-photo name="<?php echo esc_attr( $field_name . '[photo]' ); ?>" value="<?php echo (int) $photo; ?>">
 				<button type="button" class="button button-small" data-ba-pick><?php esc_html_e( 'Фото', 'tolstenko-theme' ); ?></button>
 				<button type="button" class="button button-small" data-ba-clear><?php esc_html_e( 'Убрать', 'tolstenko-theme' ); ?></button>
 			</div>
 			<div class="tolstenko-ba-fields">
 				<label><?php esc_html_e( 'Имя', 'tolstenko-theme' ); ?></label>
-				<input type="text" name="<?php echo esc_attr( $name . '[name]' ); ?>" value="<?php echo esc_attr( (string) ( $author['name'] ?? '' ) ); ?>">
+				<input type="text" name="<?php echo esc_attr( $field_name . '[name]' ); ?>" value="<?php echo esc_attr( (string) ( $author['name'] ?? '' ) ); ?>">
 				<label><?php esc_html_e( 'Должность', 'tolstenko-theme' ); ?></label>
-				<input type="text" name="<?php echo esc_attr( $name . '[job_title]' ); ?>" value="<?php echo esc_attr( (string) ( $author['job_title'] ?? '' ) ); ?>">
+				<input type="text" name="<?php echo esc_attr( $field_name . '[job_title]' ); ?>" value="<?php echo esc_attr( (string) ( $author['job_title'] ?? '' ) ); ?>">
 				<label><?php esc_html_e( 'Позиция', 'tolstenko-theme' ); ?></label>
-				<input type="text" name="<?php echo esc_attr( $name . '[position]' ); ?>" value="<?php echo esc_attr( (string) ( $author['position'] ?? '' ) ); ?>">
+				<input type="text" name="<?php echo esc_attr( $field_name . '[position]' ); ?>" value="<?php echo esc_attr( (string) ( $author['position'] ?? '' ) ); ?>">
 				<label><?php esc_html_e( 'Описание (сайдбар)', 'tolstenko-theme' ); ?></label>
-				<textarea name="<?php echo esc_attr( $name . '[description]' ); ?>" rows="4" placeholder="<?php esc_attr_e( 'Большой текст под именем в правом блоке статьи', 'tolstenko-theme' ); ?>"><?php echo esc_textarea( (string) ( $author['description'] ?? '' ) ); ?></textarea>
-				<div class="tolstenko-ba-actions">
-					<button type="button" class="button-link-delete" data-ba-remove><?php esc_html_e( 'Удалить автора', 'tolstenko-theme' ); ?></button>
-				</div>
+				<textarea name="<?php echo esc_attr( $field_name . '[description]' ); ?>" rows="4" placeholder="<?php esc_attr_e( 'Большой текст под именем в правом блоке статьи', 'tolstenko-theme' ); ?>"><?php echo esc_textarea( (string) ( $author['description'] ?? '' ) ); ?></textarea>
+				<?php if ( ! $is_main ) : ?>
+					<div class="tolstenko-ba-actions">
+						<button type="button" class="button-link-delete" data-ba-remove><?php esc_html_e( 'Удалить автора', 'tolstenko-theme' ); ?></button>
+					</div>
+				<?php endif; ?>
 			</div>
 		</div>
 	</div>

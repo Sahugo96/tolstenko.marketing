@@ -52,6 +52,9 @@
       filter: grayscale(1);
       transition: all 0.3s linear;
     }
+    &--placeholder img {
+      filter: grayscale(0);
+    }
   }
   &__wrapper {
     width: 100%;

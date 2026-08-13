@@ -64,12 +64,12 @@
     color: var(--white-color);
     margin: vw(14px, $mobile) 0;
     @media (min-width: $desk) {
-      font-size: vw(30px, $desktop);
+      font-size: vw(28px, $desktop);
       text-transform: uppercase;
       margin: vw(18px, $desktop) 0;
     }
     @media (min-width: $desk_large) {
-      font-size: vw(30px, $desktop_large);
+      font-size: vw(28px, $desktop_large);
       text-transform: uppercase;
       margin: vw(18px, $desktop_large) 0;
     }
@@ -193,7 +193,7 @@
       gap: vw(12px, $desktop_large);
     }
   }
-  ul li::before {
+  ul.wp-block-list li::before {
     content: "";
     display: inline-block;
     max-width: vw(6px, $mobile);
@@ -201,10 +201,12 @@
     height: vw(6px, $mobile);
     margin-top: vw(10px, $mobile);
     margin-right: vw(12px, $mobile);
-    background-color: var(--black-color);
+    background-color: var(--gray-10-color);
     transition: all 0.3s linear;
     aspect-ratio: 1/1;
     border-radius: 50%;
+    box-shadow: 0px 0px 0px 3px var(--gray-10-color), 0px 0px 0px 4px var(--brand-accent-yellow-color);
+    
     @media (min-width: $desk) {
       max-width: vw(6px, $desktop);
       min-width: vw(6px, $desktop);
@@ -220,8 +222,89 @@
       margin-right: vw(12px, $desktop_large);
     }
   }
+  ul.wp-block-list li {
+    
+    @media (any-hover: hover) {
+      &:hover::before {
+        background-color: var(--brand-accent-yellow-color);
+      }
+    }
+  }
 
-  ol {
+  // Нумерованный Gutenberg-список: кружки как у single-blog__content-list.
+  ol.wp-block-list {
+    counter-reset: redactor-ol;
+    list-style: none;
+    padding-left: 0;
+  }
+  ol.wp-block-list ol {
+    counter-reset: redactor-ol;
+    margin-top: vw(12px, $mobile);
+    @media (min-width: $desk) {
+      margin-top: vw(12px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      margin-top: vw(12px, $desktop_large);
+    }
+  }
+  ol.wp-block-list > li,
+  ol.wp-block-list ol > li {
+    list-style: none;
+  }
+  ol.wp-block-list > li::before,
+  ol.wp-block-list ol > li::before {
+    counter-increment: redactor-ol;
+    content: counter(redactor-ol);
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    max-width: vw(25px, $mobile);
+    min-width: vw(25px, $mobile);
+    height: auto;
+    margin: vw(2px, $mobile);
+    margin-right: vw(10px, $mobile);
+    aspect-ratio: 1/1;
+    font-family: $Montserrat;
+    font-size: vw(13px, $mobile);
+    font-weight: 700;
+    line-height: 1.154;
+    letter-spacing: -1%;
+    color: var(--gray-90-color);
+    text-align: center;
+    border: vw(2px, $mobile) solid var(--brand-accent-yellow-color);
+    border-radius: 50%;
+    background-color: transparent;
+    transition: all 0.3s linear;
+    @media (min-width: $desk) {
+      max-width: vw(25px, $desktop);
+      min-width: vw(25px, $desktop);
+      margin: vw(2px, $desktop);
+      margin-right: vw(10px, $desktop);
+      font-size: vw(13px, $desktop);
+      border-width: vw(2px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(25px, $desktop_large);
+      min-width: vw(25px, $desktop_large);
+      margin: vw(2px, $desktop_large);
+      margin-right: vw(10px, $desktop_large);
+      font-size: vw(13px, $desktop_large);
+      border-width: vw(2px, $desktop_large);
+    }
+  }
+  @media (any-hover: hover) {
+    ol.wp-block-list > li:hover::before,
+    ol.wp-block-list ol > li:hover::before {
+      color: var(--black-color);
+      background-color: var(--brand-accent-yellow-color);
+      cursor: default;
+    }
+  }
+
+  // ol без wp-block-list (старый контент / редкие вставки) — обычная нумерация.
+  ol:not(.wp-block-list) {
     padding-left: vw(26px, $mobile);
     @media (min-width: $desk) {
       padding-left: vw(26px, $desktop);
@@ -230,7 +313,7 @@
       padding-left: vw(26px, $desktop_large);
     }
   }
-  ol li {
+  ol:not(.wp-block-list) > li {
     display: list-item;
     list-style-type: decimal;
   }
@@ -239,6 +322,7 @@
     color: var(--gray-90-color);
     cursor: pointer;
     transition: all 0.3s linear;
+    text-decoration: underline;
     @media (any-hover: hover) {
       &:hover {
         color: var(--brand-accent-yellow-color);
@@ -260,9 +344,4 @@
       margin-top: vw(10px, $desktop_large);
     }
   }
-}
-
-// Статья / акция (body.article-page): жёлтые маркеры ul.
-.single-blog .redactor ul li::before {
-  background-color: var(--brand-accent-yellow-color);
 }

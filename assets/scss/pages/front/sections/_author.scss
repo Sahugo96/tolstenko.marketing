@@ -342,7 +342,7 @@
     background-color: transparent;
     color: var(--gray-45-color);
     border: 1px solid var(--gray-20-color);
-    width: min-content;
+    min-width: min-content;
     padding: vw(5px, $mobile) vw(14px, $mobile);
     @media (min-width: $desk) {
       height: vw(45px, $desktop);

@@ -46,6 +46,50 @@ function tolstenko_theme_setup() {
 add_action( 'after_setup_theme', 'tolstenko_theme_setup' );
 
 /**
+ * Не создавать размер large при загрузке; thumbnail и medium оставляем.
+ *
+ * @param array $sizes Image sizes.
+ * @return array
+ */
+function tolstenko_disable_large_image_size( $sizes ) {
+	if ( ! is_array( $sizes ) ) {
+		return $sizes;
+	}
+	unset( $sizes['large'] );
+	return $sizes;
+}
+add_filter( 'intermediate_image_sizes_advanced', 'tolstenko_disable_large_image_size' );
+
+/**
+ * Убрать large из списка промежуточных размеров.
+ *
+ * @param array $sizes Size names.
+ * @return array
+ */
+function tolstenko_remove_large_size_name( $sizes ) {
+	if ( ! is_array( $sizes ) ) {
+		return $sizes;
+	}
+	return array_values( array_diff( $sizes, array( 'large' ) ) );
+}
+add_filter( 'intermediate_image_sizes', 'tolstenko_remove_large_size_name' );
+
+/**
+ * Обнулить только large; medium вернуть к 300×300 (один раз после смены политики).
+ */
+function tolstenko_maybe_trim_large_media_options() {
+	if ( get_option( 'tolstenko_media_sizes_trimmed' ) === '2' ) {
+		return;
+	}
+	update_option( 'medium_size_w', 300 );
+	update_option( 'medium_size_h', 300 );
+	update_option( 'large_size_w', 0 );
+	update_option( 'large_size_h', 0 );
+	update_option( 'tolstenko_media_sizes_trimmed', '2', false );
+}
+add_action( 'after_setup_theme', 'tolstenko_maybe_trim_large_media_options', 20 );
+
+/**
  * Фавикон темы (favicon.ico в корне темы).
  */
 function tolstenko_output_favicon() {
@@ -108,11 +152,19 @@ function tolstenko_theme_scripts() {
         null
     );
 
+    $splide_css_path = $theme_dir . '/assets/css/libs/splide-core.min.css';
+    wp_enqueue_style(
+        'tolstenko-splide',
+        $theme_uri . '/assets/css/libs/splide-core.min.css',
+        array(),
+        file_exists( $splide_css_path ) ? (string) filemtime( $splide_css_path ) : null
+    );
+
     // Стили темы — после библиотек
     wp_enqueue_style(
         'tolstenko-style',
         $theme_uri . '/assets/css/style.min.css',
-        array( 'tolstenko-fancybox', 'tolstenko-swiper' ),
+        array( 'tolstenko-fancybox', 'tolstenko-swiper', 'tolstenko-splide' ),
         $style_ver
     );
 
@@ -141,6 +193,24 @@ function tolstenko_theme_scripts() {
         true
     );
 
+    $splide_js_path = $theme_dir . '/assets/js/libs/splide.min.js';
+    wp_enqueue_script(
+        'tolstenko-splide',
+        $theme_uri . '/assets/js/libs/splide.min.js',
+        array(),
+        file_exists( $splide_js_path ) ? (string) filemtime( $splide_js_path ) : null,
+        true
+    );
+
+    $blog_splide_js = $theme_dir . '/assets/js/blog-section-splide.js';
+    wp_enqueue_script(
+        'tolstenko-blog-section-splide',
+        $theme_uri . '/assets/js/blog-section-splide.js',
+        array( 'tolstenko-splide' ),
+        file_exists( $blog_splide_js ) ? (string) filemtime( $blog_splide_js ) : null,
+        true
+    );
+
     $service_swiper_js = $theme_dir . '/assets/js/service-section-swiper.js';
     wp_enqueue_script(
         'tolstenko-service-section-swiper',
@@ -154,7 +224,7 @@ function tolstenko_theme_scripts() {
     wp_enqueue_script(
         'tolstenko-main',
         $theme_uri . '/assets/js/script.js',
-        array( 'tolstenko-fancybox', 'tolstenko-swiper', 'tolstenko-service-section-swiper' ),
+        array( 'tolstenko-fancybox', 'tolstenko-swiper', 'tolstenko-splide', 'tolstenko-service-section-swiper', 'tolstenko-blog-section-splide' ),
         file_exists( $theme_dir . '/assets/js/script.js' ) ? (string) filemtime( $theme_dir . '/assets/js/script.js' ) : null,
         true
     );
@@ -187,6 +257,18 @@ function tolstenko_theme_scripts() {
     );
 }
 add_action( 'wp_enqueue_scripts', 'tolstenko_theme_scripts' );
+
+/**
+ * Убрать только Gutenberg duotone (CSS/SVG), не трогая остальные core styles.
+ * style#core-block-supports-duotone-inline-css + SVG-фильтры в футере.
+ */
+function tolstenko_disable_wp_duotone() {
+	remove_action( 'wp_enqueue_scripts', array( 'WP_Duotone', 'output_block_styles' ), 9 );
+	remove_action( 'wp_enqueue_scripts', array( 'WP_Duotone', 'output_global_styles' ), 11 );
+	remove_action( 'wp_footer', array( 'WP_Duotone', 'output_footer_assets' ), 10 );
+	remove_filter( 'render_block', array( 'WP_Duotone', 'render_duotone_support' ), 10 );
+}
+add_action( 'after_setup_theme', 'tolstenko_disable_wp_duotone', 100 );
 
 /**
  * Разрешённые HTML-теги для контента блока «Полный блок статьи» (article-full).
@@ -301,16 +383,20 @@ function tolstenko_url_or_modal( $url ) {
 /**
  * Normalize heading tag name from block attrs.
  *
- * @param string $tag
- * @param string $default
- * @return string
+ * @param string $tag        Tag from attributes.
+ * @param string $default    Fallback (h1–h6).
+ * @param bool   $allow_none Allow value «none» (без обёртки-заголовка, разметка в HTML).
+ * @return string h1–h6 or «none».
  */
-function tolstenko_normalize_heading_tag( $tag, $default = 'h2' ) {
+function tolstenko_normalize_heading_tag( $tag, $default = 'h2', $allow_none = false ) {
 	$allowed = array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' );
-	$tag = strtolower( trim( (string) $tag ) );
+	$tag     = strtolower( trim( (string) $tag ) );
 	$default = strtolower( trim( (string) $default ) );
 	if ( ! in_array( $default, $allowed, true ) ) {
 		$default = 'h2';
+	}
+	if ( $allow_none && $tag === 'none' ) {
+		return 'none';
 	}
 	return in_array( $tag, $allowed, true ) ? $tag : $default;
 }
@@ -682,7 +768,7 @@ function tolstenko_register_cpts() {
         )
     );
 
-	// Кейсы — данные для блока (как отзывы), без публичных URL /single.
+	// Кейсы — публичные записи как статьи + данные карточки для блока «Кейсы».
 	register_post_type(
 		'case',
 		array(
@@ -700,19 +786,20 @@ function tolstenko_register_cpts() {
 				'all_items'          => __( 'Все кейсы', 'tolstenko-theme' ),
 				'menu_name'          => __( 'Кейсы', 'tolstenko-theme' ),
 			),
-			'public'              => false,
-			'show_ui'             => true,
-			'show_in_menu'        => true,
-			'publicly_queryable'  => false,
-			'exclude_from_search' => true,
-			'show_in_nav_menus'   => false,
-			'menu_position'       => 27,
-			'menu_icon'           => 'dashicons-awards',
-			'supports'            => array( 'title', 'thumbnail' ),
-			'has_archive'         => false,
-			'rewrite'             => false,
-			'query_var'           => false,
-			'show_in_rest'        => true,
+			'public'            => true,
+			'show_ui'           => true,
+			'show_in_menu'      => true,
+			'show_in_nav_menus' => true,
+			'menu_position'     => 27,
+			'menu_icon'         => 'dashicons-awards',
+			'supports'          => array( 'title', 'editor', 'thumbnail', 'custom-fields' ),
+			'has_archive'       => false,
+			'rewrite'           => array(
+				'slug'       => 'cases',
+				'with_front' => false,
+			),
+			'show_in_rest'      => true,
+			'taxonomies'        => array( 'case_cat' ),
 		)
 	);
 
@@ -780,14 +867,14 @@ function tolstenko_maybe_flush_review_rewrite() {
 add_action( 'init', 'tolstenko_maybe_flush_review_rewrite', 99 );
 
 /**
- * Сброс rewrite после отключения публичных URL CPT case.
+ * Сброс rewrite после включения публичных URL CPT case (/cases/{slug}/).
  */
 function tolstenko_maybe_flush_case_rewrite() {
-	if ( get_option( 'tolstenko_case_rewrite_flushed' ) === '1' ) {
+	if ( get_option( 'tolstenko_case_rewrite_flushed' ) === '2' ) {
 		return;
 	}
 	flush_rewrite_rules( false );
-	update_option( 'tolstenko_case_rewrite_flushed', '1', false );
+	update_option( 'tolstenko_case_rewrite_flushed', '2', false );
 }
 add_action( 'init', 'tolstenko_maybe_flush_case_rewrite', 99 );
 
@@ -937,7 +1024,11 @@ function tolstenko_get_case_card_data( $post_id ) {
 		$title = (string) get_the_title( $post_id );
 	}
 	$text       = (string) get_post_meta( $post_id, 'case_text', true );
-	$link       = (string) get_post_meta( $post_id, 'case_link', true );
+	$link       = trim( (string) get_post_meta( $post_id, 'case_link', true ) );
+	// Пустая ссылка «Разобрать кейс» → страница самого кейса.
+	if ( $link === '' ) {
+		$link = (string) get_permalink( $post_id );
+	}
 	$service_id = (int) get_post_meta( $post_id, 'case_service', true );
 	$items_raw  = get_post_meta( $post_id, 'case_items', true );
 	$items      = array();
@@ -1961,12 +2052,9 @@ function tolstenko_service_post_type_link( $post_link, $post ) {
         return $post_link;
     }
 
-    $terms = get_the_terms( $post, 'service_category' );
-    if ( empty( $terms ) || is_wp_error( $terms ) ) {
-        return home_url( '/services/' . $post->post_name . '/' );
-    }
-
-    $term = array_shift( $terms );
+    $term = function_exists( 'tolstenko_get_primary_term' )
+		? tolstenko_get_primary_term( $post, 'service_category' )
+		: null;
     if ( ! ( $term instanceof WP_Term ) ) {
         return home_url( '/services/' . $post->post_name . '/' );
     }
@@ -1977,29 +2065,34 @@ add_filter( 'post_type_link', 'tolstenko_service_post_type_link', 10, 2 );
 
 /**
  * Ссылка на статью: /blog/{category}/{slug}/ или /blog/{slug}/ без категории.
+ * При $leavename оставляем %postname%, иначе в редакторе пропадает смена URL.
  *
  * @param string  $post_link Permalink.
  * @param WP_Post $post      Post.
+ * @param bool    $leavename Leave %postname% placeholder.
+ * @param bool    $sample    Sample permalink request.
  * @return string
  */
-function tolstenko_blog_post_type_link( $post_link, $post ) {
+function tolstenko_blog_post_type_link( $post_link, $post, $leavename = false, $sample = false ) {
 	if ( ! ( $post instanceof WP_Post ) || $post->post_type !== 'blog' ) {
 		return $post_link;
 	}
 
-	$terms = get_the_terms( $post, 'blog_cat' );
-	if ( empty( $terms ) || is_wp_error( $terms ) ) {
-		return home_url( '/blog/' . $post->post_name . '/' );
+	$slug = ( $leavename || $sample ) ? '%postname%' : $post->post_name;
+	if ( $slug === '' ) {
+		return $post_link;
 	}
 
-	$term = array_shift( $terms );
+	$term = function_exists( 'tolstenko_get_primary_term' )
+		? tolstenko_get_primary_term( $post, 'blog_cat' )
+		: null;
 	if ( ! ( $term instanceof WP_Term ) ) {
-		return home_url( '/blog/' . $post->post_name . '/' );
+		return home_url( user_trailingslashit( 'blog/' . $slug ) );
 	}
 
-	return home_url( '/blog/' . $term->slug . '/' . $post->post_name . '/' );
+	return home_url( user_trailingslashit( 'blog/' . $term->slug . '/' . $slug ) );
 }
-add_filter( 'post_type_link', 'tolstenko_blog_post_type_link', 10, 2 );
+add_filter( 'post_type_link', 'tolstenko_blog_post_type_link', 10, 4 );
 
 /**
  * Для CPT blog: пустой редактор без locked template —
@@ -2179,6 +2272,11 @@ require_once get_template_directory() . '/inc/case-metabox.php';
 require_once get_template_directory() . '/inc/block-defaults-admin.php';
 
 /**
+ * Настройки сайта → Видео-пузырь.
+ */
+require_once get_template_directory() . '/inc/video-bubble-admin.php';
+
+/**
  * Партнёры блоки / Пресс-портрет: отдельные пункты «Настройки сайта».
  */
 require_once get_template_directory() . '/inc/partner-press-defaults-admin.php';
@@ -2204,15 +2302,19 @@ require_once get_template_directory() . '/inc/site-header-footer-data.php';
  * Блог (CPT blog): stats, reading time, плагины, метабоксы, авторы.
  */
 require_once get_template_directory() . '/inc/compat-koritan-rename.php';
+require_once get_template_directory() . '/inc/primary-term.php';
 
 require_once get_template_directory() . '/inc/blog/helpers.php';
+require_once get_template_directory() . '/inc/card-placeholder.php';
 require_once get_template_directory() . '/inc/blog/reading-time.php';
 require_once get_template_directory() . '/inc/blog/plugins-display.php';
+require_once get_template_directory() . '/inc/blog/admin-metabox-order.php';
 require_once get_template_directory() . '/inc/blog/authors-admin.php';
 require_once get_template_directory() . '/inc/blog/metabox.php';
 require_once get_template_directory() . '/inc/blog/faq-metabox.php';
 require_once get_template_directory() . '/inc/blog/sliders-metabox.php';
 require_once get_template_directory() . '/inc/blog/allowed-blocks.php';
+require_once get_template_directory() . '/inc/blog/comment-queue.php';
 require_once get_template_directory() . '/inc/blog/content-blocks.php';
 require_once get_template_directory() . '/inc/rewrite/blog-rewrite.php';
 require_once get_template_directory() . '/inc/rewrite/service-rewrite.php';

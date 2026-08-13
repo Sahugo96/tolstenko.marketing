@@ -1,5 +1,6 @@
 html {
   scroll-behavior: smooth;
+  margin-top: 0 !important;
 }
 
 body {
@@ -15,6 +16,18 @@ body {
   }
   @media (min-width: $desk_large) {
     font-size: vw(15px, $desktop_large);
+  }
+
+  &:has( > #wpadminbar) {
+    padding-top: 32px;
+    .header {
+      top: 32px;
+      @media (max-width: calc($desk - 1px)) {
+        &.scroll {
+          top: 0;
+        }
+      }
+    }
   }
 }
 
@@ -100,7 +113,7 @@ body {
 
 .section {
   overflow: hidden;
-  padding: vw(40px, $mobile) 0;
+  padding: vw(25px, $mobile) 0;
   @media (min-width: $desk) {
     padding: vw(50px, $desktop) 0;
   }
@@ -180,20 +193,20 @@ body {
 }
 .h2 {
   font-family: $Montserrat;
-  font-size: vw(20px, $mobile);
+  font-size: vw(18px, $mobile);
   font-weight: 600;
   line-height: 1.25;
   letter-spacing: -1%;
   color: var(--white-color);
   @media (min-width: $desk) {
-    font-size: vw(30px, $desktop);
+    font-size: vw(32px, $desktop);
     font-weight: 700;
     line-height: 1.166;
     letter-spacing: -3%;
     text-transform: uppercase;
   }
   @media (min-width: $desk_large) {
-    font-size: vw(30px, $desktop_large);
+    font-size: vw(32px, $desktop_large);
     font-weight: 700;
     line-height: 1.166;
     letter-spacing: -3%;
@@ -205,17 +218,17 @@ body {
 }
 .h3 {
   font-family: $Montserrat;
-  font-size: vw(24px, $mobile);
+  font-size: vw(16px, $mobile);
   font-weight: 600;
   line-height: 1.1;
   letter-spacing: -1%;
   color: var(--white-color);
   @media (min-width: $desk) {
-    font-size: vw(32px, $desktop);
+    font-size: vw(28px, $desktop);
     text-transform: uppercase;
   }
   @media (min-width: $desk_large) {
-    font-size: vw(32px, $desktop_large);
+    font-size: vw(28px, $desktop_large);
     text-transform: uppercase;
   }
   span {
@@ -224,7 +237,7 @@ body {
 }
 .h4 {
   font-family: $Montserrat;
-  font-size: vw(20px, $mobile);
+  font-size: vw(16px, $mobile);
   font-weight: 600;
   line-height: 1.1;
   letter-spacing: -1%;
@@ -258,6 +271,7 @@ body {
 }
 
 .default-btn {
+  overflow: hidden;
   width: 100%;
   position: relative;
   display: flex;
@@ -285,6 +299,18 @@ body {
     grid-gap: vw(10px, $desktop_large);
     border-radius: vw(10px, $desktop_large);
     font-size: vw(13px, $desktop_large);
+  }
+  &:not(.header__bottom-btn):not(.header__top-btn):not(.footer__right-link)::before {
+    content: '';
+    position: absolute;
+    top: -100%;
+    left: 0;
+    width: 250%;
+    transform: rotate(-45deg) translate(-50%, -50%);
+    height: 100%;
+    background-color: var(--white-color);
+    opacity: 0.9;
+    animation: defautBtnAnim 3.5s linear infinite;
   }
 
   @media (any-hover: hover) {
@@ -368,6 +394,15 @@ body {
   }
 }
 
+@keyframes defautBtnAnim {
+  0% {
+    left: -100%;
+  }
+
+  100% {
+    left: 200%;
+  }
+}
 
 @keyframes loadPage {
   0% {
@@ -381,6 +416,10 @@ body {
   }
 }
 
+
+.fancybox__container {
+  --f-arrow-pos: 10px;
+}
 
 .fancybox__slide {
   height: 100vh;

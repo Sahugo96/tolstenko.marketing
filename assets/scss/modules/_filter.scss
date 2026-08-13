@@ -44,6 +44,14 @@
     cursor: pointer;
     user-select: none;
   }
+
+  &__link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    user-select: none;
+  }
   
   &__radio input[type="radio"] {
     position: absolute;

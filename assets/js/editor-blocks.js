@@ -3,11 +3,13 @@
  */
 (function () {
     var el = wp.element.createElement;
+    var useEffect = wp.element.useEffect;
+    var useRef = wp.element.useRef;
+    var useState = wp.element.useState;
     var useBlockProps = wp.blockEditor && wp.blockEditor.useBlockProps;
     var InspectorControls = wp.blockEditor && wp.blockEditor.InspectorControls;
     var MediaUpload = wp.blockEditor && wp.blockEditor.MediaUpload;
     var MediaUploadCheck = wp.blockEditor && wp.blockEditor.MediaUploadCheck;
-    // RichText: поддержка новых и старых версий Gutenberg (пока не используем, но оставим на будущее)
     var RichText = (wp.blockEditor && wp.blockEditor.RichText) || (wp.editor && wp.editor.RichText);
     var TextControl = wp.components && wp.components.TextControl;
     var TextareaControl = wp.components && wp.components.TextareaControl;
@@ -17,9 +19,154 @@
     var PanelBody = wp.components && wp.components.PanelBody;
     var FormTokenField = wp.components && wp.components.FormTokenField;
     var ComboboxControl = wp.components && wp.components.ComboboxControl;
+    var Modal = wp.components && wp.components.Modal;
     var useSelect = wp.data && wp.data.useSelect;
     var InnerBlocks = wp.blockEditor && wp.blockEditor.InnerBlocks;
     var blockDefaults = (typeof window !== 'undefined' && window.tolstenkoBlockDefaults) ? window.tolstenkoBlockDefaults : {};
+
+    // Настройки как у FAQ в «Дефолты блоков».
+    var TOLSTENKO_MCE = {
+        wpautop: true,
+        plugins: 'charmap colorpicker hr lists paste tabfocus textcolor wordpress wpautoresize wpeditimage wpemoji wpgallery wplink wptextpattern',
+        toolbar1: 'formatselect,bold,italic,bullist,numlist,blockquote,alignleft,aligncenter,alignright,link,unlink,wp_adv',
+        toolbar2: 'strikethrough,hr,forecolor,pastetext,removeformat,charmap,outdent,indent,undo,redo',
+        height: 320
+    };
+
+    function stripHtmlPreview(html) {
+        var tmp = document.createElement('div');
+        tmp.innerHTML = String(html || '');
+        var text = (tmp.textContent || tmp.innerText || '').replace(/\s+/g, ' ').trim();
+        if (!text) return 'Пусто — нажмите «Редактировать»';
+        return text.length > 160 ? (text.slice(0, 160) + '…') : text;
+    }
+
+    /**
+     * Поле на месте textarea: превью + модалка с настоящим wp.editor (TinyMCE),
+     * как у FAQ. Модалка в родительском документе — редактор не ломается.
+     */
+    function TolstenkoSeoTextEditor(props) {
+        var id = props.id;
+        var label = props.label || '';
+        var value = props.value || '';
+        var onChange = props.onChange;
+        var openState = useState(false);
+        var open = openState[0];
+        var setOpen = openState[1];
+        var draftRef = useRef(value);
+        var hostRef = useRef(null);
+
+        useEffect(function () {
+            if (!open) return undefined;
+            draftRef.current = value || '';
+            if (!hostRef.current || !id) return undefined;
+
+            var host = hostRef.current;
+            host.innerHTML = '';
+            var ta = document.createElement('textarea');
+            ta.id = id;
+            ta.className = 'wp-editor-area';
+            ta.rows = 12;
+            ta.value = draftRef.current;
+            host.appendChild(ta);
+
+            var timer = window.setTimeout(function () {
+                if (!wp.editor || typeof wp.editor.initialize !== 'function') return;
+                try { wp.editor.remove(id); } catch (e0) {}
+                wp.editor.initialize(id, {
+                    tinymce: Object.assign({}, TOLSTENKO_MCE, {
+                        setup: function (editor) {
+                            editor.on('init', function () {
+                                editor.setContent(draftRef.current || '');
+                            });
+                            editor.on('change keyup Undo Redo', function () {
+                                draftRef.current = editor.getContent();
+                            });
+                        }
+                    }),
+                    quicktags: true,
+                    mediaButtons: true
+                });
+            }, 50);
+
+            return function () {
+                window.clearTimeout(timer);
+                if (window.tinymce) {
+                    var ed = window.tinymce.get(id);
+                    if (ed) {
+                        try { draftRef.current = ed.getContent(); } catch (e1) {}
+                    }
+                }
+                if (wp.editor && typeof wp.editor.remove === 'function') {
+                    try { wp.editor.remove(id); } catch (e2) {}
+                }
+                host.innerHTML = '';
+            };
+        }, [open, id]);
+
+        function saveAndClose() {
+            if (window.tinymce) {
+                var ed = window.tinymce.get(id);
+                if (ed) {
+                    try { draftRef.current = ed.getContent(); } catch (e3) {}
+                }
+            }
+            if (typeof onChange === 'function') {
+                onChange(draftRef.current || '');
+            }
+            setOpen(false);
+        }
+
+        return el('div', { className: 'tolstenko-seo-text-editor', style: { margin: '8px 0 12px' } }, [
+            label ? el('p', {
+                key: 'l',
+                style: { margin: '0 0 6px', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', color: '#1e1e1e' }
+            }, label) : null,
+            el('div', {
+                key: 'preview',
+                style: {
+                    border: '1px solid #c3c4c7',
+                    borderRadius: '2px',
+                    background: '#fff',
+                    padding: '10px 12px',
+                    minHeight: '72px',
+                    color: value ? '#1e1e1e' : '#757575',
+                    fontSize: '13px',
+                    lineHeight: '1.45',
+                    marginBottom: '8px'
+                }
+            }, stripHtmlPreview(value)),
+            Button ? el(Button, {
+                key: 'edit',
+                isSecondary: true,
+                isSmall: true,
+                onClick: function () { setOpen(true); }
+            }, 'Редактировать') : null,
+            (open && Modal) ? el(Modal, {
+                key: 'modal',
+                title: label || 'Редактор',
+                onRequestClose: function () { setOpen(false); },
+                style: { maxWidth: '820px', width: '92vw' }
+            }, [
+                el('div', { key: 'host', ref: hostRef, className: 'tolstenko-seo-text-editor-host', style: { minHeight: '360px' } }),
+                el('div', {
+                    key: 'actions',
+                    style: { display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '16px' }
+                }, [
+                    el(Button, {
+                        key: 'cancel',
+                        isSecondary: true,
+                        onClick: function () { setOpen(false); }
+                    }, 'Отмена'),
+                    el(Button, {
+                        key: 'save',
+                        isPrimary: true,
+                        onClick: saveAndClose
+                    }, 'Готово')
+                ])
+            ]) : null
+        ]);
+    }
 
     function getDefault(path, fallback) {
         try {
@@ -55,13 +202,23 @@
         { label: 'H6', value: 'h6' }
     ];
 
-    function renderHeadingTagSelect(attrs, set, key, label, fallback) {
+    function renderHeadingTagSelect(attrs, set, key, label, fallback, allowNone) {
         if (!SelectControl) return null;
+        var options = allowNone
+            ? [{ label: 'Нет разметки (укажите в HTML)', value: 'none' }].concat(headingTagOptions)
+            : headingTagOptions;
+        var value = attrs[key] || fallback || 'h2';
+        if (allowNone && attrs[key] === 'none') {
+            value = 'none';
+        }
         return el(SelectControl, {
             key: key,
             label: label || 'Уровень заголовка',
-            value: attrs[key] || fallback || 'h2',
-            options: headingTagOptions,
+            value: value,
+            options: options,
+            help: allowNone
+                ? '«Нет разметки» — без обёртки h1–h6; теги пишите в поле «Заголовок (HTML)».'
+                : undefined,
             onChange: function (v) {
                 set((function () { var patch = {}; patch[key] = v; return patch; })());
             }
@@ -71,7 +228,7 @@
     function renderBlogAuthorSelect(attrs, set, key, label, emptyLabel, templateDefault) {
         if (!SelectControl) return null;
         var authors = Array.isArray(blockDefaults.blogAuthors) ? blockDefaults.blogAuthors : [];
-        var options = [{ label: emptyLabel || 'По умолчанию (шаблон вакансии)', value: '' }];
+        var options = [{ label: emptyLabel || 'Главный автор (по умолчанию)', value: '' }];
         authors.forEach(function (author) {
             options.push({ label: author.label || ('Автор #' + author.index), value: String(author.index) });
         });
@@ -323,7 +480,7 @@
             addresses.forEach(function (addr, i) {
                 var row = addr && typeof addr === 'object' ? addr : { address: '', gallery: [], items: [] };
                 var gallery = Array.isArray(row.gallery)
-                    ? row.gallery.map(function (id) { return parseInt(id, 10) || 0; }).filter(Boolean)
+                    ? row.gallery.map(function (id) { return parseInt(id, 10) || 0; })
                     : [];
                 var items = getAddrItems(row);
                 var itemNodes = items.map(function (item, ii) {
@@ -489,7 +646,7 @@
                     el('p', { key: 'gh', style: { margin: '0 0 8px', fontSize: '12px', color: '#757575' } }, 'Каждый пункт — одно фото. «Добавить пункт» — ещё одно.'),
                     (gallery.length ? gallery : [0]).map(function (id, gi) {
                         var imgId = parseInt(id, 10) || 0;
-                        return el('div', {
+                    return el('div', {
                             key: 'g-' + gi,
                             style: { marginBottom: '8px', padding: '8px', border: '1px solid #e0e0e0', borderRadius: '4px', background: '#fff' }
                         }, [
@@ -507,21 +664,21 @@
                                     style: { width: '64px', height: '64px', border: '1px dashed #ccc', display: 'inline-block' }
                                 }),
                                 MediaUpload && MediaUploadCheck ? el(MediaUploadCheck, { key: 'pick' },
-                                    el(MediaUpload, {
-                                        allowedTypes: ['image'],
+                            el(MediaUpload, {
+                                allowedTypes: ['image'],
                                         multiple: false,
                                         value: imgId || undefined,
                                         onSelect: function (media) {
                                             var next = (gallery.length ? gallery.slice() : []);
                                             while (next.length <= gi) next.push(0);
                                             next[gi] = media && media.id ? parseInt(media.id, 10) || 0 : 0;
-                                            updateAddress(i, { gallery: next.filter(Boolean).length ? next : [0] });
+                                            updateAddress(i, { gallery: next.length ? next : [0] });
                                         },
-                                        render: function (obj) {
+                                render: function (obj) {
                                             return el(Button, { isSecondary: true, isSmall: true, onClick: obj.open }, imgId ? 'Сменить' : 'Выбрать');
-                                        }
-                                    })
-                                ) : null,
+                                }
+                            })
+                        ) : null,
                                 imgId && Button ? el(Button, {
                                     key: 'clr',
                                     isSmall: true,
@@ -532,17 +689,17 @@
                                     }
                                 }, 'Очистить') : null
                             ]),
-                            Button ? el(Button, {
-                                key: 'rm',
-                                isDestructive: true,
-                                isSmall: true,
+                        Button ? el(Button, {
+                            key: 'rm',
+                            isDestructive: true,
+                            isSmall: true,
                                 style: { marginTop: '6px' },
                                 onClick: function () {
                                     var next = gallery.filter(function (_, idx) { return idx !== gi; });
                                     updateAddress(i, { gallery: next.length ? next : [0] });
                                 }
-                            }, 'Удалить пункт') : null
-                        ]);
+                        }, 'Удалить пункт') : null
+                    ]);
                     }),
                     Button ? el(Button, {
                         key: 'addgal',
@@ -550,7 +707,8 @@
                         isSmall: true,
                         style: { marginBottom: '8px' },
                         onClick: function () {
-                            updateAddress(i, { gallery: (gallery.length ? gallery : []).concat([0]) });
+                            var current = gallery.length ? gallery.slice() : [0];
+                            updateAddress(i, { gallery: current.concat([0]) });
                         }
                     }, 'Добавить пункт') : null,
                     Button ? el(Button, {
@@ -734,7 +892,7 @@
                     onChange: function (v) { set({ block_main_hero_title: v }); },
                     rows: 2
                 }) : null,
-                renderHeadingTagSelect(attrs, set, 'block_main_hero_title_tag', 'Тег заголовка', 'h1'),
+                renderHeadingTagSelect(attrs, set, 'block_main_hero_title_tag', 'Тег заголовка', 'h1', true),
                 TextareaControl ? el(TextareaControl, {
                     key: 'tx',
                     label: 'Текст (HTML)',
@@ -787,13 +945,13 @@
                     rows: 2
                 }) : null,
                 MediaUpload && MediaUploadCheck ? el(MediaUploadCheck, { key: 'pr' },
-                    el(MediaUpload, {
+                        el(MediaUpload, {
                         onSelect: function (media) {
                             set({ block_main_hero_present_image: media && media.id ? media.id : 0 });
                         },
-                        allowedTypes: ['image'],
+                            allowedTypes: ['image'],
                         value: presentId,
-                        render: function (obj) {
+                            render: function (obj) {
                             return el(Button, {
                                 variant: 'secondary',
                                 onClick: obj.open,
@@ -1020,30 +1178,30 @@
                                 set(patch);
                             }
                         }));
-                        return;
-                    }
+                    return;
+                }
                     if (f.type === 'image' && MediaUpload && MediaUploadCheck) {
                         var imgId = parseInt(attrs[f.key] || 0, 10) || 0;
                         fields.push(el('div', { key: 'img-' + i, style: { marginTop: '8px' } }, [
                             el('p', { key: 'il', style: { marginBottom: '6px', fontWeight: '600' } }, f.label),
                             el(MediaUploadCheck, { key: 'muc' },
-                                el(MediaUpload, {
-                                    allowedTypes: ['image'],
+                            el(MediaUpload, {
+                                allowedTypes: ['image'],
                                     value: imgId,
                                     onSelect: function (media) {
                                         var patch = {};
                                         patch[f.key] = media && media.id ? media.id : 0;
                                         set(patch);
                                     },
-                                    render: function (obj) {
+                                render: function (obj) {
                                         return el(Button, { isSecondary: true, onClick: obj.open }, imgId ? 'Заменить изображение' : 'Выбрать изображение');
-                                    }
-                                })
+                                }
+                            })
                             ),
                             imgId && Button ? el(Button, {
-                                key: 'rm',
-                                isDestructive: true,
-                                isSmall: true,
+                            key: 'rm',
+                            isDestructive: true,
+                            isSmall: true,
                                 style: { marginLeft: '8px' },
                                 onClick: function () {
                                     var patch = {};
@@ -1076,7 +1234,7 @@
 
     registerConsultationBlock({
         name: 'tolstenko/consultation-whatsapp',
-        title: 'Консультация WhatsApp',
+        title: 'Забронируйте место',
         icon: 'format-chat',
         fields: [
             { key: 'block_consultation_whatsapp_title', label: 'Заголовок', defaultPath: 'consultation_whatsapp.title' },
@@ -1379,19 +1537,19 @@
                 return el('div', { key: attrKey, style: { marginBottom: '10px' } }, [
                     el('p', { key: 'l', style: { marginBottom: '6px', fontWeight: '600' } }, label),
                     MediaUpload && MediaUploadCheck ? el(MediaUploadCheck, { key: 'muc' },
-                        el(MediaUpload, {
-                            allowedTypes: ['image'],
+                    el(MediaUpload, {
+                        allowedTypes: ['image'],
                             value: id || undefined,
                             onSelect: function (m) {
                                 var patch = {};
                                 patch[attrKey] = m && m.id ? m.id : 0;
                                 set(patch);
                             },
-                            render: function (obj) {
+                        render: function (obj) {
                                 return el(Button, { isSecondary: true, isSmall: true, onClick: obj.open }, id ? 'Сменить' : 'Выбрать');
-                            }
-                        })
-                    ) : null,
+                        }
+                    })
+                ) : null,
                     id && Button ? el(Button, {
                         key: 'clear',
                         isDestructive: true,
@@ -1529,15 +1687,15 @@
                                 }
                             }) : null,
                             MediaUpload && MediaUploadCheck ? el(MediaUploadCheck, { key: 'muc' },
-                                el(MediaUpload, {
-                                    allowedTypes: ['image'],
+                    el(MediaUpload, {
+                        allowedTypes: ['image'],
                                     value: iconId || undefined,
                                     onSelect: function (m) {
                                         var next = links.slice();
                                         next[i] = Object.assign({}, row, { icon: m && m.id ? m.id : 0 });
                                         set({ block_author_links: next });
                                     },
-                                    render: function (obj) {
+                        render: function (obj) {
                                         return el(Button, { isSecondary: true, isSmall: true, onClick: obj.open }, iconId ? 'Сменить иконку' : 'Иконка');
                                     }
                                 })
@@ -1611,19 +1769,19 @@
                                     }
                                 }) : null,
                                 MediaUpload && MediaUploadCheck ? el(MediaUploadCheck, { key: 'muc' },
-                                    el(MediaUpload, {
-                                        allowedTypes: ['image'],
+                    el(MediaUpload, {
+                        allowedTypes: ['image'],
                                         value: imgId || undefined,
                                         onSelect: function (m) {
                                             var next = speeches.slice();
                                             next[i] = Object.assign({}, row, { image: m && m.id ? m.id : 0 });
                                             set({ block_author_speeches: next });
                                         },
-                                        render: function (obj) {
+                        render: function (obj) {
                                             return el(Button, { isSecondary: true, isSmall: true, onClick: obj.open }, imgId ? 'Сменить фото' : 'Фото');
-                                        }
-                                    })
-                                ) : null
+                        }
+                    })
+                ) : null
                             ]);
                         },
                         label: 'Выступления',
@@ -1832,10 +1990,10 @@
             title: config.title,
             category: 'tolstenko-blocks-new',
             icon: config.icon || 'layout',
-            edit: function (props) {
+        edit: function (props) {
                 var attrs = props.attributes || {};
-                var set = props.setAttributes;
-                var blockProps = useBlockProps ? useBlockProps() : {};
+            var set = props.setAttributes;
+            var blockProps = useBlockProps ? useBlockProps() : {};
                 var itemsKey = config.itemsKey;
                 var items = itemsKey && Array.isArray(attrs[itemsKey]) ? attrs[itemsKey] : [];
                 var fields = [
@@ -1886,7 +2044,7 @@
                                 label: 'Пункт ' + (i + 1),
                                 value: typeof txt === 'string' ? txt : (txt && txt.text) || '',
                                 onChange: function (v) {
-                                    var next = items.slice();
+                var next = items.slice();
                                     next[i] = v;
                                     var p = {}; p[itemsKey] = next; set(p);
                                 }
@@ -2028,21 +2186,23 @@
                                 onChange: function (v) { updateItem(index, { title: v }); }
                             }) : null,
                             el('p', { key: 'a-l', style: { margin: '8px 0 4px', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', color: '#1e1e1e' } }, 'Ответ'),
-                            RichText ? el(RichText, {
-                                key: 'a',
-                                tagName: 'div',
-                                className: 'tolstenko-faq-answer-editor',
-                                placeholder: 'Ответ…',
-                                value: (item && item.redactor) || '',
-                                onChange: function (v) { updateItem(index, { redactor: v }); },
-                                allowedFormats: ['core/bold', 'core/italic', 'core/link', 'core/list', 'core/strikethrough']
-                            }) : (TextareaControl ? el(TextareaControl, {
-                                key: 'a',
-                                label: 'Ответ',
-                                value: (item && item.redactor) || '',
-                                onChange: function (v) { updateItem(index, { redactor: v }); },
-                                rows: 4
-                            }) : null)
+                            el('div', { key: 'a-wrap', className: 'tolstenko-richtext-editor' },
+                                RichText ? el(RichText, {
+                                    key: 'a',
+                                    tagName: 'div',
+                                    className: 'tolstenko-faq-answer-editor',
+                                    placeholder: 'Ответ…',
+                                    value: (item && item.redactor) || '',
+                                    onChange: function (v) { updateItem(index, { redactor: v }); },
+                                    allowedFormats: ['core/bold', 'core/italic', 'core/link', 'core/list', 'core/strikethrough']
+                                }) : (TextareaControl ? el(TextareaControl, {
+                                    key: 'a',
+                                    label: 'Ответ',
+                                    value: (item && item.redactor) || '',
+                                    onChange: function (v) { updateItem(index, { redactor: v }); },
+                                    rows: 4
+                                }) : null)
+                            )
                         ]);
                     },
                     label: 'Вопросы и ответы',
@@ -2068,15 +2228,15 @@
                 el('div', { key: 'foto', style: { marginTop: '8px' } }, [
                     el('p', { key: 'fl', style: { marginBottom: '6px', fontWeight: '600' } }, 'Фото справа'),
                     MediaUpload && MediaUploadCheck ? el(MediaUploadCheck, { key: 'muc' },
-                        el(MediaUpload, {
-                            allowedTypes: ['image'],
+                                el(MediaUpload, {
+                                    allowedTypes: ['image'],
                             value: fotoId || undefined,
                             onSelect: function (m) { set({ block_faq_foto: m && m.id ? m.id : 0 }); },
-                            render: function (obj) {
+                                    render: function (obj) {
                                 return el(Button, { isSecondary: true, isSmall: true, onClick: obj.open }, fotoId ? 'Сменить фото' : 'Выбрать фото');
-                            }
-                        })
-                    ) : null,
+                                    }
+                                })
+                            ) : null,
                     fotoId && Button ? el(Button, {
                         key: 'clear',
                         isDestructive: true,
@@ -2287,15 +2447,13 @@
                             onClick: function () { updateRow(index, { image: 0 }); }
                         }, 'Удалить изображение') : null
                     ]));
-                    if (TextareaControl) {
-                        fields.push(el(TextareaControl, {
-                            key: 'text',
-                            label: 'Текст',
-                            rows: 4,
-                            value: row.text,
-                            onChange: function (v) { updateRow(index, { text: v }); }
-                        }));
-                    }
+                    fields.push(el(TolstenkoSeoTextEditor, {
+                        key: 'text',
+                        id: 'tolstenko_seo_' + index + '_text',
+                        label: 'Текст',
+                        value: row.text,
+                        onChange: function (v) { updateRow(index, { text: v }); }
+                    }));
                     if (TextControl) {
                         fields.push(el(TextControl, {
                             key: 'btn-text',
@@ -2320,30 +2478,28 @@
                         }));
                     }
                 } else if (layout === 'two_columns') {
-                    if (TextareaControl) {
-                        fields.push(el(TextareaControl, {
-                            key: 'col-1',
-                            label: 'Левая колонка',
-                            rows: 4,
-                            value: row.columns[0] || '',
-                            onChange: function (v) {
-                                var columns = row.columns.slice();
-                                columns[0] = v;
-                                updateRow(index, { columns: columns });
-                            }
-                        }));
-                        fields.push(el(TextareaControl, {
-                            key: 'col-2',
-                            label: 'Правая колонка',
-                            rows: 4,
-                            value: row.columns[1] || '',
-                            onChange: function (v) {
-                                var columns = row.columns.slice();
-                                columns[1] = v;
-                                updateRow(index, { columns: columns });
-                            }
-                        }));
-                    }
+                    fields.push(el(TolstenkoSeoTextEditor, {
+                        key: 'col-1',
+                        id: 'tolstenko_seo_' + index + '_col0',
+                        label: 'Левая колонка',
+                        value: row.columns[0] || '',
+                        onChange: function (v) {
+                            var columns = row.columns.slice();
+                            columns[0] = v;
+                            updateRow(index, { columns: columns });
+                        }
+                    }));
+                    fields.push(el(TolstenkoSeoTextEditor, {
+                        key: 'col-2',
+                        id: 'tolstenko_seo_' + index + '_col1',
+                        label: 'Правая колонка',
+                        value: row.columns[1] || '',
+                        onChange: function (v) {
+                            var columns = row.columns.slice();
+                            columns[1] = v;
+                            updateRow(index, { columns: columns });
+                        }
+                    }));
                     fields.push(el('p', {
                         key: 'items-l',
                         style: { margin: '10px 0 4px', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase' }
@@ -2366,18 +2522,18 @@
                                         updateRow(index, { items: items });
                                     }
                                 }) : null,
-                                TextareaControl ? el(TextareaControl, {
+                                el(TolstenkoSeoTextEditor, {
                                     key: 'ix',
+                                    id: 'tolstenko_seo_' + index + '_item_' + itemIndex,
                                     label: 'Текст пункта',
-                                    rows: 2,
                                     value: item.text,
                                     onChange: function (v) {
                                         var items = row.items.slice();
                                         items[itemIndex] = Object.assign({}, items[itemIndex], { text: v });
                                         updateRow(index, { items: items });
                                     }
-                                }) : null
-                            ]);
+                    })
+                ]);
                         },
                         label: null,
                         addLabel: 'Добавить пункт',
@@ -2412,35 +2568,21 @@
                         }, 'Очистить') : null
                     ]));
                 } else if (layout === 'text') {
-                    if (TextareaControl) {
-                        fields.push(el(TextareaControl, {
-                            key: 'text',
-                            label: 'Текст',
-                            rows: 5,
-                            value: row.text,
-                            onChange: function (v) { updateRow(index, { text: v }); }
-                        }));
-                    }
+                    fields.push(el(TolstenkoSeoTextEditor, {
+                        key: 'text',
+                        id: 'tolstenko_seo_' + index + '_text_only',
+                        label: 'Текст',
+                        value: row.text,
+                        onChange: function (v) { updateRow(index, { text: v }); }
+                    }));
                 } else if (layout === 'redactor') {
-                    fields.push(el('p', {
-                        key: 'red-l',
-                        style: { margin: '8px 0 4px', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase' }
-                    }, 'Содержимое'));
-                    fields.push(RichText ? el(RichText, {
+                    fields.push(el(TolstenkoSeoTextEditor, {
                         key: 'red',
-                        tagName: 'div',
-                        className: 'tolstenko-seo-redactor-editor',
-                        placeholder: 'Текст…',
-                        value: row.redactor,
-                        onChange: function (v) { updateRow(index, { redactor: v }); },
-                        allowedFormats: ['core/bold', 'core/italic', 'core/link', 'core/list', 'core/strikethrough']
-                    }) : (TextareaControl ? el(TextareaControl, {
-                        key: 'red',
+                        id: 'tolstenko_seo_' + index + '_redactor',
                         label: 'Содержимое',
-                        rows: 6,
                         value: row.redactor,
                         onChange: function (v) { updateRow(index, { redactor: v }); }
-                    }) : null));
+                    }));
                 }
 
                 return fields;
@@ -2758,10 +2900,10 @@
                         return el('div', { key: 'item-render-' + index }, [
                             MediaUpload && MediaUploadCheck ? el('div', { key: 'ico', style: { marginBottom: '8px' } }, [
                                 el(MediaUploadCheck, { key: 'muc' }, el(MediaUpload, {
-                                    allowedTypes: ['image'],
+                            allowedTypes: ['image'],
                                     value: icoId,
                                     onSelect: function (m) { updateItem(index, { ico: m && m.id ? m.id : 0 }); },
-                                    render: function (obj) {
+                            render: function (obj) {
                                         return el(Button, { isSecondary: true, onClick: obj.open }, icoId ? 'Заменить иконку' : 'Иконка (SVG)');
                                     }
                                 })),
@@ -2977,8 +3119,8 @@
                             TextControl ? el(TextControl, { key: 'ty', label: 'Тип', value: item.type || '', onChange: function (v) { updateItem(index, { type: v }); } }) : null,
                             TextControl ? el(TextControl, { key: 't', label: 'Заголовок', value: item.title || '', onChange: function (v) { updateItem(index, { title: v }); } }) : null,
                             TextControl ? el(TextControl, { key: 's', label: 'Специальность', value: item.speciality || '', onChange: function (v) { updateItem(index, { speciality: v }); } }) : null
-                        ]);
-                    },
+            ]);
+        },
                     label: 'Этапы',
                     addLabel: 'Добавить этап',
                     emptyItem: { year: '', type: '', title: '', speciality: '' },
@@ -3044,6 +3186,8 @@
 
             var items = normalizeLogoList(attrs.block_clients_items);
             var smi = normalizeLogoList(attrs.block_clients_smi);
+            var showTop = attrs.block_clients_show_top !== false;
+            var showBottom = attrs.block_clients_show_bottom !== false;
             function setItems(next) { set({ block_clients_items: next.slice() }); }
             function setSmi(next) { set({ block_clients_smi: next.slice() }); }
 
@@ -3080,9 +3224,9 @@
                                     next[index] = Object.assign({}, item, { link: v });
                                     onChange(next);
                                 }
-                            }) : null
-                        ]);
-                    },
+                        }) : null
+            ]);
+        },
                     label: label,
                     addLabel: addLabel,
                     emptyItem: { image: 0, name: '', link: '' },
@@ -3093,27 +3237,45 @@
             return wrapBlock(blockProps, [
                 el('p', { key: 'l', style: { marginBottom: '8px', fontWeight: '600' } }, 'Клиенты'),
                 el('p', { key: 'h', style: { marginTop: 0, marginBottom: '8px', fontSize: '12px', color: '#757575' } }, 'Пустые поля — из «Дефолты блоков → Пресс-портрет».'),
-                TextControl ? el(TextControl, {
-                    key: 'title', label: 'Заголовок',
-                    value: attrs.block_clients_title || '',
-                    placeholder: getDefault('clients.title', 'Клиенты'),
-                    onChange: function (v) { set({ block_clients_title: v }); }
+                ToggleControl ? el(ToggleControl, {
+                    key: 'st',
+                    label: 'Показывать верхний блок',
+                    help: 'Заголовок, текст и логотипы клиентов',
+                    checked: showTop,
+                    onChange: function (v) { set({ block_clients_show_top: !!v }); }
                 }) : null,
-                renderHeadingTagSelect(attrs, set, 'block_clients_title_tag', 'Тег заголовка', 'h2'),
-                TextareaControl ? el(TextareaControl, {
-                    key: 'text', label: 'Текст',
-                    value: attrs.block_clients_text || '',
-                    placeholder: getDefault('clients.text', ''),
-                    onChange: function (v) { set({ block_clients_text: v }); }
+                showTop ? el('div', { key: 'top' }, [
+                    TextControl ? el(TextControl, {
+                        key: 'title', label: 'Заголовок',
+                        value: attrs.block_clients_title || '',
+                        placeholder: getDefault('clients.title', 'Клиенты'),
+                        onChange: function (v) { set({ block_clients_title: v }); }
+                    }) : null,
+                    renderHeadingTagSelect(attrs, set, 'block_clients_title_tag', 'Тег заголовка', 'h2'),
+                    TextareaControl ? el(TextareaControl, {
+                        key: 'text', label: 'Текст',
+                        value: attrs.block_clients_text || '',
+                        placeholder: getDefault('clients.text', ''),
+                        onChange: function (v) { set({ block_clients_text: v }); }
+                    }) : null,
+                    renderLogoEditor(items, setItems, false, 'Логотипы клиентов', 'Добавить логотип')
+                ]) : null,
+                ToggleControl ? el(ToggleControl, {
+                    key: 'sb',
+                    label: 'Показывать нижний блок',
+                    help: 'Подзаголовок СМИ и логотипы СМИ',
+                    checked: showBottom,
+                    onChange: function (v) { set({ block_clients_show_bottom: !!v }); }
                 }) : null,
-                renderLogoEditor(items, setItems, false, 'Логотипы клиентов', 'Добавить логотип'),
-                TextControl ? el(TextControl, {
-                    key: 'sub', label: 'Подзаголовок (СМИ)',
-                    value: attrs.block_clients_subtitle || '',
-                    placeholder: getDefault('clients.subtitle', ''),
-                    onChange: function (v) { set({ block_clients_subtitle: v }); }
-                }) : null,
-                renderLogoEditor(smi, setSmi, true, 'СМИ', 'Добавить СМИ')
+                showBottom ? el('div', { key: 'bottom' }, [
+                    TextControl ? el(TextControl, {
+                        key: 'sub', label: 'Подзаголовок (СМИ)',
+                        value: attrs.block_clients_subtitle || '',
+                        placeholder: getDefault('clients.subtitle', ''),
+                        onChange: function (v) { set({ block_clients_subtitle: v }); }
+                    }) : null,
+                    renderLogoEditor(smi, setSmi, true, 'СМИ', 'Добавить СМИ')
+                ]) : null
             ]);
         },
         save: function () { return null; }
@@ -3343,20 +3505,20 @@
                             MediaUpload && MediaUploadCheck ? el('div', { key: 'ico', style: { marginBottom: '8px' } }, [
                                 el('p', { key: 'il', style: { margin: '0 0 4px', fontSize: '12px' } }, 'Иконка (лучше SVG)'),
                                 el(MediaUploadCheck, { key: 'muc' }, el(MediaUpload, {
-                                    allowedTypes: ['image'],
+                            allowedTypes: ['image'],
                                     value: icoId,
                                     onSelect: function (m) { updateItem(index, { ico: m && m.id ? m.id : 0 }); },
-                                    render: function (obj) {
+                            render: function (obj) {
                                         return el(Button, { isSecondary: true, onClick: obj.open }, icoId ? 'Заменить иконку' : 'Выбрать иконку');
                                     }
                                 })),
                                 icoId && Button ? el(Button, {
                                     key: 'rm-ico',
-                                    isDestructive: true,
-                                    isSmall: true,
+                                isDestructive: true,
+                                isSmall: true,
                                     style: { marginLeft: '8px' },
                                     onClick: function () { updateItem(index, { ico: 0 }); }
-                                }, 'Удалить') : null
+                            }, 'Удалить') : null
                             ]) : null,
                             TextControl ? el(TextControl, {
                                 key: 't',
@@ -3370,8 +3532,8 @@
                                 value: item.text || '',
                                 onChange: function (v) { updateItem(index, { text: v }); }
                             }) : null
-                        ]);
-                    },
+            ]);
+        },
                     label: 'Карточки вариантов',
                     addLabel: 'Добавить карточку',
                     emptyItem: { ico: 0, title: '', text: '' },
@@ -3799,9 +3961,9 @@
             category: 'tolstenko-blocks-new',
             icon: 'hammer',
             edit: function ServiceSectionEdit(props) {
-                var attrs = props.attributes || {};
-                var set = props.setAttributes;
-                var blockProps = useBlockProps ? useBlockProps() : {};
+            var attrs = props.attributes || {};
+            var set = props.setAttributes;
+            var blockProps = useBlockProps ? useBlockProps() : {};
                 var defKey = defaultsKey || 'service_section';
                 var defTitle = getDefault(defKey + '.title', 'Услуги');
                 var defText = getDefault(defKey + '.text', '');
@@ -4067,7 +4229,7 @@
                 });
 
                 var hint = isTile
-                    ? 'Плитка статей с фильтром рубрик и постраничной навигацией. Пустые поля — из дефолтов «Статьи плитка».'
+                    ? 'Плитка статей: табы ведут на /blog/ и рубрики /blog/{cat}/. Пагинация — на месте. Пустые поля — из дефолтов «Статьи плитка».'
                     : (withFilters
                         ? 'Слайдер статей с фильтром рубрик. Пустые поля и список — из дефолтов «Статьи».'
                         : 'Пустые поля и список статей — из дефолтов.');
@@ -4161,10 +4323,10 @@
         return el('div', { key: k, style: { marginBottom: '12px' } }, [
             el('p', { key: k + '-l', style: { margin: '0 0 4px', fontWeight: '600' } }, label),
             el('div', { key: k + '-row', style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } }, [
-                Button ? el(Button, {
+                                Button ? el(Button, {
                     key: k + '-pick',
                     isSecondary: true,
-                    isSmall: true,
+                                    isSmall: true,
                     onClick: openPicker
                 }, mid ? ('Сменить (#' + mid + ')') : 'Выбрать') : el('button', {
                     key: k + '-pick',
@@ -4174,8 +4336,8 @@
                 }, mid ? ('Сменить (#' + mid + ')') : 'Выбрать'),
                 mid && Button ? el(Button, {
                     key: k + '-rm',
-                    isDestructive: true,
-                    isSmall: true,
+                                    isDestructive: true,
+                            isSmall: true,
                     onClick: onRemove
                 }, 'Убрать') : null
             ])
@@ -4267,12 +4429,12 @@
                     placeholder: getDefault('blog_blockquote.link', ''),
                     onChange: function (v) { set({ block_blog_blockquote_link: v }); }
                 }) : null,
-                ToggleControl ? el(ToggleControl, {
+                    ToggleControl ? el(ToggleControl, {
                     key: 'show',
                     label: 'Показать автора справа',
                     checked: showAuthor,
                     onChange: function (v) { set({ block_blog_blockquote_show_author: !!v }); }
-                }) : null,
+                    }) : null,
                 showAuthor ? mediaImageControl(
                     'Фото автора',
                     attrs.block_blog_blockquote_image || getDefault('blog_blockquote.image', 0),
@@ -4335,23 +4497,44 @@
                     items: items,
                     onChange: setItems,
                     renderItem: function (item, index) {
-                        return TextareaControl ? el(TextareaControl, {
-                            label: 'Пункт ' + (index + 1),
-                            value: (item && item.text) || '',
-                            onChange: function (v) {
-                                var next = items.slice();
-                                next[index] = { text: v };
-                                setItems(next);
-                            },
-                            rows: 2
-                        }) : null;
+                        return [
+                            el('p', {
+                                key: 'lbl',
+                                style: { margin: '0 0 4px', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', color: '#1e1e1e' }
+                            }, 'Пункт ' + (index + 1)),
+                            el('div', { key: 'txt-wrap', className: 'tolstenko-richtext-editor' },
+                                RichText ? el(RichText, {
+                                    key: 'txt',
+                                    tagName: 'div',
+                                    className: 'tolstenko-blog-number-list-editor',
+                                    placeholder: 'Текст пункта…',
+                                    value: (item && item.text) || '',
+                                    onChange: function (v) {
+                                        var next = items.slice();
+                                        next[index] = { text: v };
+                                        setItems(next);
+                                    },
+                                    allowedFormats: ['core/bold', 'core/italic', 'core/link', 'core/list', 'core/strikethrough']
+                                }) : (TextareaControl ? el(TextareaControl, {
+                                    key: 'txt',
+                                    label: 'Пункт ' + (index + 1),
+                                    value: (item && item.text) || '',
+                                    onChange: function (v) {
+                                        var next = items.slice();
+                                        next[index] = { text: v };
+                                        setItems(next);
+                                    },
+                                    rows: 4
+                                }) : null)
+                            )
+                        ];
                     },
                     label: null,
                     addLabel: 'Добавить пункт',
                     emptyItem: { text: '' },
                     keyPrefix: 'numlist-items'
-                })
-            ]);
+                    })
+                ]);
         },
         save: function () { return null; }
     });
@@ -4380,7 +4563,7 @@
                 { label: 'Внимание', value: 'warn' },
                 { label: 'Подметить', value: 'pin' },
                 { label: 'Идея', value: 'ide' },
-                { label: 'Кастомный', value: 'custom' }
+                { label: 'Кастомный (иконка необязательна)', value: 'custom' }
             ];
             return wrapBlock(blockProps, [
                 el('p', { key: 'l', style: { fontWeight: '600', marginBottom: '8px' } }, 'Статья: предупреждения'),
@@ -4391,39 +4574,72 @@
                         var type = (item && item.type) || 'warn';
                         return el('div', { key: 'item-render-' + index }, [
                             SelectControl ? el(SelectControl, {
-                                label: 'Тип иконки',
+                                label: 'Тип',
                                 value: type,
                                 options: typeOptions,
                                 onChange: function (v) {
                                     var next = items.slice();
-                                    next[index] = Object.assign({}, item || {}, { type: v });
-                                    setItems(next);
-                                }
-                            }) : null,
-                            TextareaControl ? el(TextareaControl, {
-                                label: 'Текст',
-                                value: (item && item.text) || '',
-                                onChange: function (v) {
-                                    var next = items.slice();
-                                    next[index] = Object.assign({}, item || {}, { text: v });
+                                    var patch = { type: v };
+                                    // При уходе с custom не тащим чужую иконку в warn/pin/ide.
+                                    if (v !== 'custom') {
+                                        patch.icon = 0;
+                                    }
+                                    next[index] = Object.assign({}, item || {}, patch);
                                     setItems(next);
                                 },
-                                rows: 2
+                                help: type === 'custom'
+                                    ? 'Без иконки — тёмная плашка и текст по центру. С иконкой — слева иконка, справа текст.'
+                                    : undefined
                             }) : null,
-                            type === 'custom' ? mediaImageControl(
-                                'Иконка (SVG/изображение)',
-                                item && item.icon,
-                                function (id) {
-                                    var next = items.slice();
-                                    next[index] = Object.assign({}, item || {}, { icon: id });
-                                    setItems(next);
-                                },
-                                function () {
-                                    var next = items.slice();
-                                    next[index] = Object.assign({}, item || {}, { icon: 0 });
-                                    setItems(next);
-                                }
-                            ) : null
+                            el('p', {
+                                key: 'txt-l',
+                                style: { margin: '8px 0 4px', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', color: '#1e1e1e' }
+                            }, 'Текст'),
+                            el('div', { key: 'txt-wrap', className: 'tolstenko-richtext-editor' },
+                                RichText ? el(RichText, {
+                                    key: 'txt',
+                                    tagName: 'div',
+                                    className: 'tolstenko-blog-warning-editor',
+                                    placeholder: 'Текст предупреждения…',
+                                    value: (item && item.text) || '',
+                                    onChange: function (v) {
+                                        var next = items.slice();
+                                        next[index] = Object.assign({}, item || {}, { text: v });
+                                        setItems(next);
+                                    },
+                                    allowedFormats: ['core/bold', 'core/italic', 'core/link', 'core/list', 'core/strikethrough']
+                                }) : (TextareaControl ? el(TextareaControl, {
+                                    key: 'txt',
+                                    label: 'Текст',
+                                    value: (item && item.text) || '',
+                                    onChange: function (v) {
+                                        var next = items.slice();
+                                        next[index] = Object.assign({}, item || {}, { text: v });
+                                        setItems(next);
+                                    },
+                                    rows: 4
+                                }) : null)
+                            ),
+                            type === 'custom' ? el('div', { key: 'custom-icon' }, [
+                                el('p', {
+                                    key: 'icon-hint',
+                                    style: { margin: '8px 0 4px', fontSize: '12px', color: '#646970' }
+                                }, 'Иконка необязательна. Если не выбрать — пункт без иконки.'),
+                                mediaImageControl(
+                                    'Иконка (SVG/изображение)',
+                                    item && item.icon,
+                                    function (id) {
+                                        var next = items.slice();
+                                        next[index] = Object.assign({}, item || {}, { icon: id });
+                                        setItems(next);
+                                    },
+                                    function () {
+                                        var next = items.slice();
+                                        next[index] = Object.assign({}, item || {}, { icon: 0 });
+                                        setItems(next);
+                                    }
+                                )
+                            ]) : null
                         ]);
                     },
                     label: null,
@@ -4490,7 +4706,7 @@
                 el('p', {
                     key: 'h',
                     style: { marginTop: 0, marginBottom: '12px', opacity: 0.7, fontSize: '12px' }
-                }, 'Сетка всех услуг, фильтр по категориям и кнопка «Показать ещё» после 6 карточек. Пустые поля — из дефолтов «Услуги (плитка)».'),
+                }, 'Сетка услуг; табы — ссылки на /services/ и /services/{cat}/. «Показать ещё» после 6 карточек. Пустые поля — из дефолтов «Услуги (плитка)».'),
                 TextareaControl ? el(TextareaControl, {
                     key: 't',
                     label: 'Заголовок (HTML)',
@@ -4819,7 +5035,7 @@
                     set,
                     'block_vacancy_content_sidebar_author',
                     'Автор',
-                    'По умолчанию (шаблон вакансии)',
+                    'Главный автор (по умолчанию)',
                     getDefault('vacancy_content.sidebar_author', '')
                 ),
                 TextControl ? el(TextControl, {

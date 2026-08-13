@@ -1,7 +1,7 @@
 <?php
 /**
- * Блок «Услуги (плитка)»: заголовок, фильтр категорий, сетка всех услуг, «Показать ещё».
- * Фильтр — REST /tolstenko/v1/filter-posts, карточки через service-card.php (card=service_tile).
+ * Блок «Услуги (плитка)»: заголовок, ссылки-фильтры на разделы, сетка услуг, «Показать ещё».
+ * «Все услуги» → страница /services/, рубрики → /services/{cat}/.
  */
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -41,6 +41,14 @@ $taxonomy   = 'service_category';
 $post_type  = 'service';
 $card       = 'service_tile';
 $posts_per_page = -1;
+
+$all_url = home_url( '/services/' );
+if ( function_exists( 'tolstenko_get_cpt_listing_breadcrumb' ) ) {
+	$listing = tolstenko_get_cpt_listing_breadcrumb( 'service' );
+	if ( is_array( $listing ) && ! empty( $listing['url'] ) ) {
+		$all_url = (string) $listing['url'];
+	}
+}
 
 $all_categories = taxonomy_exists( $taxonomy )
 	? get_terms(
@@ -85,13 +93,8 @@ if ( $title === '' && $text === '' && $items_html === '' && empty( $categories_w
 ?>
 <section
 	class="service-section service-section--archive section"
-	data-tolstenko-filter
 	data-tolstenko-layout="tile"
 	data-section-id="<?php echo esc_attr( $section_id ); ?>"
-	data-taxonomy="<?php echo esc_attr( $taxonomy ); ?>"
-	data-post-type="<?php echo esc_attr( $post_type ); ?>"
-	data-posts-per-page="<?php echo esc_attr( (string) $posts_per_page ); ?>"
-	data-card="<?php echo esc_attr( $card ); ?>"
 >
 	<div class="container">
 		<div class="service-section__top section-top">
@@ -106,29 +109,27 @@ if ( $title === '' && $text === '' && $items_html === '' && empty( $categories_w
 		<?php if ( ! empty( $categories_with_posts ) ) : ?>
 			<div class="service-section__filter filter">
 				<div class="filter__form">
-					<label class="filter__radio">
-						<input
-							type="radio"
-							name="<?php echo esc_attr( $section_id ); ?>_category"
-							value=""
-							data-section-id="<?php echo esc_attr( $section_id ); ?>"
-							class="tolstenko-filter-radio"
-							<?php checked( $active_term, '' ); ?>
-						>
+					<a
+						class="filter__link<?php echo $active_term === '' ? ' active' : ''; ?>"
+						href="<?php echo esc_url( $all_url ); ?>"
+						data-term=""
+					>
 						<span class="filter__label"><?php esc_html_e( 'Все услуги', 'tolstenko-theme' ); ?></span>
-					</label>
+					</a>
 					<?php foreach ( $categories_with_posts as $cat ) : ?>
-						<label class="filter__radio">
-							<input
-								type="radio"
-								name="<?php echo esc_attr( $section_id ); ?>_category"
-								value="<?php echo esc_attr( $cat->slug ); ?>"
-								data-section-id="<?php echo esc_attr( $section_id ); ?>"
-								class="tolstenko-filter-radio"
-								<?php checked( $active_term, $cat->slug ); ?>
-							>
+						<?php
+						$term_url = get_term_link( $cat );
+						if ( is_wp_error( $term_url ) || ! $term_url ) {
+							continue;
+						}
+						?>
+						<a
+							class="filter__link<?php echo $active_term === $cat->slug ? ' active' : ''; ?>"
+							href="<?php echo esc_url( $term_url ); ?>"
+							data-term="<?php echo esc_attr( $cat->slug ); ?>"
+						>
 							<span class="filter__label"><?php echo esc_html( $cat->name ); ?></span>
-						</label>
+						</a>
 					<?php endforeach; ?>
 				</div>
 			</div>
@@ -140,7 +141,6 @@ if ( $title === '' && $text === '' && $items_html === '' && empty( $categories_w
 			<div
 				class="fade-in-container service-section__grid"
 				id="<?php echo esc_attr( $section_id ); ?>-container"
-				data-tolstenko-filter-container
 			>
 				<?php echo $items_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped card template. ?>
 			</div>

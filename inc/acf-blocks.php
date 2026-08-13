@@ -12,6 +12,31 @@ if ( ! defined( 'ABSPATH' ) ) {
 add_action( 'init', 'tolstenko_register_theme_blocks', 20 );
 
 add_action( 'enqueue_block_editor_assets', 'tolstenko_enqueue_editor_blocks' );
+add_filter( 'block_editor_settings_all', 'tolstenko_inject_editor_blocks_styles', 20 );
+
+/**
+ * Стили RichText в iframe холста Gutenberg.
+ *
+ * @param array $settings Editor settings.
+ * @return array
+ */
+function tolstenko_inject_editor_blocks_styles( $settings ) {
+	$path = get_template_directory() . '/assets/css/editor-blocks.css';
+	if ( ! is_readable( $path ) ) {
+		return $settings;
+	}
+	$css = file_get_contents( $path );
+	if ( ! is_string( $css ) || $css === '' || ! is_array( $settings ) ) {
+		return $settings;
+	}
+	if ( empty( $settings['styles'] ) || ! is_array( $settings['styles'] ) ) {
+		$settings['styles'] = array();
+	}
+	$settings['styles'][] = array(
+		'css' => $css,
+	);
+	return $settings;
+}
 
 /**
  * Тип записи текущего редактора Gutenberg.
@@ -117,6 +142,7 @@ function tolstenko_filter_allowed_blocks_by_post_type( $allowed, $editor_context
 
 function tolstenko_enqueue_editor_blocks() {
     wp_enqueue_media();
+    wp_enqueue_editor();
     $uri = get_template_directory_uri();
     $path = get_template_directory() . '/assets/js/editor-blocks.js';
     $ver = file_exists( $path ) ? (string) filemtime( $path ) : '1.0';
@@ -127,6 +153,15 @@ function tolstenko_enqueue_editor_blocks() {
         $ver,
         true
     );
+	$editor_css = get_template_directory() . '/assets/css/editor-blocks.css';
+	if ( is_readable( $editor_css ) ) {
+		wp_enqueue_style(
+			'tolstenko-editor-blocks',
+			$uri . '/assets/css/editor-blocks.css',
+			array(),
+			(string) filemtime( $editor_css )
+		);
+	}
     if ( function_exists( 'tolstenko_get_block_defaults' ) ) {
         $vacancy_posts_for_editor = array();
         if ( post_type_exists( 'vacancy' ) ) {
@@ -593,12 +628,14 @@ function tolstenko_get_theme_block_attributes() {
             'block_aducation_images'    => array( 'type' => 'array', 'default' => array() ),
         ),
         'clients' => array(
-            'block_clients_title'     => array( 'type' => 'string', 'default' => '' ),
-            'block_clients_title_tag' => array( 'type' => 'string', 'default' => 'h2' ),
-            'block_clients_text'      => array( 'type' => 'string', 'default' => '' ),
-            'block_clients_items'     => array( 'type' => 'array', 'default' => array() ),
-            'block_clients_subtitle'  => array( 'type' => 'string', 'default' => '' ),
-            'block_clients_smi'       => array( 'type' => 'array', 'default' => array() ),
+            'block_clients_title'         => array( 'type' => 'string', 'default' => '' ),
+            'block_clients_title_tag'     => array( 'type' => 'string', 'default' => 'h2' ),
+            'block_clients_text'          => array( 'type' => 'string', 'default' => '' ),
+            'block_clients_items'         => array( 'type' => 'array', 'default' => array() ),
+            'block_clients_show_top'      => array( 'type' => 'boolean', 'default' => true ),
+            'block_clients_subtitle'      => array( 'type' => 'string', 'default' => '' ),
+            'block_clients_smi'           => array( 'type' => 'array', 'default' => array() ),
+            'block_clients_show_bottom'   => array( 'type' => 'boolean', 'default' => true ),
         ),
         'themes' => array(
             'block_themes_title'     => array( 'type' => 'string', 'default' => '' ),
@@ -717,7 +754,7 @@ function tolstenko_register_theme_blocks() {
         array( 'name' => 'blog-number-list', 'title' => __( 'Статья: нумерованный список', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'blog-warning', 'title' => __( 'Статья: предупреждения', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'blog-seo', 'title' => __( 'Статья: SEO / CTA', 'tolstenko-theme' ), 'category' => $cat_new ),
-        array( 'name' => 'consultation-whatsapp', 'title' => __( 'Консультация WhatsApp', 'tolstenko-theme' ), 'category' => $cat_new ),
+        array( 'name' => 'consultation-whatsapp', 'title' => __( 'Забронируйте место', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'consultation-tg', 'title' => __( 'Консультация Telegram', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'consultation-tel', 'title' => __( 'Консультация телефон', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'consultation-free', 'title' => __( 'Бесплатная консультация', 'tolstenko-theme' ), 'category' => $cat_new ),

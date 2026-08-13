@@ -29,6 +29,7 @@
     gap: vw(20px, $mobile);
     padding: 0;
     background-color: var(--gray-5-color);
+    box-shadow: 0 0 2px 0 #ffffff66;
 
     @media (min-width: $desk) {
       grid-template-columns: vw(200px, $desktop) minmax(0, 1fr) vw(280px, $desktop);

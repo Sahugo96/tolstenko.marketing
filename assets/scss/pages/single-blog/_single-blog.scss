@@ -304,7 +304,6 @@
     &.redactor ul li::before,
     .redactor ul li::before {
       margin-top: vw(6px, $mobile);
-      background-color: var(--brand-accent-yellow-color);
       @media (min-width: $desk) {
         margin-top: vw(6px, $desktop);
       }
@@ -466,14 +465,67 @@
     &:has( .ide) {
       background-color: #A1E4E9;
     }
+
+    // Кастомный: тёмная плашка сайта + читаемый светлый текст (и с иконкой, и без).
+    &--custom {
+      background-color: var(--gray-15-color);
+      color: var(--gray-90-color);
+
+      .single-blog__warnings-text,
+      .single-blog__warnings-text p,
+      .single-blog__warnings-text li,
+      .single-blog__warnings-text span,
+      .single-blog__warnings-text strong,
+      .single-blog__warnings-text b,
+      .single-blog__warnings-text em,
+      .single-blog__warnings-text i {
+        color: inherit;
+      }
+
+      .single-blog__warnings-text a {
+        color: var(--brand-accent-yellow-color);
+      }
+
+      // Не перекрашивать кастомный SVG/img в чёрный (правило &__warnings-item svg ниже).
+      .single-blog__warnings-icon,
+      .single-blog__warnings-icon svg,
+      > svg.custom {
+        fill: unset;
+        opacity: 1;
+        color: inherit;
+      }
+
+      .single-blog__warnings-icon img,
+      > img.custom {
+        opacity: 1;
+      }
+    }
+
+    &--no-icon {
+      justify-content: center;
+      text-align: center;
+
+      .single-blog__warnings-text {
+        width: 100%;
+        text-align: left;
+      }
+    }
   }
-  &__warnings-item svg {
+  &__warnings-icon {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    line-height: 0;
+  }
+  &__warnings-item svg,
+  &__warnings-item img {
     max-width: vw(30px, $mobile);
     min-width: vw(30px, $mobile);
     height: auto;
     aspect-ratio: 1/1;
-    fill: var(--black-color);
-    opacity: .75;
+    object-fit: contain;
+    flex-shrink: 0;
     @media (min-width: $desk) {
       max-width: vw(55px, $desktop);
       min-width: vw(55px, $desktop);
@@ -483,8 +535,33 @@
       min-width: vw(55px, $desktop_large);
     }
   }
-  &__warnings-item span {
+  &__warnings-item svg {
+    fill: var(--black-color);
+    opacity: .75;
+  }
+  &__warnings-item span,
+  &__warnings-text {
     color: var(--gray-10-color);
+  }
+
+  // После общего цвета текста — иначе .warnings-item span / .warnings-text перебьют custom.
+  &__warnings-item--custom {
+    color: var(--gray-90-color);
+
+    .single-blog__warnings-text,
+    .single-blog__warnings-text p,
+    .single-blog__warnings-text li,
+    .single-blog__warnings-text span,
+    .single-blog__warnings-text strong,
+    .single-blog__warnings-text b,
+    .single-blog__warnings-text em,
+    .single-blog__warnings-text i {
+      color: var(--gray-90-color);
+    }
+
+    .single-blog__warnings-text a {
+      color: var(--brand-accent-yellow-color);
+    }
   }
   &__content-blockquote {
     display: flex;

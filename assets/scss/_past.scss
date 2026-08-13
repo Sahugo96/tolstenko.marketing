@@ -748,21 +748,6 @@
   }
 }
 
-.index {
-  &-page {
-    overflow: hidden;
-    .reviews {
-      margin-bottom: 100px;
-    }
-    
-    @media screen and (min-width: 768px) and (max-width: 1500px) {
-      .reviews {
-        margin-bottom: 7.81vw;
-      }
-    }
-  }
-}
-
 .tolstenko {
   &-sc {
     &-category {

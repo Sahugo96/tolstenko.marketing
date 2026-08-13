@@ -1,7 +1,12 @@
 <?php
 /**
- * Single template: кейс.
+ * Single template: кейс (CPT case) — hybrid как у статьи, без комментариев.
+ * Уникальные поля карточки слайдера: case_title / case_text / case_link / case_items / case_service.
  */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 get_header();
 ?>
@@ -14,7 +19,27 @@ get_header();
 
 	while ( have_posts() ) {
 		the_post();
-		the_content();
+		get_template_part( 'pages/single-blog/sections/single-blog' );
+
+		$services_attrs = function_exists( 'tolstenko_get_blog_services_block_attrs' )
+			? tolstenko_get_blog_services_block_attrs( get_the_ID() )
+			: array();
+		if ( empty( $services_attrs['_tolstenko_hidden'] ) ) {
+			set_query_var( 'tolstenko_block_attributes', $services_attrs );
+			get_template_part( 'template-parts/blocks/service-section-simple' );
+			set_query_var( 'tolstenko_block_attributes', array() );
+		}
+
+		$faq_attrs = function_exists( 'tolstenko_get_blog_faq_block_attrs' )
+			? tolstenko_get_blog_faq_block_attrs( get_the_ID() )
+			: array();
+		if ( empty( $faq_attrs['_tolstenko_faq_hidden'] ) ) {
+			set_query_var( 'tolstenko_block_attributes', $faq_attrs );
+			get_template_part( 'template-parts/blocks/faq' );
+			set_query_var( 'tolstenko_block_attributes', array() );
+		}
+
+		get_template_part( 'template-parts/blocks/consultation-free' );
 	}
 	?>
 </main>

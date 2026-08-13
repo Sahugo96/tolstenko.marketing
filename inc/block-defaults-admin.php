@@ -23,6 +23,24 @@ function tolstenko_block_defaults_schema() {
 			'btn_text' => 'Получить гайд',
 			'btn_url'  => '',
 		),
+		'timed_modal' => array(
+			'enabled'       => true,
+			'delay_seconds' => 40,
+			'title'         => 'Не уходите без ответов!',
+			'text'          => 'Получите консультацию по привлечению клиентов — оставьте контакты, и мы перезвоним.',
+			'phone'         => '',
+		),
+		'video_bubble' => array(
+			'enabled'       => false,
+			'source'        => 'file',
+			'video'         => 0,
+			'iframe_url'    => '',
+			'btn_text'      => 'Консультация',
+			'btn_url'       => '',
+			'position'      => 'left',
+			'delay_seconds' => 5,
+			'memory_hours'  => 24,
+		),
 		'reviews' => array(
 			'title'      => 'Отзывы',
 			'text'       => '',
@@ -456,11 +474,13 @@ function tolstenko_block_defaults_schema() {
 			'images' => array(),
 		),
 		'clients' => array(
-			'title'    => 'Клиенты',
-			'text'     => '',
-			'items'    => array(),
-			'subtitle' => 'СМИ',
-			'smi'      => array(),
+			'title'        => 'Клиенты',
+			'text'         => '',
+			'items'        => array(),
+			'show_top'     => true,
+			'subtitle'     => 'СМИ',
+			'smi'          => array(),
+			'show_bottom'  => true,
 		),
 		'themes' => array(
 			'title'     => 'Темы обучений и выступлений',
@@ -1066,8 +1086,9 @@ function tolstenko_render_block_defaults_admin_page() {
 				<button type="button" class="tolstenko-df-tab" data-panel="partners" data-group="main"><?php esc_html_e( 'Партнёры', 'tolstenko-theme' ); ?></button>
 				<button type="button" class="tolstenko-df-tab" data-panel="certificates" data-group="main"><?php esc_html_e( 'Сертификаты', 'tolstenko-theme' ); ?></button>
 				<button type="button" class="tolstenko-df-tab" data-panel="guide_banner" data-group="main"><?php esc_html_e( 'Гайд-баннер', 'tolstenko-theme' ); ?></button>
+				<button type="button" class="tolstenko-df-tab" data-panel="timed_modal" data-group="main"><?php esc_html_e( 'Модалка по таймеру', 'tolstenko-theme' ); ?></button>
 				<button type="button" class="tolstenko-df-tab" data-panel="city" data-group="main"><?php esc_html_e( 'Города', 'tolstenko-theme' ); ?></button>
-				<button type="button" class="tolstenko-df-tab" data-panel="consultation_whatsapp" data-group="main"><?php esc_html_e( 'Консультация WApp', 'tolstenko-theme' ); ?></button>
+				<button type="button" class="tolstenko-df-tab" data-panel="consultation_whatsapp" data-group="main"><?php esc_html_e( 'Забронируйте место', 'tolstenko-theme' ); ?></button>
 				<button type="button" class="tolstenko-df-tab" data-panel="consultation_free" data-group="main"><?php esc_html_e( 'Бесплатная консультация', 'tolstenko-theme' ); ?></button>
 				<button type="button" class="tolstenko-df-tab" data-panel="tg_channel" data-group="main"><?php esc_html_e( 'TG-канал', 'tolstenko-theme' ); ?></button>
 				<button type="button" class="tolstenko-df-tab" data-panel="faq" data-group="main"><?php esc_html_e( 'FAQ', 'tolstenko-theme' ); ?></button>
@@ -1161,6 +1182,24 @@ function tolstenko_render_block_defaults_admin_page() {
 			<div class="row"><input type="text" name="tolstenko_block_defaults[guide_banner][text]" value="<?php echo esc_attr( $gb['text'] ?? '' ); ?>" style="width:100%" placeholder="Текст уведомления"></div>
 			<div class="row"><input type="text" name="tolstenko_block_defaults[guide_banner][btn_text]" value="<?php echo esc_attr( $gb['btn_text'] ?? '' ); ?>" style="width:100%" placeholder="Текст кнопки"></div>
 			<div class="row"><input type="text" name="tolstenko_block_defaults[guide_banner][btn_url]" value="<?php echo esc_attr( $gb['btn_url'] ?? '' ); ?>" style="width:100%" placeholder="Ссылка кнопки (пусто → модалка заявки)"></div>
+		</div>
+
+		<div class="tolstenko-df-panel" data-panel="timed_modal" data-group="main">
+			<?php $tm = $all['timed_modal'] ?? array(); ?>
+			<div class="row">
+				<label>
+					<input type="checkbox" name="tolstenko_block_defaults[timed_modal][enabled]" value="1" <?php checked( ! empty( $tm['enabled'] ) ); ?>>
+					<?php esc_html_e( 'Показывать модалку заявки по таймеру', 'tolstenko-theme' ); ?>
+				</label>
+			</div>
+			<p class="description"><?php esc_html_e( 'Отдельная плашка (#modal-timed): логотип, телефон, заголовок + та же CF7. Память закрытия — как у гайд-баннера (24 часа). Обычная #modal не затрагивается.', 'tolstenko-theme' ); ?></p>
+			<div class="row">
+				<label for="tolstenko_timed_modal_delay"><strong><?php esc_html_e( 'Задержка, секунд', 'tolstenko-theme' ); ?></strong></label><br>
+				<input type="number" id="tolstenko_timed_modal_delay" name="tolstenko_block_defaults[timed_modal][delay_seconds]" value="<?php echo esc_attr( (string) (int) ( $tm['delay_seconds'] ?? 40 ) ); ?>" min="5" max="600" step="1" style="width:120px">
+			</div>
+			<div class="row"><input type="text" name="tolstenko_block_defaults[timed_modal][title]" value="<?php echo esc_attr( $tm['title'] ?? '' ); ?>" style="width:100%" placeholder="<?php esc_attr_e( 'Заголовок', 'tolstenko-theme' ); ?>"></div>
+			<div class="row"><textarea name="tolstenko_block_defaults[timed_modal][text]" rows="3" style="width:100%" placeholder="<?php esc_attr_e( 'Текст под заголовком', 'tolstenko-theme' ); ?>"><?php echo esc_textarea( $tm['text'] ?? '' ); ?></textarea></div>
+			<div class="row"><input type="text" name="tolstenko_block_defaults[timed_modal][phone]" value="<?php echo esc_attr( $tm['phone'] ?? '' ); ?>" style="width:100%" placeholder="<?php esc_attr_e( 'Телефон (пусто = из контактных данных сайта)', 'tolstenko-theme' ); ?>"></div>
 		</div>
 
 		<div class="tolstenko-df-panel" data-panel="reviews" data-group="post_sliders">
@@ -2020,10 +2059,10 @@ function tolstenko_render_block_defaults_admin_page() {
 			<div class="row"><input type="text" name="tolstenko_block_defaults[seo_section][more_text]" value="<?php echo esc_attr( $seo_section['more_text'] ?? '' ); ?>" style="width:100%" placeholder="Текст кнопки раскрытия (по умолчанию: Читать далее)"></div>
 		</div>
 
-		</div><!-- .tolstenko-df-panels-source -->
+		</div><!-- .tolstenko-df-panels-source -->ы
 	</div>
 	<div class="actions">
-		<button type="submit" name="tolstenko_defaults_reset_all" value="1" class="button"><?php esc_html_e( 'Сбросить всё к заводским', 'tolstenko-theme' ); ?></button>
+		<!-- <button type="submit" name="tolstenko_defaults_reset_all" value="1" class="button"><?php esc_html_e( 'Сбросить всё к заводским', 'tolstenko-theme' ); ?></button> -->
 	</div>
 	<?php submit_button( __( 'Сохранить дефолты', 'tolstenko-theme' ) ); ?>
 	<script>
@@ -2047,6 +2086,7 @@ function tolstenko_render_block_defaults_admin_page() {
 			partners: 'main',
 			certificates: 'main',
 			guide_banner: 'main',
+			timed_modal: 'main',
 			city: 'main',
 			consultation_whatsapp: 'main',
 			consultation_free: 'main',
@@ -2324,6 +2364,40 @@ function tolstenko_render_block_defaults_admin_page() {
 				setTimeout(function(){ bindIconPicker(document); }, 0);
 			}
 		});
+
+		function bindVideoPicker(scope){
+			scope.querySelectorAll('.tolstenko-defaults-pick-video').forEach(function(btn){
+				if (btn.dataset.bound) return;
+				btn.dataset.bound = '1';
+				btn.addEventListener('click', function(ev){
+					ev.preventDefault();
+					if (typeof wp === 'undefined' || !wp.media) return;
+					var row = btn.closest('.tolstenko-defaults-image-row');
+					if (!row) return;
+					var input = row.querySelector('.tolstenko-defaults-icon-id');
+					var preview = row.querySelector('.icon-preview');
+					var frame = wp.media({
+						title: 'Выберите видео',
+						button: { text: 'Использовать' },
+						multiple: false,
+						library: { type: 'video' }
+					});
+					frame.on('select', function(){
+						var sel = frame.state().get('selection').first();
+						if (!sel) return;
+						var json = sel.toJSON();
+						input.value = json.id || 0;
+						var name = (json.filename || json.title || json.url || '');
+						if (name && name.indexOf('/') !== -1) {
+							name = name.split('/').pop();
+						}
+						preview.textContent = name || '';
+					});
+					frame.open();
+				});
+			});
+		}
+		bindVideoPicker(document);
 	})();
 	</script>
 	</form>
@@ -2371,6 +2445,21 @@ function tolstenko_save_block_defaults_from_request() {
 		'text'     => sanitize_text_field( $raw['guide_banner']['text'] ?? '' ),
 		'btn_text' => sanitize_text_field( $raw['guide_banner']['btn_text'] ?? '' ),
 		'btn_url'  => esc_url_raw( $raw['guide_banner']['btn_url'] ?? '' ),
+	);
+
+	$tm_delay = isset( $raw['timed_modal']['delay_seconds'] ) ? (int) $raw['timed_modal']['delay_seconds'] : 40;
+	if ( $tm_delay < 5 ) {
+		$tm_delay = 5;
+	}
+	if ( $tm_delay > 600 ) {
+		$tm_delay = 600;
+	}
+	$out['timed_modal'] = array(
+		'enabled'       => ! empty( $raw['timed_modal']['enabled'] ),
+		'delay_seconds' => $tm_delay,
+		'title'         => sanitize_text_field( $raw['timed_modal']['title'] ?? '' ),
+		'text'          => sanitize_textarea_field( $raw['timed_modal']['text'] ?? '' ),
+		'phone'         => sanitize_text_field( $raw['timed_modal']['phone'] ?? '' ),
 	);
 
 	$out['reviews'] = array(
@@ -2911,6 +3000,11 @@ function tolstenko_save_block_defaults_from_request() {
 				$out[ $vac_key ] = $prev[ $vac_key ];
 			}
 		}
+	}
+
+	// Не затирать видео-пузырь (отдельная страница настроек).
+	if ( is_array( $prev ) && isset( $prev['video_bubble'] ) ) {
+		$out['video_bubble'] = $prev['video_bubble'];
 	}
 
 	update_option( 'tolstenko_block_defaults', $out, false );

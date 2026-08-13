@@ -53,40 +53,24 @@ $director_photo = ! empty( $director['photo'] ) && function_exists( 'tolstenko_g
 	? tolstenko_get_image_attrs( $director['photo'] )
 	: null;
 
-$sidebar_person = function_exists( 'tolstenko_get_vacancy_sidebar_person' )
-	? tolstenko_get_vacancy_sidebar_person()
-	: array(
-		'photo_id' => 0,
-		'name'     => '',
-		'text'     => '',
-	);
+// Статья / акция: сайдбар = автор записи → главный автор (через director).
+// Не тянем «Автора по умолчанию» из шаблона вакансии поверх автора статьи.
 $sidebar_defaults = function_exists( 'tolstenko_get_block_defaults' )
 	? tolstenko_get_block_defaults( 'vacancy_content' )
 	: array();
-$sidebar_photo_id  = (int) ( $sidebar_person['photo_id'] ?? 0 );
-$sidebar_photo_url = $sidebar_photo_id ? (string) wp_get_attachment_image_url( $sidebar_photo_id, 'medium' ) : '';
-$sidebar_photo_alt = $sidebar_photo_id ? (string) get_post_meta( $sidebar_photo_id, '_wp_attachment_image_alt', true ) : '';
-$sidebar_name      = trim( (string) ( $sidebar_person['name'] ?? '' ) );
-$sidebar_text      = (string) ( $sidebar_person['text'] ?? '' );
-$sidebar_btn       = trim( (string) ( $sidebar_defaults['sidebar_btn'] ?? '' ) );
+$sidebar_photo_url = $director_photo ? (string) ( $director_photo['url'] ?? '' ) : '';
+$sidebar_photo_alt = $director_photo
+	? (string) ( $director_photo['alt'] ?? ( $director['name'] ?? '' ) )
+	: '';
+$sidebar_name = trim( (string) ( $director['name'] ?? '' ) );
+$sidebar_text = (string) ( $director['description'] ?? '' );
+$sidebar_btn  = trim( (string) ( $sidebar_defaults['sidebar_btn'] ?? '' ) );
 if ( $sidebar_btn === '' ) {
 	$sidebar_btn = __( 'Бесплатный аудит', 'tolstenko-theme' );
 }
 $sidebar_btn_url = function_exists( 'tolstenko_url_or_modal' )
 	? tolstenko_url_or_modal( (string) ( $sidebar_defaults['sidebar_btn_url'] ?? '' ) )
 	: '#modal';
-
-// Если сайдбар вакансии пуст — берём автора статьи (выбранного в метабоксе).
-if ( $sidebar_photo_url === '' && $director_photo ) {
-	$sidebar_photo_url = (string) ( $director_photo['url'] ?? '' );
-	$sidebar_photo_alt = (string) ( $director_photo['alt'] ?? ( $director['name'] ?? '' ) );
-}
-if ( $sidebar_name === '' && ! empty( $director['name'] ) ) {
-	$sidebar_name = (string) $director['name'];
-}
-if ( trim( wp_strip_all_tags( $sidebar_text ) ) === '' && ! empty( $director['description'] ) ) {
-	$sidebar_text = (string) $director['description'];
-}
 
 $has_contact_socials_rgb = false;
 if ( function_exists( 'tolstenko_get_contact_data' ) ) {
@@ -104,6 +88,26 @@ if ( is_array( $blog_actions ) ) {
 	}
 }
 $actions_ids = array_values( array_filter( array_unique( $actions_ids ) ) );
+
+// Пустое «Акции в сайдбаре» — последние 5 опубликованных акций.
+if ( empty( $actions_ids ) && post_type_exists( 'actions' ) ) {
+	$exclude_actions = ( get_post_type( $post_id ) === 'actions' ) ? array( (int) $post_id ) : array();
+	$actions_ids     = get_posts(
+		array(
+			'post_type'              => 'actions',
+			'post_status'            => 'publish',
+			'posts_per_page'         => 5,
+			'orderby'                => 'date',
+			'order'                  => 'DESC',
+			'fields'                 => 'ids',
+			'post__not_in'           => $exclude_actions,
+			'no_found_rows'          => true,
+			'update_post_meta_cache' => false,
+			'update_post_term_cache' => false,
+		)
+	);
+	$actions_ids = array_values( array_map( 'intval', $actions_ids ) );
+}
 
 $has_sidebar = (
 	$sidebar_photo_url !== ''

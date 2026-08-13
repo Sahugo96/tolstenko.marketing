@@ -1,3 +1,8 @@
+/* splide-core.min.css: .splide { visibility:hidden } до init — только для real Splide в «Статьи» */
+.splide:not(.blog-section__splide) {
+  visibility: visible;
+}
+
 /* Фиксы Swiper для слайдеров услуг/кейсов (пока SCSS не пересобран в style.min). */
 
 .service-section__splide,
@@ -15,9 +20,22 @@
   grid-gap: 0 !important;
 }
 
-.service-section__splide .swiper-slide.service-card {
+.service-section__splide .swiper-slide.service-card,
+.service-section__splide .service-section__item.swiper-slide {
   width: auto;
   max-width: none;
+  height: auto;
+  display: flex;
+  box-sizing: border-box;
+  justify-content: flex-start;
+}
+
+.service-section__splide .service-section__splide-list.swiper-wrapper {
+  align-items: stretch;
+}
+
+.service-section__splide .service-card__wrapper {
+  flex: 1 1 auto;
 }
 
 .case-section__splide .swiper-slide.case-card,

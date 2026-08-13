@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 add_action( 'add_meta_boxes', 'tolstenko_blog_sliders_add_metabox' );
 add_action( 'save_post_blog', 'tolstenko_blog_sliders_save_metabox', 10, 2 );
 add_action( 'save_post_actions', 'tolstenko_blog_sliders_save_metabox', 10, 2 );
+add_action( 'save_post_case', 'tolstenko_blog_sliders_save_metabox', 10, 2 );
 
 /**
  * @param mixed $raw Raw IDs.
@@ -123,7 +124,9 @@ function tolstenko_blog_sliders_add_metabox() {
 	foreach ( $types as $pt ) {
 		$title = ( $pt === 'actions' )
 			? __( 'Слайдеры под акцией', 'tolstenko-theme' )
-			: __( 'Слайдеры под статьёй', 'tolstenko-theme' );
+			: ( $pt === 'case'
+				? __( 'Слайдеры под кейсом', 'tolstenko-theme' )
+				: __( 'Слайдеры под статьёй', 'tolstenko-theme' ) );
 		add_meta_box(
 			'tolstenko_blog_sliders',
 			$title,
@@ -153,8 +156,9 @@ function tolstenko_blog_sliders_render_metabox( $post ) {
 	$rel_ppp    = get_post_meta( $post->ID, 'blog_related_posts_per_page', true );
 	$rel_ids    = tolstenko_blog_sliders_sanitize_ids( get_post_meta( $post->ID, 'blog_related_ids', true ) );
 
-	$settings_url = admin_url( 'admin.php?page=tolstenko-site-settings' );
-	$rel_exclude  = ( $post->post_type === 'blog' ) ? array( (int) $post->ID ) : array();
+	$settings_url   = admin_url( 'admin.php?page=tolstenko-site-settings' );
+	$rel_exclude    = ( $post->post_type === 'blog' ) ? array( (int) $post->ID ) : array();
+	$show_related   = ( $post->post_type !== 'case' );
 
 	if ( function_exists( 'tolstenko_post_select_print_assets' ) ) {
 		tolstenko_post_select_print_assets();
@@ -172,7 +176,11 @@ function tolstenko_blog_sliders_render_metabox( $post ) {
 
 	<div class="tolstenko-blog-sliders">
 		<p class="description">
-			<?php esc_html_e( 'Блоки выводятся перед FAQ. Пустые поля — из «Настройки сайта» (Слайдер услуг / Похожие статьи).', 'tolstenko-theme' ); ?>
+			<?php
+			echo $show_related
+				? esc_html__( 'Блоки выводятся перед FAQ. Пустые поля — из «Настройки сайта» (Слайдер услуг / Похожие статьи).', 'tolstenko-theme' )
+				: esc_html__( 'Пустые поля — из «Настройки сайта» (Слайдер услуг).', 'tolstenko-theme' );
+			?>
 			<a href="<?php echo esc_url( $settings_url ); ?>"><?php esc_html_e( 'Открыть настройки', 'tolstenko-theme' ); ?></a>
 		</p>
 
@@ -216,6 +224,7 @@ function tolstenko_blog_sliders_render_metabox( $post ) {
 			</div>
 		</div>
 
+		<?php if ( $show_related ) : ?>
 		<div class="tolstenko-bs-block">
 			<h3><?php esc_html_e( 'Похожие статьи', 'tolstenko-theme' ); ?></h3>
 			<p class="tolstenko-bs-field">
@@ -256,6 +265,7 @@ function tolstenko_blog_sliders_render_metabox( $post ) {
 				?>
 			</div>
 		</div>
+		<?php endif; ?>
 	</div>
 	<?php
 }
@@ -293,6 +303,11 @@ function tolstenko_blog_sliders_save_metabox( $post_id, $post ) {
 	}
 	$svc_ids = isset( $_POST['tolstenko_blog_services_ids'] ) ? tolstenko_blog_sliders_sanitize_ids( wp_unslash( $_POST['tolstenko_blog_services_ids'] ) ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 	update_post_meta( $post_id, 'blog_services_ids', $svc_ids );
+
+	// У кейсов блока «Похожие статьи» нет.
+	if ( $post instanceof WP_Post && $post->post_type === 'case' ) {
+		return;
+	}
 
 	update_post_meta( $post_id, 'blog_related_hidden', ! empty( $_POST['tolstenko_blog_related_hidden'] ) ? '1' : '0' );
 	update_post_meta(

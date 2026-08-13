@@ -1,7 +1,7 @@
 .hero {
   position: relative;
   overflow: hidden;
-  padding-top: vw(30px, $mobile);
+  padding-top: vw(10px, $mobile);
   margin-bottom: vw(-3px, $mobile);
   @media (min-width: $desk) {
     padding-top: vw(20px, $desktop);
@@ -30,6 +30,11 @@
     @media (min-width: $desk_large) {
       max-width: vw(830px, $desktop_large);
       margin-bottom: vw(50px, $desktop_large);
+    }
+
+    // «Нет разметки»: h1–h6 из HTML не ломают вид .hero__title.h1.
+    :where(h1, h2, h3, h4, h5, h6) {
+      display: contents;
     }
   }
   &__title:has( + .hero__text) {

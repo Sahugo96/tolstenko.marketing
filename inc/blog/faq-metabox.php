@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 add_action( 'add_meta_boxes', 'tolstenko_blog_faq_add_metabox' );
 add_action( 'save_post_blog', 'tolstenko_blog_faq_save_metabox', 10, 2 );
 add_action( 'save_post_actions', 'tolstenko_blog_faq_save_metabox', 10, 2 );
+add_action( 'save_post_case', 'tolstenko_blog_faq_save_metabox', 10, 2 );
 
 function tolstenko_blog_faq_add_metabox() {
 	$types = function_exists( 'tolstenko_get_content_body_post_types' )
@@ -19,7 +20,9 @@ function tolstenko_blog_faq_add_metabox() {
 	foreach ( $types as $pt ) {
 		$title = ( $pt === 'actions' )
 			? __( 'FAQ акции', 'tolstenko-theme' )
-			: __( 'FAQ статьи', 'tolstenko-theme' );
+			: ( $pt === 'case'
+				? __( 'FAQ кейса', 'tolstenko-theme' )
+				: __( 'FAQ статьи', 'tolstenko-theme' ) );
 		add_meta_box(
 			'tolstenko_blog_faq',
 			$title,

@@ -235,7 +235,8 @@ $render_info_items = static function ( $contact_items ) {
 		<div class="contacts__inner">
 			<?php if ( $has_addresses ) : ?>
 				<div class="contacts__tabs tabs" aria-label="<?php esc_attr_e( 'Адреса', 'tolstenko-theme' ); ?>">
-					<div class="contacts__labels tabs__labels">
+					<div class="contacts__tabs-track swiper">
+						<div class="contacts__labels tabs__labels swiper-wrapper">
 						<?php
 						$checked = ' checked';
 						foreach ( $addresses as $index => $item ) :
@@ -245,7 +246,7 @@ $render_info_items = static function ( $contact_items ) {
 							}
 							$tab_id = 'contacts-tab-' . (int) $index;
 							?>
-							<label class="contacts__label tabs__label line-caps-bold-13-15">
+							<label class="contacts__label tabs__label swiper-slide line-caps-bold-13-15">
 								<input type="radio" name="contacts" value="<?php echo esc_attr( $tab_id ); ?>" data-tab-index="<?php echo esc_attr( (string) $index ); ?>"<?php echo $checked; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 								<span><?php echo esc_html( $tab_label ); ?></span>
 							</label>
@@ -253,6 +254,7 @@ $render_info_items = static function ( $contact_items ) {
 							$checked = '';
 						endforeach;
 						?>
+						</div>
 					</div>
 				</div>
 			<?php endif; ?>

@@ -1,7 +1,7 @@
 <?php
 /**
- * Нативный метабокс CPT «Кейс» — без ACF, по образцу «Отзыв».
- * Публичных страниц у кейса нет: ссылка «Разобрать кейс» задаётся вручную.
+ * Нативный метабокс CPT «Кейс» — данные карточки для блока «Кейсы».
+ * Страница кейса заполняется как статья (Gutenberg + метабоксы блога); комментарии не используются.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -11,49 +11,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 add_action( 'add_meta_boxes', 'tolstenko_case_add_metabox' );
 add_action( 'save_post_case', 'tolstenko_case_save_metabox', 10, 2 );
 add_action( 'admin_enqueue_scripts', 'tolstenko_case_metabox_assets' );
-add_filter( 'post_row_actions', 'tolstenko_case_row_actions', 10, 2 );
-add_filter( 'get_sample_permalink_html', 'tolstenko_case_hide_sample_permalink', 10, 2 );
-add_filter( 'use_block_editor_for_post_type', 'tolstenko_case_disable_block_editor', 10, 2 );
-
-/**
- * Классический экран редактирования, как у отзывов.
- *
- * @param bool   $use       Whether to use block editor.
- * @param string $post_type Post type.
- * @return bool
- */
-function tolstenko_case_disable_block_editor( $use, $post_type ) {
-	if ( $post_type === 'case' ) {
-		return false;
-	}
-	return $use;
-}
-
-/**
- * Убрать «Просмотреть» — публичных страниц нет.
- *
- * @param array   $actions Row actions.
- * @param WP_Post $post    Post.
- * @return array
- */
-function tolstenko_case_row_actions( $actions, $post ) {
-	if ( $post instanceof WP_Post && $post->post_type === 'case' ) {
-		unset( $actions['view'] );
-	}
-	return $actions;
-}
-
-/**
- * @param string $html    Permalink HTML.
- * @param int    $post_id Post ID.
- * @return string
- */
-function tolstenko_case_hide_sample_permalink( $html, $post_id ) {
-	if ( get_post_type( $post_id ) === 'case' ) {
-		return '';
-	}
-	return $html;
-}
 
 /**
  * @param string $hook Admin hook.
@@ -72,11 +29,11 @@ function tolstenko_case_metabox_assets( $hook ) {
 function tolstenko_case_add_metabox() {
 	add_meta_box(
 		'tolstenko_case_fields',
-		__( 'Данные кейса (карточка)', 'tolstenko-theme' ),
+		__( 'Данные кейса (карточка слайдера)', 'tolstenko-theme' ),
 		'tolstenko_case_render_metabox',
 		'case',
 		'normal',
-		'high'
+		'default'
 	);
 }
 
@@ -148,6 +105,10 @@ function tolstenko_case_render_metabox( $post ) {
 	</style>
 
 	<div class="tolstenko-case-box" id="tolstenko-case-box">
+		<p class="description" style="margin:0 0 14px">
+			<?php esc_html_e( 'Эти поля используются только в блоке «Кейсы» (карточка слайдера). Текст страницы кейса заполняется в редакторе и метабоксах ниже, как у статьи.', 'tolstenko-theme' ); ?>
+		</p>
+
 		<p class="tolstenko-case-field">
 			<label for="tolstenko_case_title"><strong><?php esc_html_e( 'Заголовок на карточке', 'tolstenko-theme' ); ?></strong></label><br>
 			<input type="text" id="tolstenko_case_title" name="tolstenko_case_title" value="<?php echo esc_attr( $card_title ); ?>" placeholder="<?php esc_attr_e( 'Пусто = заголовок записи', 'tolstenko-theme' ); ?>">
@@ -161,6 +122,7 @@ function tolstenko_case_render_metabox( $post ) {
 		<p class="tolstenko-case-field">
 			<label for="tolstenko_case_link"><strong><?php esc_html_e( 'Ссылка кнопки «Разобрать кейс»', 'tolstenko-theme' ); ?></strong></label><br>
 			<input type="url" id="tolstenko_case_link" name="tolstenko_case_link" value="<?php echo esc_attr( $case_link ); ?>" placeholder="https://…">
+			<span class="description"><?php esc_html_e( 'Пусто = ссылка на эту страницу кейса.', 'tolstenko-theme' ); ?></span>
 		</p>
 
 		<p class="tolstenko-case-field">

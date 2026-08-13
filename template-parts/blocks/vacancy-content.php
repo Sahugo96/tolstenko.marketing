@@ -95,7 +95,7 @@ if ( $title === '' && $content === '' && ! $has_sidebar ) {
 				<div class="single-vacancy__content-blocks">
 					<div class="single-vacancy__content-article br-30">
 						<?php if ( $title !== '' ) : ?>
-							<<?php echo esc_attr( $title_tag ); ?> class="single-vacancy__content-article-title lead-20-25"><?php echo tolstenko_kses_html( $title ); ?></<?php echo esc_attr( $title_tag ); ?>>
+							<<?php echo esc_attr( $title_tag ); ?> class="single-vacancy__content-article-title h2"><?php echo tolstenko_kses_html( $title ); ?></<?php echo esc_attr( $title_tag ); ?>>
 						<?php endif; ?>
 
 						<div class="single-vacancy__content-article-items redactor">

@@ -120,6 +120,21 @@
       flex-direction: unset;
       grid-gap: 0;
     }
+
+    .service-section__splide-list.swiper-wrapper {
+      align-items: stretch;
+    }
+
+    .service-section__item.swiper-slide {
+      height: auto;
+      display: flex;
+      box-sizing: border-box;
+      justify-content: flex-start;
+    }
+
+    .service-card__wrapper {
+      flex: 1 1 auto;
+    }
   }
 
   .splide__track {
@@ -157,9 +172,6 @@
     }
   }
 
-  &__splide-list.swiper-wrapper {
-    
-  }
   &__items {
 
     @media (min-width: $desk) {

@@ -97,19 +97,35 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        function activateTab(tab) {
+            if (!tab) return;
+            var tabIndex = tab.getAttribute('data-tab-index');
+            tabs.forEach(function (item) {
+                var isActive = item === tab;
+                item.classList.toggle('is-active', isActive);
+                item.setAttribute('aria-selected', isActive ? 'true' : 'false');
+            });
+            tabPanels.forEach(function (tabPanel) {
+                var isActive = tabPanel.getAttribute('data-tab-index') === tabIndex;
+                tabPanel.classList.toggle('is-active', isActive);
+                tabPanel.hidden = !isActive;
+            });
+        }
+
+        var canHover = window.matchMedia('(hover: hover) and (pointer: fine)');
+
         tabs.forEach(function (tab) {
             tab.addEventListener('click', function () {
-                var tabIndex = tab.getAttribute('data-tab-index');
-                tabs.forEach(function (item) {
-                    var isActive = item === tab;
-                    item.classList.toggle('is-active', isActive);
-                    item.setAttribute('aria-selected', isActive ? 'true' : 'false');
-                });
-                tabPanels.forEach(function (tabPanel) {
-                    var isActive = tabPanel.getAttribute('data-tab-index') === tabIndex;
-                    tabPanel.classList.toggle('is-active', isActive);
-                    tabPanel.hidden = !isActive;
-                });
+                activateTab(tab);
+            });
+            tab.addEventListener('pointerenter', function (event) {
+                // Desktop: hover. Touch / coarse pointer — только click.
+                if (!canHover.matches) return;
+                if (event.pointerType && event.pointerType !== 'mouse' && event.pointerType !== 'pen') return;
+                activateTab(tab);
+            });
+            tab.addEventListener('focus', function () {
+                activateTab(tab);
             });
         });
 
@@ -260,7 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Модалка заявки (как в marketing)
     (function() {
-        var modal = document.querySelector('.modal');
+        var modal = document.getElementById('modal');
         if (!modal) return;
 
         function openModal(e) {
@@ -312,6 +328,229 @@ document.addEventListener('DOMContentLoaded', () => {
                 closeModal();
             }
         });
+    })();
+
+    // Отдельная модалка по таймеру (вид/CF7 как #modal, память как guide-banner).
+    (function() {
+        var modal = document.getElementById('modal-timed');
+        if (!modal) return;
+
+        var STORAGE_KEY = 'theme_timed_modal_dismissed_at';
+        var DISMISS_DURATION = 2 * 60 * 60 * 1000;
+        var timedDelaySec = parseInt(modal.getAttribute('data-timed-delay') || '40', 10);
+        if (Number.isNaN(timedDelaySec) || timedDelaySec < 5) timedDelaySec = 40;
+        if (timedDelaySec > 600) timedDelaySec = 600;
+        var SHOW_DELAY = timedDelaySec * 1000;
+        var mainModal = document.getElementById('modal');
+
+        function isDismissed() {
+            var dismissedAt = localStorage.getItem(STORAGE_KEY);
+            if (!dismissedAt) return false;
+            var timestamp = parseInt(dismissedAt, 10);
+            if (Number.isNaN(timestamp)) {
+                localStorage.removeItem(STORAGE_KEY);
+                return false;
+            }
+            return Date.now() - timestamp < DISMISS_DURATION;
+        }
+
+        function dismiss() {
+            localStorage.setItem(STORAGE_KEY, String(Date.now()));
+        }
+
+        function hideModal() {
+            modal.classList.remove('active', 'success');
+            modal.setAttribute('aria-hidden', 'true');
+            modal.hidden = true;
+            if (!mainModal || !mainModal.classList.contains('active')) {
+                document.body.classList.remove('lock');
+            }
+        }
+
+        function showModal() {
+            if (isDismissed() || modal.classList.contains('active')) return;
+            if (mainModal && mainModal.classList.contains('active')) return;
+            modal.hidden = false;
+            modal.setAttribute('aria-hidden', 'false');
+            modal.classList.add('active');
+            modal.classList.remove('success');
+            document.body.classList.add('lock');
+        }
+
+        function closeAndRemember() {
+            dismiss();
+            hideModal();
+        }
+
+        document.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeAndRemember();
+            }
+        });
+
+        var closeBtn = modal.querySelector('.modal__close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                closeAndRemember();
+            });
+            closeBtn.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    closeAndRemember();
+                }
+            });
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+                closeAndRemember();
+            }
+        });
+
+        document.addEventListener('wpcf7mailsent', function(ev) {
+            var form = ev.target && ev.target.tagName === 'FORM' ? ev.target : null;
+            if (form && form.closest && form.closest('#modal-timed') === modal) {
+                dismiss();
+            }
+        }, false);
+
+        if (!isDismissed()) {
+            window.setTimeout(showModal, SHOW_DELAY);
+        }
+    })();
+
+    // Плавающий видео-пузырь (автоплей при показе; кнопка после клика).
+    (function() {
+        var root = document.getElementById('video-bubble');
+        if (!root) return;
+
+        var STORAGE_KEY = 'theme_video_bubble_dismissed_at';
+        var memoryHours = parseInt(root.getAttribute('data-memory-hours') || '24', 10);
+        if (Number.isNaN(memoryHours) || memoryHours < 1) memoryHours = 24;
+        if (memoryHours > 8760) memoryHours = 8760;
+        var DISMISS_DURATION = memoryHours * 60 * 60 * 1000;
+        var delaySec = parseInt(root.getAttribute('data-delay') || '5', 10);
+        if (Number.isNaN(delaySec) || delaySec < 0) delaySec = 5;
+        if (delaySec > 120) delaySec = 120;
+
+        var player = root.querySelector('[data-video-bubble-player]');
+        var iframeWrap = root.querySelector('[data-video-bubble-iframe]');
+        var hit = root.querySelector('[data-video-bubble-hit]');
+        var timeEl = root.querySelector('[data-video-bubble-time]');
+        var btn = root.querySelector('[data-video-bubble-btn]');
+        var closeBtn = root.querySelector('.video-bubble__close');
+        var source = root.getAttribute('data-source') || 'file';
+        var embedUrl = root.getAttribute('data-embed') || '';
+        var playing = false;
+
+        function isDismissed() {
+            var dismissedAt = localStorage.getItem(STORAGE_KEY);
+            if (!dismissedAt) return false;
+            var timestamp = parseInt(dismissedAt, 10);
+            if (Number.isNaN(timestamp)) {
+                localStorage.removeItem(STORAGE_KEY);
+                return false;
+            }
+            return Date.now() - timestamp < DISMISS_DURATION;
+        }
+
+        function dismiss() {
+            localStorage.setItem(STORAGE_KEY, String(Date.now()));
+        }
+
+        function formatTime(sec) {
+            sec = Math.max(0, Math.floor(sec || 0));
+            var m = Math.floor(sec / 60);
+            var s = sec % 60;
+            return m + ':' + (s < 10 ? '0' + s : String(s));
+        }
+
+        function startAutoplay() {
+            if (playing) return;
+            playing = true;
+            root.classList.add('is-playing');
+
+            if (source === 'file' && player) {
+                player.muted = true;
+                player.play().catch(function(){});
+                return;
+            }
+
+            if (source === 'iframe' && iframeWrap && embedUrl) {
+                iframeWrap.innerHTML = '<iframe src="' + embedUrl + '" title="Video" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe>';
+            }
+        }
+
+        function showBubble() {
+            if (isDismissed() || root.classList.contains('is-visible')) return;
+            root.hidden = false;
+            root.setAttribute('aria-hidden', 'false');
+            root.classList.add('is-visible');
+            startAutoplay();
+        }
+
+        function hideBubble() {
+            root.classList.remove('is-visible', 'is-playing', 'is-engaged');
+            root.setAttribute('aria-hidden', 'true');
+            root.hidden = true;
+            if (player && !player.paused) {
+                try { player.pause(); } catch (err) {}
+            }
+            if (iframeWrap) {
+                iframeWrap.innerHTML = '';
+            }
+            if (btn) btn.hidden = true;
+            if (hit) hit.hidden = false;
+            playing = false;
+        }
+
+        function revealConsult() {
+            if (btn) btn.hidden = false;
+            root.classList.add('is-engaged');
+            if (hit) hit.hidden = true;
+            if (player && player.muted) {
+                player.muted = false;
+                player.play().catch(function() {
+                    player.muted = true;
+                });
+            }
+        }
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dismiss();
+                hideBubble();
+            });
+        }
+
+        if (hit) {
+            hit.addEventListener('click', function(e) {
+                e.preventDefault();
+                revealConsult();
+            });
+        }
+
+        if (player && timeEl) {
+            player.addEventListener('loadedmetadata', function() {
+                if (player.duration && isFinite(player.duration)) {
+                    timeEl.hidden = false;
+                    timeEl.textContent = formatTime(player.duration);
+                }
+            });
+            player.addEventListener('timeupdate', function() {
+                if (!player.duration || !isFinite(player.duration)) return;
+                var left = Math.max(0, player.duration - player.currentTime);
+                timeEl.hidden = false;
+                timeEl.textContent = formatTime(left);
+            });
+        }
+
+        if (!isDismissed()) {
+            window.setTimeout(showBubble, delaySec * 1000);
+        }
     })();
 
 
@@ -386,6 +625,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 sel: '.reviews__splide--video',
                 opts: {
                     spaceBetween: 30,
+                    preventClicks: false,
+                    preventClicksPropagation: false,
                     breakpoints: {
                         992: {
                             slidesPerView: 3,
@@ -502,12 +743,21 @@ document.addEventListener('DOMContentLoaded', () => {
         var closeBtn = modal.querySelector('.reviews-video-modal__close');
 
         function getAutoplaySrc(src) {
+            if (!src) return src;
             try {
                 var url = new URL(src, window.location.origin);
                 url.searchParams.set('autoplay', '1');
+                // YouTube / Vimeo: без playsinline автоплей на мобилке часто молчит.
+                if (/youtube\.com|youtu\.be|vimeo\.com/i.test(url.hostname)) {
+                    url.searchParams.set('playsinline', '1');
+                }
+                // Rutube: autoplay=true надёжнее, чем 1.
+                if (/rutube\.ru/i.test(url.hostname)) {
+                    url.searchParams.set('autoplay', 'true');
+                }
                 return url.toString();
             } catch (e) {
-                return src;
+                return src.indexOf('?') === -1 ? (src + '?autoplay=1') : (src + '&autoplay=1');
             }
         }
 
@@ -518,19 +768,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function openModal(src) {
-            var iframe = document.createElement('iframe');
-            iframe.src = getAutoplaySrc(src);
-            iframe.setAttribute('allow', 'autoplay; fullscreen; picture-in-picture');
-            iframe.setAttribute('allowfullscreen', '');
-            iframe.setAttribute('title', 'Видео отзыв');
+            // Сначала показать модалку: иначе iframe грузится в visibility:hidden
+            // и браузер блокирует autoplay → «воспроизведение только со 2-го клика».
             content.innerHTML = '';
-            content.appendChild(iframe);
             modal.classList.add('is-active');
             document.body.classList.add('lock');
+
+            var iframe = document.createElement('iframe');
+            iframe.setAttribute('allow', 'autoplay; fullscreen; picture-in-picture; encrypted-media');
+            iframe.setAttribute('allowfullscreen', '');
+            iframe.setAttribute('title', 'Видео отзыв');
+            iframe.src = getAutoplaySrc(src);
+            content.appendChild(iframe);
         }
 
         triggers.forEach(function(trigger) {
-            trigger.addEventListener('click', function() {
+            trigger.addEventListener('click', function(e) {
+                // Не даём Swiper «съесть» клик как начало свайпа.
+                e.preventDefault();
+                e.stopPropagation();
                 var src = trigger.getAttribute('data-video-src');
                 if (src) openModal(src);
             });
@@ -1136,10 +1392,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function getActiveTerm(section) {
             var checked = section.querySelector('.tolstenko-filter-radio:checked');
-            return checked ? (checked.value || '') : '';
+            if (checked) {
+                return checked.value || '';
+            }
+            var activeLink = section.querySelector('.filter__link.active');
+            if (activeLink) {
+                return activeLink.getAttribute('data-term') || '';
+            }
+            return section.getAttribute('data-active-term') || '';
         }
 
         function applyFilterResult(section, container, data) {
+            var blogRoot = container.classList.contains('blog-section__splide')
+                ? container
+                : container.closest('.blog-section__splide');
+            if (blogRoot && typeof window.tolstenkoDestroyBlogSectionSplide === 'function') {
+                window.tolstenkoDestroyBlogSectionSplide(blogRoot);
+            }
+
             container.innerHTML = (data && typeof data.html === 'string') ? data.html : '';
             animateFadeIn(container);
 
@@ -1159,9 +1429,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (serviceRoot && typeof window.tolstenkoMountServiceSectionSwiper === 'function') {
                 window.tolstenkoMountServiceSectionSwiper(serviceRoot);
             }
-            var blogRoot = container.classList.contains('blog-section__splide')
-                ? container
-                : container.closest('.blog-section__splide');
             if (blogRoot && typeof window.tolstenkoMountBlogSectionSplide === 'function') {
                 window.tolstenkoMountBlogSectionSplide(blogRoot);
             } else if (blogRoot && blogRoot.closest('.blog-section--same') && typeof window.tolstenkoMountServiceSectionSwiper === 'function') {
@@ -1294,6 +1561,12 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 var url = new URL(src, window.location.origin);
                 url.searchParams.set('autoplay', '1');
+                if (/youtube\.com|youtu\.be|vimeo\.com/i.test(url.hostname)) {
+                    url.searchParams.set('playsinline', '1');
+                }
+                if (/rutube\.ru/i.test(url.hostname)) {
+                    url.searchParams.set('autoplay', 'true');
+                }
                 return url.toString();
             } catch (e) {
                 return src.indexOf('?') === -1 ? (src + '?autoplay=1') : (src + '&autoplay=1');
@@ -1307,15 +1580,31 @@ document.addEventListener('DOMContentLoaded', () => {
             var iframe = root.querySelector('iframe.video__iframe, .video__embed iframe');
             var video = root.querySelector('video.video__iframe');
 
+            // Сначала раскрываем блок: иначе iframe стартует в display:none / opacity:0
+            // и autoplay блокируется → нужен второй клик по плееру.
+            root.classList.add('active');
             if (embed) {
                 embed.hidden = false;
             }
 
             if (iframe) {
-                var src = iframe.getAttribute('data-src') || iframe.getAttribute('src') || '';
+                var src = iframe.getAttribute('data-src') || '';
+                if (!src || src === 'about:blank') {
+                    src = iframe.getAttribute('src') || '';
+                }
                 if (src && src !== 'about:blank') {
-                    iframe.setAttribute('src', withAutoplay(src));
-                    iframe.removeAttribute('data-src');
+                    var fresh = document.createElement('iframe');
+                    fresh.className = iframe.className;
+                    fresh.setAttribute('title', iframe.getAttribute('title') || 'Видео');
+                    fresh.setAttribute(
+                        'allow',
+                        iframe.getAttribute('allow') || 'autoplay; fullscreen; picture-in-picture; encrypted-media; clipboard-write'
+                    );
+                    fresh.setAttribute('allowfullscreen', '');
+                    fresh.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+                    // Создаём iframe с src в жесте клика — autoplay надёжнее, чем src у about:blank.
+                    fresh.src = withAutoplay(src);
+                    iframe.replaceWith(fresh);
                 }
             }
 
@@ -1325,8 +1614,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     video.play().catch(function() {});
                 }
             }
-
-            root.classList.add('active');
         }
 
         document.querySelectorAll('[data-tolstenko-blog-video]').forEach(function(root) {
@@ -1382,7 +1669,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 thumbsSwiper = new Swiper(thumbsEl, {
                     slidesPerView: 'auto',
                     spaceBetween: 8,
-                    rewind: true,
+                    rewind: false,
                     watchSlidesProgress: true,
                     slideToClickedSlide: true,
                     watchOverflow: true,
@@ -1401,7 +1688,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 fadeEffect: { crossFade: true },
                 slidesPerView: 1,
                 spaceBetween: 0,
-                rewind: true,
+                rewind: false,
                 watchOverflow: false,
                 allowTouchMove: slideCount > 1,
                 observer: true,
@@ -1417,7 +1704,49 @@ document.addEventListener('DOMContentLoaded', () => {
             if (slideCount > 1) unlockArrows(gallery);
         }
 
+        function mountContactsTabs(section) {
+            if (typeof Swiper === 'undefined') return;
+            var track = section.querySelector('.contacts__tabs-track.swiper');
+            if (!track || track._tabsSwiper) return;
+            var slideCount = track.querySelectorAll('.swiper-slide').length;
+            if (slideCount < 1) return;
+
+            track._tabsSwiper = new Swiper(track, {
+                slidesPerView: 'auto',
+                spaceBetween: 10,
+                freeMode: {
+                    enabled: true,
+                    momentum: true,
+                    momentumBounce: false
+                },
+                watchOverflow: true,
+                observer: true,
+                observeParents: true,
+                grabCursor: slideCount > 1,
+                resistance: true,
+                resistanceRatio: 0.85
+            });
+
+            return track._tabsSwiper;
+        }
+
+        function scrollContactsTabIntoView(section, tabIndex) {
+            var track = section.querySelector('.contacts__tabs-track.swiper');
+            var swiper = track && track._tabsSwiper;
+            if (!swiper || swiper.destroyed) return;
+
+            var slides = swiper.slides || [];
+            for (var i = 0; i < slides.length; i++) {
+                var input = slides[i].querySelector('input[data-tab-index]');
+                if (input && input.getAttribute('data-tab-index') === String(tabIndex)) {
+                    swiper.slideTo(i, 300);
+                    return;
+                }
+            }
+        }
+
         document.querySelectorAll('section.contacts').forEach(function(section) {
+            mountContactsTabs(section);
             var radios = section.querySelectorAll('input[name="contacts"]');
             var galleryPanels = section.querySelectorAll('.contacts__gallery-panel');
             var infoPanels = section.querySelectorAll('.contacts__info-panel');
@@ -1425,6 +1754,7 @@ document.addEventListener('DOMContentLoaded', () => {
             section.querySelectorAll('[data-contacts-gallery]').forEach(mountContactsGallery);
 
             function activateTab(idx) {
+                scrollContactsTabIntoView(section, idx);
                 infoPanels.forEach(function(panel) {
                     var on = panel.getAttribute('data-tab-index') === idx;
                     panel.hidden = !on;
@@ -1515,7 +1845,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function topAboveCenter(el) {
-            return el.getBoundingClientRect().top <= window.innerHeight * (window.innerWidth >= 992 ? 0.7 : 1 / 1.5);
+            return el.getBoundingClientRect().top <= window.innerHeight * (window.innerWidth >= 992 ? 0.75 : 1 / 1.5);
         }
 
         function activate(el, observer) {

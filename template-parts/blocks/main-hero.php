@@ -40,7 +40,7 @@ if ( isset( $block_attrs['block_main_hero_text'] ) && trim( (string) $block_attr
 }
 
 $title_tag = function_exists( 'tolstenko_normalize_heading_tag' )
-	? tolstenko_normalize_heading_tag( $block_attrs['block_main_hero_title_tag'] ?? 'h1', 'h1' )
+	? tolstenko_normalize_heading_tag( $block_attrs['block_main_hero_title_tag'] ?? 'h1', 'h1', true )
 	: 'h1';
 
 $btn_text = '';
@@ -138,7 +138,12 @@ $list_svg = '<svg class="hero__list-svg" viewBox="0 0 30 30" fill="none" xmlns="
 	<div class="container">
 		<div class="hero__inner">
 			<?php if ( $title !== '' ) : ?>
-				<<?php echo esc_attr( $title_tag ); ?> class="hero__title h1"><?php echo tolstenko_kses_html( $title ); ?></<?php echo esc_attr( $title_tag ); ?>>
+				<?php if ( $title_tag === 'none' ) : ?>
+					<?php // Визуал как у h1 (классы), семантика — из HTML в поле заголовка. ?>
+					<div class="hero__title h1"><?php echo tolstenko_kses_html( $title ); ?></div>
+				<?php else : ?>
+					<<?php echo esc_attr( $title_tag ); ?> class="hero__title h1"><?php echo tolstenko_kses_html( $title ); ?></<?php echo esc_attr( $title_tag ); ?>>
+				<?php endif; ?>
 			<?php endif; ?>
 
 			<?php if ( $text !== '' ) : ?>

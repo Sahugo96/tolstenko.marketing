@@ -30,22 +30,24 @@ $extra_class   = (string) get_query_var( 'tolstenko_service_card_class', 'servic
 $has_thumb     = has_post_thumbnail( $post_id );
 ?>
 <article class="<?php echo esc_attr( $extra_class ); ?>">
-	<?php if ( $has_thumb ) : ?>
-		<a class="service-card__image" href="<?php echo esc_url( $link ); ?>">
+	<a class="service-card__image<?php echo $has_thumb ? '' : ' service-card__image--placeholder'; ?>" href="<?php echo esc_url( $link ); ?>">
+		<?php if ( $has_thumb ) : ?>
 			<?php echo get_the_post_thumbnail( $post_id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- core thumbnail HTML. ?>
+		<?php else : ?>
+			<?php echo tolstenko_get_card_placeholder_image_html( 'large', $title ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+		<?php endif; ?>
 
-			<?php if ( $tag_name !== '' ) : ?>
-				<span class="service-card__tag caption-8-10"><?php echo esc_html( $tag_name ); ?></span>
+		<?php if ( $tag_name !== '' ) : ?>
+			<span class="service-card__tag caption-8-10"><?php echo esc_html( $tag_name ); ?></span>
+		<?php endif; ?>
+
+		<span class="service-card__hit caption-8-10">
+			<?php esc_html_e( 'хит', 'tolstenko-theme' ); ?>
+			<?php if ( $is_hit && $discount !== '' ) : ?>
+				<span><?php echo esc_html( $discount ); ?>%</span>
 			<?php endif; ?>
-
-			<span class="service-card__hit caption-8-10">
-				<?php esc_html_e( 'хит', 'tolstenko-theme' ); ?>
-				<?php if ( $is_hit && $discount !== '' ) : ?>
-					<span><?php echo esc_html( $discount ); ?>%</span>
-				<?php endif; ?>
-			</span>
-		</a>
-	<?php endif; ?>
+		</span>
+	</a>
 
 	<div class="service-card__wrapper">
 		<a class="service-card__title paragraph-15-15" href="<?php echo esc_url( $link ); ?>"><?php echo esc_html( $title ); ?></a>

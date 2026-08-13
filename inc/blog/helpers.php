@@ -86,7 +86,52 @@ function tolstenko_get_blog_comments_count( $post_id = 0 ) {
 }
 
 /**
+ * Добавить кураторский комментарий в meta blog_comments (append, без затирания).
+ *
+ * @param int   $post_id Target blog/actions post ID.
+ * @param array $item    Keys: photo, name, date, time, text; replies optional.
+ * @return bool
+ */
+function tolstenko_append_blog_comment( $post_id, array $item ) {
+	$post_id = (int) $post_id;
+	if ( ! $post_id || ! get_post( $post_id ) ) {
+		return false;
+	}
+
+	$row = array(
+		'photo'   => (int) ( $item['photo'] ?? 0 ),
+		'name'    => sanitize_text_field( (string) ( $item['name'] ?? '' ) ),
+		'date'    => sanitize_text_field( (string) ( $item['date'] ?? '' ) ),
+		'time'    => sanitize_text_field( (string) ( $item['time'] ?? '' ) ),
+		'text'    => sanitize_textarea_field( (string) ( $item['text'] ?? '' ) ),
+		'replies' => array(),
+	);
+
+	if ( $row['name'] === '' && $row['text'] === '' && ! $row['photo'] ) {
+		return false;
+	}
+
+	if ( function_exists( 'tolstenko_blog_sanitize_comments' ) ) {
+		$sanitized = tolstenko_blog_sanitize_comments( array( $row ) );
+		if ( ! $sanitized ) {
+			return false;
+		}
+		$row = $sanitized[0];
+	}
+
+	$comments = get_post_meta( $post_id, 'blog_comments', true );
+	if ( ! is_array( $comments ) ) {
+		$comments = array();
+	}
+	$comments[] = $row;
+	update_post_meta( $post_id, 'blog_comments', $comments );
+
+	return true;
+}
+
+/**
  * Автор для .single-blog__director и сайдбара.
+ * Приоритет: выбранный в записи → главный автор → шаблон вакансии → legacy-поля.
  *
  * @param int $post_id Post ID.
  * @return array{photo:mixed,name:string,title:string,position:string,description:string,show_quest:bool}
@@ -111,6 +156,26 @@ function tolstenko_get_single_blog_director( $post_id = 0 ) {
 				'title'       => $title,
 				'position'    => trim( (string) ( $author['position'] ?? '' ) ),
 				'description' => trim( (string) ( $author['description'] ?? '' ) ),
+				'show_quest'  => $show_quest,
+			);
+		}
+	}
+
+	// Главный автор из «Настройки сайта → Авторы статей».
+	if ( function_exists( 'tolstenko_get_blog_main_author' ) ) {
+		$main = tolstenko_get_blog_main_author();
+		if ( is_array( $main ) ) {
+			$title = trim( (string) ( $main['job_title'] ?? '' ) );
+			if ( $title === '' ) {
+				$title = trim( (string) ( $main['position'] ?? '' ) );
+			}
+
+			return array(
+				'photo'       => ! empty( $main['photo'] ) ? (int) $main['photo'] : null,
+				'name'        => trim( (string) ( $main['name'] ?? '' ) ),
+				'title'       => $title,
+				'position'    => trim( (string) ( $main['position'] ?? '' ) ),
+				'description' => trim( (string) ( $main['description'] ?? '' ) ),
 				'show_quest'  => $show_quest,
 			);
 		}

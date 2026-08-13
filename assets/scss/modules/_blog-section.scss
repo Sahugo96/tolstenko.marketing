@@ -396,6 +396,12 @@
     pointer-events: none;
   }
 
+  &__splide.loading {
+    opacity: 0.6;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+
   &__filter {
     margin-bottom: vw(20px, $mobile);
     @media (min-width: $desk) {

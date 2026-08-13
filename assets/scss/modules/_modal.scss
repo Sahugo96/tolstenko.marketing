@@ -142,4 +142,98 @@
       }
     }
   }
+
+  // Отдельная плашка по таймеру: логотип + телефон + тексты со скрина.
+  &--timed {
+    .modal__inner {
+      @media (min-width: $desk) {
+        padding-top: vw(56px, $desktop);
+      }
+      @media (min-width: $desk_large) {
+        padding-top: vw(56px, $desktop_large);
+      }
+    }
+
+    .modal__brand {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: vw(16px, $mobile);
+      margin-bottom: vw(24px, $mobile);
+      padding-right: vw(40px, $mobile);
+      @media (min-width: $desk) {
+        gap: vw(18px, $desktop);
+        margin-bottom: vw(28px, $desktop);
+        padding-right: vw(48px, $desktop);
+      }
+      @media (min-width: $desk_large) {
+        gap: vw(18px, $desktop_large);
+        margin-bottom: vw(28px, $desktop_large);
+        padding-right: vw(48px, $desktop_large);
+      }
+    }
+
+    .modal__logo {
+      display: inline-flex;
+      max-width: vw(180px, $mobile);
+      @media (min-width: $desk) {
+        max-width: vw(200px, $desktop);
+      }
+      @media (min-width: $desk_large) {
+        max-width: vw(200px, $desktop_large);
+      }
+
+      img {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+    }
+
+    .modal__phone {
+      display: inline-flex;
+      align-items: center;
+      gap: vw(10px, $mobile);
+      color: var(--white-color);
+      text-decoration: none;
+      font-weight: 600;
+      @media (min-width: $desk) {
+        gap: vw(10px, $desktop);
+      }
+      @media (min-width: $desk_large) {
+        gap: vw(10px, $desktop_large);
+      }
+
+      svg {
+        flex-shrink: 0;
+        width: vw(18px, $mobile);
+        height: vw(18px, $mobile);
+        fill: var(--white-color);
+        transition: fill .3s linear;
+        @media (min-width: $desk) {
+          width: vw(20px, $desktop);
+          height: vw(20px, $desktop);
+        }
+        @media (min-width: $desk_large) {
+          width: vw(20px, $desktop_large);
+          height: vw(20px, $desktop_large);
+        }
+      }
+
+      @media (any-hover: hover) {
+        transition: color .3s linear;
+        &:hover {
+          color: var(--brand-accent-yellow-color);
+          svg {
+            fill: var(--brand-accent-yellow-color);
+          }
+        }
+      }
+    }
+
+    .modal__title,
+    .modal__subtitle {
+      text-align: left;
+    }
+  }
 }

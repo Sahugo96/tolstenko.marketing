@@ -133,6 +133,7 @@ if ( ! function_exists( 'tolstenko_render_breadcrumb_ancestors' ) ) {
 			'blog'    => 'blog_cat',
 			'service' => 'service_category',
 			'vacancy' => 'vacancy_cat',
+			'case'    => 'case_cat',
 			'post'    => 'category',
 		);
 		$term_map = apply_filters( 'tolstenko_breadcrumb_single_taxonomy', $term_map, $post_type );
@@ -140,11 +141,15 @@ if ( ! function_exists( 'tolstenko_render_breadcrumb_ancestors' ) ) {
 		$crumb_term = null;
 		$tax        = isset( $term_map[ $post_type ] ) ? (string) $term_map[ $post_type ] : '';
 		if ( $tax !== '' && taxonomy_exists( $tax ) ) {
-			$terms = get_the_terms( get_the_ID(), $tax );
-			if ( is_array( $terms ) && ! empty( $terms ) ) {
-				$first = reset( $terms );
-				if ( $first instanceof WP_Term ) {
-					$crumb_term = $first;
+			if ( function_exists( 'tolstenko_get_primary_term' ) ) {
+				$crumb_term = tolstenko_get_primary_term( get_the_ID(), $tax );
+			} else {
+				$terms = get_the_terms( get_the_ID(), $tax );
+				if ( is_array( $terms ) && ! empty( $terms ) ) {
+					$first = reset( $terms );
+					if ( $first instanceof WP_Term ) {
+						$crumb_term = $first;
+					}
 				}
 			}
 		}

@@ -1,7 +1,7 @@
 <?php
 /**
- * Блоки тела статьи/акции (flexible content):
- * — в редакторе только у CPT blog и actions;
+ * Блоки тела статьи / акции / кейса (flexible content):
+ * — в редакторе у CPT blog, actions и case;
  * — «Настройки сайта → Блоки для статей» = дефолтное наполнение (не выбор видимости).
  */
 
@@ -18,7 +18,7 @@ add_action( 'admin_enqueue_scripts', 'tolstenko_blog_content_defaults_admin_asse
  * @return string[]
  */
 function tolstenko_get_content_body_post_types() {
-	return array( 'blog', 'actions' );
+	return array( 'blog', 'actions', 'case' );
 }
 
 /**
@@ -45,7 +45,11 @@ function tolstenko_is_content_body_singular() {
  * @return string
  */
 function tolstenko_get_single_content_bem() {
-	return is_singular( 'actions' ) ? 'single-actions' : 'single-blog';
+	if ( is_singular( 'actions' ) ) {
+		return 'single-actions';
+	}
+	// Кейс визуально как статья.
+	return 'single-blog';
 }
 
 /**
@@ -75,7 +79,7 @@ function tolstenko_get_blog_theme_blocks_catalog() {
 		'tolstenko/blog-number-list' => __( 'Нумерованный список', 'tolstenko-theme' ),
 		'tolstenko/blog-warning'     => __( 'Предупреждения', 'tolstenko-theme' ),
 		'tolstenko/blog-seo'         => __( 'SEO / CTA', 'tolstenko-theme' ),
-		'tolstenko/consultation-whatsapp' => __( 'Консультация WhatsApp', 'tolstenko-theme' ),
+		'tolstenko/consultation-whatsapp' => __( 'Забронируйте место', 'tolstenko-theme' ),
 		'tolstenko/consultation-tg'       => __( 'Консультация Telegram', 'tolstenko-theme' ),
 	);
 
@@ -236,6 +240,58 @@ function tolstenko_blog_content_defaults_admin_assets( $hook ) {
 		return;
 	}
 	wp_enqueue_media();
+	wp_enqueue_editor();
+}
+
+/**
+ * Визуальный редактор пункта списка (дефолты «Блоки для статей»).
+ * TinyMCE намеренно не авто-инициализируется: панель вкладки скрыта (hidden),
+ * иначе остаётся голый textarea. Инициализация — в JS при открытии вкладки.
+ *
+ * @param string $content Content.
+ * @param string $index   Repeater index.
+ */
+function tolstenko_blog_number_list_item_editor( $content, $index ) {
+	$index     = preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) $index );
+	$editor_id = 'tolstenko_bcd_nl_' . $index;
+	wp_editor(
+		(string) $content,
+		$editor_id,
+		array(
+			'textarea_name' => 'tolstenko_block_defaults[blog_number_list][items][' . $index . '][text]',
+			'textarea_rows' => 8,
+			'media_buttons' => true,
+			'tinymce'       => false,
+			'quicktags'     => false,
+			'editor_class'  => 'tolstenko-bcd-wysiwyg',
+			'editor_height' => 180,
+		)
+	);
+}
+
+/**
+ * Визуальный редактор пункта предупреждения (дефолты «Блоки для статей»).
+ * См. комментарий к tolstenko_blog_number_list_item_editor().
+ *
+ * @param string $content Content.
+ * @param string $index   Repeater index.
+ */
+function tolstenko_blog_warning_item_editor( $content, $index ) {
+	$index     = preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) $index );
+	$editor_id = 'tolstenko_bcd_wn_' . $index;
+	wp_editor(
+		(string) $content,
+		$editor_id,
+		array(
+			'textarea_name' => 'tolstenko_block_defaults[blog_warning][items][' . $index . '][text]',
+			'textarea_rows' => 8,
+			'media_buttons' => true,
+			'tinymce'       => false,
+			'quicktags'     => false,
+			'editor_class'  => 'tolstenko-bcd-wysiwyg',
+			'editor_height' => 180,
+		)
+	);
 }
 
 /**
@@ -312,6 +368,9 @@ function tolstenko_render_blog_content_defaults_admin_page() {
 				.tolstenko-bcd-panel input[type=url],
 				.tolstenko-bcd-panel textarea{width:100%;max-width:720px}
 				.tolstenko-bcd-item{border:1px solid #dcdcde;background:#f6f7f7;padding:10px;margin:0 0 8px;max-width:720px}
+				.tolstenko-bcd-editor-wrap{margin:8px 0;max-width:720px}
+				.tolstenko-bcd-editor-wrap .wp-editor-wrap{width:100%;max-width:720px}
+				.tolstenko-bcd-editor-wrap .wp-editor-area{width:100%}
 				.tolstenko-bcd-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
 				.tolstenko-bcd-tab{cursor:pointer}
 				.tolstenko-bcd-tab.is-active{font-weight:600}
@@ -367,19 +426,19 @@ function tolstenko_render_blog_content_defaults_admin_page() {
 				<h2><?php esc_html_e( 'Нумерованный список', 'tolstenko-theme' ); ?></h2>
 				<div data-bcd-list="number">
 					<?php foreach ( $nl_items as $i => $item ) : ?>
+						<?php
+						$nl_text = is_array( $item ) ? (string) ( $item['text'] ?? '' ) : (string) $item;
+						$nl_idx  = (string) $i;
+						?>
 						<div class="tolstenko-bcd-item">
-							<textarea name="tolstenko_block_defaults[blog_number_list][items][<?php echo esc_attr( (string) $i ); ?>][text]" rows="2" placeholder="<?php esc_attr_e( 'Пункт', 'tolstenko-theme' ); ?>"><?php echo esc_textarea( is_array( $item ) ? (string) ( $item['text'] ?? '' ) : (string) $item ); ?></textarea>
+							<div class="tolstenko-bcd-editor-wrap">
+								<?php tolstenko_blog_number_list_item_editor( $nl_text, $nl_idx ); ?>
+							</div>
 							<p><button type="button" class="button-link-delete" data-bcd-remove><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button></p>
 						</div>
 					<?php endforeach; ?>
 				</div>
 				<p><button type="button" class="button" data-bcd-add="number"><?php esc_html_e( 'Добавить пункт', 'tolstenko-theme' ); ?></button></p>
-				<template data-bcd-tpl="number">
-					<div class="tolstenko-bcd-item">
-						<textarea name="tolstenko_block_defaults[blog_number_list][items][__INDEX__][text]" rows="2" placeholder="<?php esc_attr_e( 'Пункт', 'tolstenko-theme' ); ?>"></textarea>
-						<p><button type="button" class="button-link-delete" data-bcd-remove><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button></p>
-					</div>
-				</template>
 			</div>
 
 			<div class="tolstenko-bcd-panel" data-bcd-panel="blog_warning" hidden>
@@ -387,37 +446,27 @@ function tolstenko_render_blog_content_defaults_admin_page() {
 				<div data-bcd-list="warning">
 					<?php foreach ( $wn_items as $i => $item ) : ?>
 						<?php
-						$type = is_array( $item ) ? (string) ( $item['type'] ?? 'warn' ) : 'warn';
-						$text = is_array( $item ) ? (string) ( $item['text'] ?? '' ) : (string) $item;
-						$icon = is_array( $item ) ? (int) ( $item['icon'] ?? 0 ) : 0;
+						$type    = is_array( $item ) ? (string) ( $item['type'] ?? 'warn' ) : 'warn';
+						$text    = is_array( $item ) ? (string) ( $item['text'] ?? '' ) : (string) $item;
+						$icon    = is_array( $item ) ? (int) ( $item['icon'] ?? 0 ) : 0;
+						$wn_idx  = (string) $i;
 						?>
 						<div class="tolstenko-bcd-item">
-							<select name="tolstenko_block_defaults[blog_warning][items][<?php echo esc_attr( (string) $i ); ?>][type]">
+							<select name="tolstenko_block_defaults[blog_warning][items][<?php echo esc_attr( $wn_idx ); ?>][type]">
 								<option value="warn" <?php selected( $type, 'warn' ); ?>><?php esc_html_e( 'Внимание', 'tolstenko-theme' ); ?></option>
 								<option value="pin" <?php selected( $type, 'pin' ); ?>><?php esc_html_e( 'Подметить', 'tolstenko-theme' ); ?></option>
 								<option value="ide" <?php selected( $type, 'ide' ); ?>><?php esc_html_e( 'Идея', 'tolstenko-theme' ); ?></option>
-								<option value="custom" <?php selected( $type, 'custom' ); ?>><?php esc_html_e( 'Кастомный', 'tolstenko-theme' ); ?></option>
+								<option value="custom" <?php selected( $type, 'custom' ); ?>><?php esc_html_e( 'Кастомный (иконка необязательна)', 'tolstenko-theme' ); ?></option>
 							</select>
-							<textarea name="tolstenko_block_defaults[blog_warning][items][<?php echo esc_attr( (string) $i ); ?>][text]" rows="2" placeholder="<?php esc_attr_e( 'Текст', 'tolstenko-theme' ); ?>"><?php echo esc_textarea( $text ); ?></textarea>
-							<input type="hidden" name="tolstenko_block_defaults[blog_warning][items][<?php echo esc_attr( (string) $i ); ?>][icon]" value="<?php echo esc_attr( (string) $icon ); ?>">
+							<div class="tolstenko-bcd-editor-wrap">
+								<?php tolstenko_blog_warning_item_editor( $text, $wn_idx ); ?>
+							</div>
+							<input type="hidden" name="tolstenko_block_defaults[blog_warning][items][<?php echo esc_attr( $wn_idx ); ?>][icon]" value="<?php echo esc_attr( (string) $icon ); ?>">
 							<p><button type="button" class="button-link-delete" data-bcd-remove><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button></p>
 						</div>
 					<?php endforeach; ?>
 				</div>
 				<p><button type="button" class="button" data-bcd-add="warning"><?php esc_html_e( 'Добавить пункт', 'tolstenko-theme' ); ?></button></p>
-				<template data-bcd-tpl="warning">
-					<div class="tolstenko-bcd-item">
-						<select name="tolstenko_block_defaults[blog_warning][items][__INDEX__][type]">
-							<option value="warn"><?php esc_html_e( 'Внимание', 'tolstenko-theme' ); ?></option>
-							<option value="pin"><?php esc_html_e( 'Подметить', 'tolstenko-theme' ); ?></option>
-							<option value="ide"><?php esc_html_e( 'Идея', 'tolstenko-theme' ); ?></option>
-							<option value="custom"><?php esc_html_e( 'Кастомный', 'tolstenko-theme' ); ?></option>
-						</select>
-						<textarea name="tolstenko_block_defaults[blog_warning][items][__INDEX__][text]" rows="2"></textarea>
-						<input type="hidden" name="tolstenko_block_defaults[blog_warning][items][__INDEX__][icon]" value="0">
-						<p><button type="button" class="button-link-delete" data-bcd-remove><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button></p>
-					</div>
-				</template>
 			</div>
 
 			<div class="tolstenko-bcd-panel" data-bcd-panel="blog_large_img" hidden>
@@ -439,20 +488,121 @@ function tolstenko_render_blog_content_defaults_admin_page() {
 	(function(){
 		var root = document.getElementById('tolstenko-blog-content-defaults');
 		if (!root) return;
+
+		var bcdEditorSettings = {
+			tinymce: {
+				wpautop: true,
+				plugins: 'charmap colorpicker hr lists paste tabfocus textcolor wordpress wpautoresize wpeditimage wpemoji wpgallery wplink wptextpattern',
+				toolbar1: 'formatselect,bold,italic,bullist,numlist,blockquote,alignleft,aligncenter,alignright,link,unlink,wp_adv',
+				toolbar2: 'strikethrough,hr,forecolor,pastetext,removeformat,charmap,outdent,indent,undo,redo',
+				height: 180
+			},
+			quicktags: true,
+			mediaButtons: true
+		};
+
+		function triggerBcdSave() {
+			if (typeof window.tinymce !== 'undefined' && tinymce.triggerSave) {
+				tinymce.triggerSave();
+			}
+		}
+
+		function initBcdEditor(editorId) {
+			if (!editorId || typeof wp === 'undefined' || !wp.editor || typeof wp.editor.initialize !== 'function') return;
+			try { wp.editor.remove(editorId); } catch (err) {}
+			wp.editor.initialize(editorId, bcdEditorSettings);
+		}
+
+		function removeBcdEditor(scope) {
+			if (!scope) return;
+			triggerBcdSave();
+			scope.querySelectorAll('textarea.wp-editor-area, textarea.tolstenko-bcd-wysiwyg').forEach(function(area) {
+				if (area && area.id && window.wp && wp.editor && typeof wp.editor.remove === 'function') {
+					try { wp.editor.remove(area.id); } catch (err) {}
+				}
+			});
+		}
+
+		function initPanelEditors(panel) {
+			if (!panel) return;
+			panel.querySelectorAll('textarea.wp-editor-area, textarea.tolstenko-bcd-wysiwyg').forEach(function(area) {
+				if (!area.id) return;
+				initBcdEditor(area.id);
+			});
+		}
+
+		function activateBcdTab(key) {
+			triggerBcdSave();
+			root.querySelectorAll('[data-bcd-tab]').forEach(function(b) {
+				b.classList.toggle('is-active', b.getAttribute('data-bcd-tab') === key);
+			});
+			root.querySelectorAll('[data-bcd-panel]').forEach(function(p) {
+				var show = p.getAttribute('data-bcd-panel') === key;
+				p.hidden = !show;
+				if (show) {
+					window.setTimeout(function() {
+						initPanelEditors(p);
+					}, 40);
+				}
+			});
+		}
+
+		root.addEventListener('submit', function(){
+			triggerBcdSave();
+		});
+
 		root.querySelectorAll('[data-bcd-tab]').forEach(function(btn){
 			btn.addEventListener('click', function(){
-				var key = btn.getAttribute('data-bcd-tab');
-				root.querySelectorAll('[data-bcd-tab]').forEach(function(b){ b.classList.toggle('is-active', b===btn); });
-				root.querySelectorAll('[data-bcd-panel]').forEach(function(p){
-					p.hidden = p.getAttribute('data-bcd-panel') !== key;
-				});
+				activateBcdTab(btn.getAttribute('data-bcd-tab'));
 			});
 		});
+
+		// Если активна вкладка со списком/предупреждениями — поднять редакторы.
+		var activeTab = root.querySelector('[data-bcd-tab].is-active');
+		if (activeTab) {
+			activateBcdTab(activeTab.getAttribute('data-bcd-tab'));
+		}
+
 		root.addEventListener('click', function(e){
 			var add = e.target.closest('[data-bcd-add]');
 			if (add) {
 				var kind = add.getAttribute('data-bcd-add');
 				var list = root.querySelector('[data-bcd-list="'+kind+'"]');
+				if (kind === 'number' && list) {
+					var idx = String(Date.now());
+					var editorId = 'tolstenko_bcd_nl_' + idx;
+					var html = ''
+						+ '<div class="tolstenko-bcd-item">'
+						+ '<div class="tolstenko-bcd-editor-wrap">'
+						+ '<textarea id="'+editorId+'" name="tolstenko_block_defaults[blog_number_list][items]['+idx+'][text]" rows="8" class="wp-editor-area tolstenko-bcd-wysiwyg"></textarea>'
+						+ '</div>'
+						+ '<p><button type="button" class="button-link-delete" data-bcd-remove><?php echo esc_js( __( 'Удалить', 'tolstenko-theme' ) ); ?></button></p>'
+						+ '</div>';
+					list.insertAdjacentHTML('beforeend', html);
+					initBcdEditor(editorId);
+					return;
+				}
+				if (kind === 'warning' && list) {
+					var wIdx = String(Date.now());
+					var wEditorId = 'tolstenko_bcd_wn_' + wIdx;
+					var wHtml = ''
+						+ '<div class="tolstenko-bcd-item">'
+						+ '<select name="tolstenko_block_defaults[blog_warning][items]['+wIdx+'][type]">'
+						+ '<option value="warn"><?php echo esc_js( __( 'Внимание', 'tolstenko-theme' ) ); ?></option>'
+						+ '<option value="pin"><?php echo esc_js( __( 'Подметить', 'tolstenko-theme' ) ); ?></option>'
+						+ '<option value="ide"><?php echo esc_js( __( 'Идея', 'tolstenko-theme' ) ); ?></option>'
+						+ '<option value="custom"><?php echo esc_js( __( 'Кастомный (иконка необязательна)', 'tolstenko-theme' ) ); ?></option>'
+						+ '</select>'
+						+ '<div class="tolstenko-bcd-editor-wrap">'
+						+ '<textarea id="'+wEditorId+'" name="tolstenko_block_defaults[blog_warning][items]['+wIdx+'][text]" rows="8" class="wp-editor-area tolstenko-bcd-wysiwyg"></textarea>'
+						+ '</div>'
+						+ '<input type="hidden" name="tolstenko_block_defaults[blog_warning][items]['+wIdx+'][icon]" value="0">'
+						+ '<p><button type="button" class="button-link-delete" data-bcd-remove><?php echo esc_js( __( 'Удалить', 'tolstenko-theme' ) ); ?></button></p>'
+						+ '</div>';
+					list.insertAdjacentHTML('beforeend', wHtml);
+					initBcdEditor(wEditorId);
+					return;
+				}
 				var tpl = root.querySelector('[data-bcd-tpl="'+kind+'"]');
 				if (list && tpl) list.insertAdjacentHTML('beforeend', tpl.innerHTML.replace(/__INDEX__/g, Date.now().toString()));
 				return;
@@ -460,7 +610,10 @@ function tolstenko_render_blog_content_defaults_admin_page() {
 			var rm = e.target.closest('[data-bcd-remove]');
 			if (rm) {
 				var item = rm.closest('.tolstenko-bcd-item');
-				if (item) item.remove();
+				if (item) {
+					removeBcdEditor(item);
+					item.remove();
+				}
 				return;
 			}
 			var pick = e.target.closest('[data-bcd-pick]');
@@ -543,8 +696,8 @@ function tolstenko_save_blog_content_defaults_from_request() {
 		if ( ! is_array( $row ) ) {
 			continue;
 		}
-		$text = trim( (string) ( $row['text'] ?? '' ) );
-		if ( $text === '' ) {
+		$text = (string) ( $row['text'] ?? '' );
+		if ( trim( wp_strip_all_tags( $text ) ) === '' ) {
 			continue;
 		}
 		$type = sanitize_key( (string) ( $row['type'] ?? 'warn' ) );

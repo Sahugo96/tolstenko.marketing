@@ -71,7 +71,6 @@ if ( $preview_url === '' && $embed_src !== '' && function_exists( 'tolstenko_get
 				title="<?php esc_attr_e( 'Видео', 'tolstenko-theme' ); ?>"
 				allow="autoplay; fullscreen; picture-in-picture; encrypted-media; clipboard-write"
 				allowfullscreen
-				loading="lazy"
 				referrerpolicy="strict-origin-when-cross-origin"
 			></iframe>
 		</div>
