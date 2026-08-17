@@ -95,7 +95,6 @@ function tolstenko_get_blog_related_block_attrs( $post_id = 0 ) {
 
 	$title = trim( (string) get_post_meta( $post_id, 'blog_related_title', true ) );
 	$text  = trim( (string) get_post_meta( $post_id, 'blog_related_text', true ) );
-	$ppp   = get_post_meta( $post_id, 'blog_related_posts_per_page', true );
 	$ids   = tolstenko_blog_sliders_sanitize_ids( get_post_meta( $post_id, 'blog_related_ids', true ) );
 
 	$attrs = array(
@@ -106,9 +105,6 @@ function tolstenko_get_blog_related_block_attrs( $post_id = 0 ) {
 	}
 	if ( $text !== '' ) {
 		$attrs['block_blog_section_text'] = $text;
-	}
-	if ( $ppp !== '' && $ppp !== null ) {
-		$attrs['block_blog_section_posts_per_page'] = (int) $ppp;
 	}
 	if ( $ids ) {
 		$attrs['block_blog_section_ids'] = $ids;
@@ -153,7 +149,6 @@ function tolstenko_blog_sliders_render_metabox( $post ) {
 	$rel_hidden = (string) get_post_meta( $post->ID, 'blog_related_hidden', true );
 	$rel_title  = (string) get_post_meta( $post->ID, 'blog_related_title', true );
 	$rel_text   = (string) get_post_meta( $post->ID, 'blog_related_text', true );
-	$rel_ppp    = get_post_meta( $post->ID, 'blog_related_posts_per_page', true );
 	$rel_ids    = tolstenko_blog_sliders_sanitize_ids( get_post_meta( $post->ID, 'blog_related_ids', true ) );
 
 	$settings_url   = admin_url( 'admin.php?page=tolstenko-site-settings' );
@@ -242,13 +237,9 @@ function tolstenko_blog_sliders_render_metabox( $post ) {
 				<label for="tolstenko_blog_related_text"><strong><?php esc_html_e( 'Текст под заголовком', 'tolstenko-theme' ); ?></strong></label><br>
 				<textarea id="tolstenko_blog_related_text" name="tolstenko_blog_related_text" rows="2" placeholder="<?php esc_attr_e( 'Пусто = из общих настроек', 'tolstenko-theme' ); ?>"><?php echo esc_textarea( $rel_text ); ?></textarea>
 			</p>
-			<p class="tolstenko-bs-field">
-				<label for="tolstenko_blog_related_ppp"><strong><?php esc_html_e( 'Количество, если статьи не выбраны (−1 = все)', 'tolstenko-theme' ); ?></strong></label><br>
-				<input type="number" id="tolstenko_blog_related_ppp" name="tolstenko_blog_related_posts_per_page" value="<?php echo esc_attr( $rel_ppp === '' || $rel_ppp === null ? '' : (string) (int) $rel_ppp ); ?>" placeholder="<?php esc_attr_e( 'Пусто = из общих настроек', 'tolstenko-theme' ); ?>">
-			</p>
 			<div class="tolstenko-bs-field">
 				<strong><?php esc_html_e( 'Статьи', 'tolstenko-theme' ); ?></strong>
-				<p class="description" style="margin:4px 0 8px;"><?php esc_html_e( 'Пусто = дефолты настроек, иначе самые новые (текущая статья исключается). Кликните в поле или начните ввод — уже выбранные не показываются.', 'tolstenko-theme' ); ?></p>
+				<p class="description" style="margin:4px 0 8px;"><?php esc_html_e( 'Выбранные идут первыми. Меньше 12 — добиваем свежими по дате. Больше 12 — берём только первые 12. Без выбора — 12 последних. Текущая статья исключается.', 'tolstenko-theme' ); ?></p>
 				<?php
 				if ( function_exists( 'tolstenko_render_post_select' ) ) {
 					tolstenko_render_post_select(
@@ -320,11 +311,6 @@ function tolstenko_blog_sliders_save_metabox( $post_id, $post ) {
 		'blog_related_text',
 		isset( $_POST['tolstenko_blog_related_text'] ) ? sanitize_textarea_field( wp_unslash( $_POST['tolstenko_blog_related_text'] ) ) : ''
 	);
-	if ( isset( $_POST['tolstenko_blog_related_posts_per_page'] ) && $_POST['tolstenko_blog_related_posts_per_page'] !== '' ) {
-		update_post_meta( $post_id, 'blog_related_posts_per_page', (int) $_POST['tolstenko_blog_related_posts_per_page'] );
-	} else {
-		delete_post_meta( $post_id, 'blog_related_posts_per_page' );
-	}
 	$rel_ids = isset( $_POST['tolstenko_blog_related_ids'] ) ? tolstenko_blog_sliders_sanitize_ids( wp_unslash( $_POST['tolstenko_blog_related_ids'] ) ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 	$rel_ids = array_values( array_diff( $rel_ids, array( (int) $post_id ) ) );
 	update_post_meta( $post_id, 'blog_related_ids', $rel_ids );

@@ -1,0 +1,99 @@
+.doubts {
+  &__title {
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  &__splide.splide {
+    visibility: visible;
+
+    &:not(.is-overflow) .splide__bottom {
+      display: none;
+    }
+
+    @media (min-width: $desk) {
+      .splide__bottom {
+        display: none;
+      }
+    }
+  }
+
+  &__items.swiper-wrapper {
+    @media (min-width: $desk) {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-gap: vw(20px, $desktop);
+      transform: none !important;
+      width: 100% !important;
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(20px, $desktop_large);
+    }
+  }
+
+  &__item {
+    display: flex;
+    flex-direction: column;
+    grid-gap: vw(15px, $mobile);
+    padding: vw(20px, $mobile);
+    border: 1px solid var(--gray-25-color);
+    background-color: var(--gray-15-color);
+    box-sizing: border-box;
+    height: auto;
+
+    @media (min-width: $desk) {
+      width: auto !important;
+      margin: 0 !important;
+      grid-gap: vw(15px, $desktop);
+      padding: vw(25px, $desktop) vw(30px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(15px, $desktop_large);
+      padding: vw(25px, $desktop_large) vw(30px, $desktop_large);
+    }
+  }
+
+  &__item-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    grid-gap: vw(10px, $mobile);
+
+    @media (min-width: $desk) {
+      grid-gap: vw(12px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(12px, $desktop_large);
+    }
+  }
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: vw(6px, $mobile) vw(10px, $mobile);
+    border-radius: vw(6px, $mobile);
+    color: var(--white-color);
+    background-color: var(--brand-accent-red-color);
+    white-space: nowrap;
+
+    @media (min-width: $desk) {
+      padding: vw(6px, $desktop) vw(12px, $desktop);
+      border-radius: vw(6px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      padding: vw(6px, $desktop_large) vw(12px, $desktop_large);
+      border-radius: vw(6px, $desktop_large);
+    }
+  }
+
+  &__item-title {
+    color: var(--white-color);
+    font-weight: 600;
+  }
+
+  &__item-text {
+    color: var(--gray-70-color);
+  }
+}

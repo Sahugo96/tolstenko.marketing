@@ -1302,6 +1302,88 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     })();
 
+    // Сомнения (.doubts) — слайдер только на мобиле (<992), на ПК сетка 2 колонки.
+    (function() {
+        if (typeof Swiper === 'undefined') return;
+
+        function syncDoubtsOverflow(root, swiper) {
+            if (!root || !swiper) return;
+            var mobile = window.matchMedia('(max-width: 991.98px)').matches;
+            root.classList.toggle('is-overflow', mobile && !swiper.isLocked);
+        }
+
+        document.querySelectorAll('.doubts__splide .splide__track.swiper').forEach(function(el) {
+            var root = el.closest('.doubts__splide');
+            if (!root || !el.querySelector('.swiper-slide')) return;
+            if (el.swiper) return;
+
+            var pagEl = root.querySelector('.splide__pagination');
+            new Swiper(el, {
+                slidesPerView: 1,
+                slidesPerGroup: 1,
+                spaceBetween: 20,
+                watchOverflow: true,
+                autoHeight: true,
+                pagination: pagEl ? { el: pagEl, clickable: true } : false,
+                breakpoints: {
+                    992: {
+                        enabled: false,
+                        autoHeight: false
+                    }
+                },
+                on: {
+                    init: function () { syncDoubtsOverflow(root, this); },
+                    resize: function () { syncDoubtsOverflow(root, this); },
+                    update: function () { syncDoubtsOverflow(root, this); },
+                    breakpoint: function () { syncDoubtsOverflow(root, this); },
+                    lock: function () { syncDoubtsOverflow(root, this); },
+                    unlock: function () { syncDoubtsOverflow(root, this); }
+                }
+            });
+        });
+    })();
+
+    // Знакомая ситуация (.familiar) — слайдер только на мобиле (<992), на ПК сетка.
+    (function() {
+        if (typeof Swiper === 'undefined') return;
+
+        function syncFamiliarOverflow(root, swiper) {
+            if (!root || !swiper) return;
+            var mobile = window.matchMedia('(max-width: 991.98px)').matches;
+            root.classList.toggle('is-overflow', mobile && !swiper.isLocked);
+        }
+
+        document.querySelectorAll('.familiar__splide .splide__track.swiper').forEach(function(el) {
+            var root = el.closest('.familiar__splide');
+            if (!root || !el.querySelector('.swiper-slide')) return;
+            if (el.swiper) return;
+
+            var pagEl = root.querySelector('.splide__pagination');
+            new Swiper(el, {
+                slidesPerView: 1,
+                slidesPerGroup: 1,
+                spaceBetween: 20,
+                watchOverflow: true,
+                autoHeight: true,
+                pagination: pagEl ? { el: pagEl, clickable: true } : false,
+                breakpoints: {
+                    992: {
+                        enabled: false,
+                        autoHeight: false
+                    }
+                },
+                on: {
+                    init: function () { syncFamiliarOverflow(root, this); },
+                    resize: function () { syncFamiliarOverflow(root, this); },
+                    update: function () { syncFamiliarOverflow(root, this); },
+                    breakpoint: function () { syncFamiliarOverflow(root, this); },
+                    lock: function () { syncFamiliarOverflow(root, this); },
+                    unlock: function () { syncFamiliarOverflow(root, this); }
+                }
+            });
+        });
+    })();
+
     // Решение (.solution) — два синхронизированных ряда
     (function() {
         if (typeof Swiper === 'undefined') return;

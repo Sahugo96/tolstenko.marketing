@@ -1,6 +1,7 @@
 <?php
 /**
- * Блок «Слайдер статей»: заголовок (дефолт «Похожие статьи»), текст, слайдер карточек без фильтра.
+ * «Похожие статьи» (.blog-section--same).
+ * Выборка: до 12 ID — ручные первыми, недостающее добивается свежими по дате.
  * Карточки через blog-card.php / REST-рендерер (card=blog).
  */
 if ( ! defined( 'ABSPATH' ) ) {
@@ -35,24 +36,20 @@ $title_tag = function_exists( 'tolstenko_normalize_heading_tag' )
 	? tolstenko_normalize_heading_tag( $block_attrs['block_blog_section_title_tag'] ?? 'h2', 'h2' )
 	: 'h2';
 
-$posts_per_page = isset( $block_attrs['block_blog_section_posts_per_page'] )
-	? (int) $block_attrs['block_blog_section_posts_per_page']
-	: ( isset( $defaults['posts_per_page'] ) ? (int) $defaults['posts_per_page'] : 6 );
-if ( $posts_per_page === 0 ) {
-	$posts_per_page = 6;
-}
+/** Максимум карточек в слайдере «Похожие статьи». */
+$posts_limit = 12;
 
-$post_ids = array();
+$manual_ids = array();
 if ( ! empty( $block_attrs['block_blog_section_ids'] ) && is_array( $block_attrs['block_blog_section_ids'] ) ) {
 	foreach ( $block_attrs['block_blog_section_ids'] as $id ) {
 		$id = (int) $id;
 		if ( $id > 0 ) {
-			$post_ids[] = $id;
+			$manual_ids[] = $id;
 		}
 	}
-	$post_ids = array_values( array_unique( $post_ids ) );
+	$manual_ids = array_values( array_unique( $manual_ids ) );
 } elseif ( ! empty( $defaults['ids'] ) && is_array( $defaults['ids'] ) ) {
-	$post_ids = function_exists( 'tolstenko_sanitize_service_section_ids' )
+	$manual_ids = function_exists( 'tolstenko_sanitize_service_section_ids' )
 		? tolstenko_sanitize_service_section_ids( $defaults['ids'] )
 		: array_values( array_unique( array_filter( array_map( 'intval', $defaults['ids'] ) ) ) );
 }
@@ -73,18 +70,62 @@ if ( ! empty( $block_attrs['block_blog_section_exclude'] ) && is_array( $block_a
 }
 $exclude = array_values( array_unique( $exclude ) );
 
+// Ручные: только опубликованные blog, без exclude; порядок сохраняем.
+$selected = array();
+foreach ( $manual_ids as $id ) {
+	if ( in_array( $id, $exclude, true ) || in_array( $id, $selected, true ) ) {
+		continue;
+	}
+	$candidate = get_post( $id );
+	if ( ! ( $candidate instanceof WP_Post ) || $candidate->post_type !== 'blog' || $candidate->post_status !== 'publish' ) {
+		continue;
+	}
+	$selected[] = $id;
+	if ( count( $selected ) >= $posts_limit ) {
+		break;
+	}
+}
+
+$post_ids = $selected;
+$need     = $posts_limit - count( $post_ids );
+if ( $need > 0 ) {
+	$fresh_query = new WP_Query(
+		array(
+			'post_type'              => 'blog',
+			'post_status'            => 'publish',
+			'posts_per_page'         => $need,
+			'orderby'                => 'date',
+			'order'                  => 'DESC',
+			'post__not_in'           => array_values( array_unique( array_merge( $exclude, $post_ids ) ) ),
+			'fields'                 => 'ids',
+			'no_found_rows'          => true,
+			'update_post_meta_cache' => false,
+			'update_post_term_cache' => false,
+		)
+	);
+	if ( ! empty( $fresh_query->posts ) ) {
+		foreach ( $fresh_query->posts as $fid ) {
+			$fid = (int) $fid;
+			if ( $fid > 0 ) {
+				$post_ids[] = $fid;
+			}
+		}
+	}
+}
+$post_ids = array_slice( array_values( array_unique( $post_ids ) ), 0, $posts_limit );
+
 $section_id = 'blog_simple_' . wp_unique_id();
 
-$items_html = function_exists( 'tolstenko_render_filtered_posts_html' )
+$items_html = ( $post_ids && function_exists( 'tolstenko_render_filtered_posts_html' ) )
 	? tolstenko_render_filtered_posts_html(
 		array(
 			'post_type'      => 'blog',
 			'taxonomy'       => '',
 			'term'           => '',
-			'posts_per_page' => $posts_per_page,
+			'posts_per_page' => count( $post_ids ),
 			'card'           => 'blog',
 			'post_ids'       => $post_ids,
-			'exclude'        => $exclude,
+			'exclude'        => array(),
 		)
 	)
 	: '';

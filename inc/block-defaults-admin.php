@@ -99,7 +99,7 @@ function tolstenko_block_defaults_schema() {
 		'blog_section' => array(
 			'title'          => 'Похожие статьи',
 			'text'           => '',
-			'posts_per_page' => 6,
+			'posts_per_page' => 12,
 			'ids'            => array(),
 		),
 		'blog_section_filters' => array(
@@ -322,6 +322,109 @@ function tolstenko_block_defaults_schema() {
 				'Оставляете заявку и кратко описываете задачу',
 				'Мы готовим предложение и согласовываем план',
 				'Запускаем работу и держим вас в курсе',
+			),
+		),
+		'doubts' => array(
+			'subtitle' => 'Развеиваем сомнения',
+			'title'    => 'Возражения перед стартом',
+			'items'    => array(
+				array(
+					'badge' => 'Цена',
+					'title' => '«150к в месяц — дорого»',
+					'text'  => 'Вы получаете команду и систему, которая приводит заявки годами, а не разовую акцию. На аудите считаем окупаемость — если экономики нет, скажем честно.',
+				),
+				array(
+					'badge' => 'Сроки',
+					'title' => '«Клиенты нужны сейчас»',
+					'text'  => 'SEO хорошо работает в связке с рекламой: реклама даёт заявки сразу, SEO — удешевляет их со временем. Что можно ускорить — скажем прямо.',
+				),
+				array(
+					'badge' => 'Гарантии',
+					'title' => '«Нет гарантий результата»',
+					'text'  => 'KPI и финансовая ответственность — в договоре. Не достигли — дорабатываем за свой счёт.',
+				),
+				array(
+					'badge' => 'Опыт',
+					'title' => '«Пробовали — только отчёты»',
+					'text'  => 'Проблема обычно в подходе: SEO делали в отрыве от заявок. Мы начинаем с аудита и находим, где именно всё встало.',
+				),
+				array(
+					'badge' => 'Ниша',
+					'title' => '«Вы не разберётесь»',
+					'text'  => 'Перед стартом погружаемся в продукт, ЦА и цикл сделки. Работа с B2B и производством — наш профиль.',
+				),
+				array(
+					'badge' => 'Риск',
+					'title' => '«Сайт может просесть»',
+					'text'  => 'Только белые методы и аккуратная работа. Правки согласуем, критичные страницы не трогаем без анализа.',
+				),
+				array(
+					'badge' => 'Реклама',
+					'title' => '«Проще увеличить рекламу»',
+					'text'  => 'Реклама останавливается вместе с оплатой. SEO снижает зависимость от бюджета и удешевляет привлечение вдолгую.',
+				),
+				array(
+					'badge' => 'Время',
+					'title' => '«Некогда этим заниматься»',
+					'text'  => 'Передаёте канал нам. От вас — только согласования, всё остальное берём на себя.',
+				),
+			),
+		),
+		'familiar' => array(
+			'subtitle' => 'Знакомая ситуация?',
+			'title'    => 'Почему сайт не приносит <span>достаточно</span> клиентов',
+			'text'     => 'Если узнали себя хотя бы в двух пунктах — SEO решит это системно.',
+			'items'    => array(
+				array(
+					'title' => 'Сайт есть — заявок нет',
+					'text'  => 'Ресурс работает как визитка, а не как канал продаж.',
+				),
+				array(
+					'title' => 'Только реклама и рекомендации',
+					'text'  => 'Выключаете рекламу — поток обращений сразу падает.',
+				),
+				array(
+					'title' => 'Реклама дорожает',
+					'text'  => 'Каждый месяц бюджет растёт, а заявок столько же.',
+				),
+				array(
+					'title' => 'Пробовали SEO — были отчёты',
+					'text'  => 'Позиции росли, а продажи и обращения — нет.',
+				),
+				array(
+					'title' => 'Конкуренты в топе, вас не видно',
+					'text'  => 'Клиенты находят их раньше и уходят к ним.',
+				),
+				array(
+					'title' => 'Нет времени разбираться',
+					'text'  => 'Нужен подрядчик, которому можно передать канал.',
+				),
+			),
+		),
+		'result' => array(
+			'subtitle' => 'Отвечаем за результат',
+			'title'    => 'Наши гарантии <span>в договоре</span>',
+			'items'    => array(
+				array(
+					'ico'   => 0,
+					'title' => 'Гарантия результата',
+					'text'  => 'Фиксируем KPI. Не достигли в срок — работаем до результата.',
+				),
+				array(
+					'ico'   => 0,
+					'title' => 'Гарантия прозрачности',
+					'text'  => 'Видите план/факт и отчёт по заявкам каждый период.',
+				),
+				array(
+					'ico'   => 0,
+					'title' => 'Гарантия стоимости',
+					'text'  => 'Цена зафиксирована в договоре, без скрытых доплат.',
+				),
+				array(
+					'ico'   => 0,
+					'title' => 'Гарантия безопасности',
+					'text'  => 'Только белые методы, без риска фильтров.',
+				),
 			),
 		),
 		'faq' => array(
@@ -1080,6 +1183,9 @@ function tolstenko_render_block_defaults_admin_page() {
 				<button type="button" class="tolstenko-df-tab" data-panel="consultation_tg" data-group="main"><?php esc_html_e( 'Консультация TG', 'tolstenko-theme' ); ?></button>
 				<button type="button" class="tolstenko-df-tab" data-panel="different_experiences" data-group="main"><?php esc_html_e( 'Разный опыт', 'tolstenko-theme' ); ?></button>
 				<button type="button" class="tolstenko-df-tab" data-panel="three_steps" data-group="main"><?php esc_html_e( 'Три шага', 'tolstenko-theme' ); ?></button>
+				<button type="button" class="tolstenko-df-tab" data-panel="doubts" data-group="main"><?php esc_html_e( 'Сомнения', 'tolstenko-theme' ); ?></button>
+				<button type="button" class="tolstenko-df-tab" data-panel="familiar" data-group="main"><?php esc_html_e( 'Знакомая ситуация', 'tolstenko-theme' ); ?></button>
+				<button type="button" class="tolstenko-df-tab" data-panel="result" data-group="main"><?php esc_html_e( 'Результат', 'tolstenko-theme' ); ?></button>
 				<button type="button" class="tolstenko-df-tab" data-panel="strategy" data-group="main"><?php esc_html_e( 'Стратегия', 'tolstenko-theme' ); ?></button>
 				<button type="button" class="tolstenko-df-tab" data-panel="author" data-group="main"><?php esc_html_e( 'Автор', 'tolstenko-theme' ); ?></button>
 				<button type="button" class="tolstenko-df-tab" data-panel="team_cards" data-group="main"><?php esc_html_e( 'Команда', 'tolstenko-theme' ); ?></button>
@@ -1865,6 +1971,9 @@ function tolstenko_render_block_defaults_admin_page() {
 		$tmc = $all['team_cards'] ?? array();
 		$tgc = $all['tg_channel'] ?? array();
 		$ts  = $all['three_steps'] ?? array();
+		$doubts = $all['doubts'] ?? array();
+		$familiar = $all['familiar'] ?? array();
+		$result = $all['result'] ?? array();
 		$faq = $all['faq'] ?? array();
 		$seo_section = $all['seo_section'] ?? array();
 		$faq_foto_id = isset( $faq['foto'] ) ? (int) $faq['foto'] : 0;
@@ -2011,6 +2120,84 @@ function tolstenko_render_block_defaults_admin_page() {
 			</div>
 		</div>
 
+		<div class="tolstenko-df-panel" data-panel="doubts" data-group="main">
+			<div class="row"><input type="text" name="tolstenko_block_defaults[doubts][subtitle]" value="<?php echo esc_attr( $doubts['subtitle'] ?? '' ); ?>" style="width:100%" placeholder="Подзаголовок"></div>
+			<div class="row"><input type="text" name="tolstenko_block_defaults[doubts][title]" value="<?php echo esc_attr( $doubts['title'] ?? '' ); ?>" style="width:100%" placeholder="Заголовок"></div>
+			<div class="row">
+				<div class="muted"><?php esc_html_e( 'Карточки возражений', 'tolstenko-theme' ); ?></div>
+				<div data-repeater-list="doubts-list">
+					<?php foreach ( (array) ( $doubts['items'] ?? array() ) as $idx => $it ) : ?>
+						<?php $it = is_array( $it ) ? $it : array(); ?>
+						<div class="repeater-item" data-repeater-item>
+							<div class="cols">
+								<input type="text" name="tolstenko_block_defaults[doubts][items][<?php echo (int) $idx; ?>][badge]" value="<?php echo esc_attr( $it['badge'] ?? '' ); ?>" placeholder="Бейдж (Цена)">
+								<input type="text" name="tolstenko_block_defaults[doubts][items][<?php echo (int) $idx; ?>][title]" value="<?php echo esc_attr( $it['title'] ?? '' ); ?>" placeholder="Заголовок возражения" style="flex:1">
+								<button type="button" class="button move-btn" data-move-up title="Вверх">↑</button>
+								<button type="button" class="button move-btn" data-move-down title="Вниз">↓</button>
+								<button type="button" class="button" data-remove-item><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button>
+							</div>
+							<div class="row"><textarea name="tolstenko_block_defaults[doubts][items][<?php echo (int) $idx; ?>][text]" rows="3" placeholder="Текст ответа"><?php echo esc_textarea( $it['text'] ?? '' ); ?></textarea></div>
+						</div>
+					<?php endforeach; ?>
+				</div>
+				<div class="actions"><button type="button" class="button" data-add-item="doubts-list"><?php esc_html_e( 'Добавить карточку', 'tolstenko-theme' ); ?></button></div>
+			</div>
+		</div>
+
+		<div class="tolstenko-df-panel" data-panel="familiar" data-group="main">
+			<div class="row"><input type="text" name="tolstenko_block_defaults[familiar][subtitle]" value="<?php echo esc_attr( $familiar['subtitle'] ?? '' ); ?>" style="width:100%" placeholder="Подзаголовок"></div>
+			<div class="row"><textarea name="tolstenko_block_defaults[familiar][title]" rows="2" style="width:100%" placeholder="Заголовок (HTML, span для акцента)"><?php echo esc_textarea( $familiar['title'] ?? '' ); ?></textarea></div>
+			<div class="row"><textarea name="tolstenko_block_defaults[familiar][text]" rows="2" style="width:100%" placeholder="Текст под заголовком"><?php echo esc_textarea( $familiar['text'] ?? '' ); ?></textarea></div>
+			<div class="row">
+				<div class="muted"><?php esc_html_e( 'Карточки', 'tolstenko-theme' ); ?></div>
+				<div data-repeater-list="familiar-list">
+					<?php foreach ( (array) ( $familiar['items'] ?? array() ) as $idx => $it ) : ?>
+						<?php $it = is_array( $it ) ? $it : array(); ?>
+						<div class="repeater-item" data-repeater-item>
+							<div class="cols">
+								<input type="text" name="tolstenko_block_defaults[familiar][items][<?php echo (int) $idx; ?>][title]" value="<?php echo esc_attr( $it['title'] ?? '' ); ?>" placeholder="Заголовок" style="flex:1">
+								<button type="button" class="button move-btn" data-move-up title="Вверх">↑</button>
+								<button type="button" class="button move-btn" data-move-down title="Вниз">↓</button>
+								<button type="button" class="button" data-remove-item><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button>
+							</div>
+							<div class="row"><textarea name="tolstenko_block_defaults[familiar][items][<?php echo (int) $idx; ?>][text]" rows="2" placeholder="Текст"><?php echo esc_textarea( $it['text'] ?? '' ); ?></textarea></div>
+						</div>
+					<?php endforeach; ?>
+				</div>
+				<div class="actions"><button type="button" class="button" data-add-item="familiar-list"><?php esc_html_e( 'Добавить карточку', 'tolstenko-theme' ); ?></button></div>
+			</div>
+		</div>
+
+		<div class="tolstenko-df-panel" data-panel="result" data-group="main">
+			<div class="row"><input type="text" name="tolstenko_block_defaults[result][subtitle]" value="<?php echo esc_attr( $result['subtitle'] ?? '' ); ?>" style="width:100%" placeholder="Подзаголовок"></div>
+			<div class="row"><textarea name="tolstenko_block_defaults[result][title]" rows="2" style="width:100%" placeholder="Заголовок (HTML, span для акцента)"><?php echo esc_textarea( $result['title'] ?? '' ); ?></textarea></div>
+			<div class="row">
+				<div class="muted"><?php esc_html_e( 'Карточки гарантий', 'tolstenko-theme' ); ?></div>
+				<div data-repeater-list="result-list">
+					<?php foreach ( (array) ( $result['items'] ?? array() ) as $idx => $it ) : ?>
+						<?php
+						$it = is_array( $it ) ? $it : array();
+						$ico_id = isset( $it['ico'] ) ? (int) $it['ico'] : 0;
+						$ico_url = $ico_id ? wp_get_attachment_image_url( $ico_id, 'thumbnail' ) : '';
+						?>
+						<div class="repeater-item" data-repeater-item>
+							<div class="cols">
+								<input type="text" name="tolstenko_block_defaults[result][items][<?php echo (int) $idx; ?>][title]" value="<?php echo esc_attr( $it['title'] ?? '' ); ?>" placeholder="Заголовок" style="flex:1">
+								<input type="hidden" class="tolstenko-defaults-icon-id" name="tolstenko_block_defaults[result][items][<?php echo (int) $idx; ?>][ico]" value="<?php echo (int) $ico_id; ?>">
+								<button type="button" class="button tolstenko-defaults-pick-icon"><?php esc_html_e( 'Иконка', 'tolstenko-theme' ); ?></button>
+								<button type="button" class="button move-btn" data-move-up title="Вверх">↑</button>
+								<button type="button" class="button move-btn" data-move-down title="Вниз">↓</button>
+								<button type="button" class="button" data-remove-item><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button>
+							</div>
+							<div class="icon-preview" style="margin-top:8px;"><?php if ( $ico_url ) : ?><img src="<?php echo esc_url( $ico_url ); ?>" alt=""><?php endif; ?></div>
+							<div class="row"><textarea name="tolstenko_block_defaults[result][items][<?php echo (int) $idx; ?>][text]" rows="2" placeholder="Текст"><?php echo esc_textarea( $it['text'] ?? '' ); ?></textarea></div>
+						</div>
+					<?php endforeach; ?>
+				</div>
+				<div class="actions"><button type="button" class="button" data-add-item="result-list"><?php esc_html_e( 'Добавить карточку', 'tolstenko-theme' ); ?></button></div>
+			</div>
+		</div>
+
 		<div class="tolstenko-df-panel" data-panel="faq">
 			<div class="row"><input type="text" name="tolstenko_block_defaults[faq][title]" value="<?php echo esc_attr( $faq['title'] ?? '' ); ?>" style="width:100%" placeholder="Заголовок"></div>
 			<div class="row"><textarea name="tolstenko_block_defaults[faq][text]" rows="3" placeholder="Текст под заголовком"><?php echo esc_textarea( $faq['text'] ?? '' ); ?></textarea></div>
@@ -2059,7 +2246,7 @@ function tolstenko_render_block_defaults_admin_page() {
 			<div class="row"><input type="text" name="tolstenko_block_defaults[seo_section][more_text]" value="<?php echo esc_attr( $seo_section['more_text'] ?? '' ); ?>" style="width:100%" placeholder="Текст кнопки раскрытия (по умолчанию: Читать далее)"></div>
 		</div>
 
-		</div><!-- .tolstenko-df-panels-source -->ы
+		</div><!-- .tolstenko-df-panels-source -->
 	</div>
 	<div class="actions">
 		<!-- <button type="submit" name="tolstenko_defaults_reset_all" value="1" class="button"><?php esc_html_e( 'Сбросить всё к заводским', 'tolstenko-theme' ); ?></button> -->
@@ -2080,6 +2267,9 @@ function tolstenko_render_block_defaults_admin_page() {
 			consultation_tg: 'main',
 			different_experiences: 'main',
 			three_steps: 'main',
+			doubts: 'main',
+			familiar: 'main',
+			result: 'main',
 			strategy: 'main',
 			author: 'main',
 			team_cards: 'main',
@@ -2247,6 +2437,12 @@ function tolstenko_render_block_defaults_admin_page() {
 					var map = { 'strategy-list': 'strategy', 'tg-channel-list': 'tg_channel', 'three-steps-list': 'three_steps' };
 					var k = map[key];
 					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[' + k + '][items][' + idx + ']" placeholder="Текст"><button type="button" class="button move-btn" data-move-up title="Вверх">↑</button><button type="button" class="button move-btn" data-move-down title="Вниз">↓</button><button type="button" class="button" data-remove-item>Удалить</button></div></div>';
+				} else if (key === 'doubts-list') {
+					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[doubts][items][' + idx + '][badge]" placeholder="Бейдж (Цена)"><input type="text" name="tolstenko_block_defaults[doubts][items][' + idx + '][title]" placeholder="Заголовок возражения" style="flex:1"><button type="button" class="button move-btn" data-move-up title="Вверх">↑</button><button type="button" class="button move-btn" data-move-down title="Вниз">↓</button><button type="button" class="button" data-remove-item>Удалить</button></div><div class="row"><textarea name="tolstenko_block_defaults[doubts][items][' + idx + '][text]" rows="3" placeholder="Текст ответа"></textarea></div></div>';
+				} else if (key === 'familiar-list') {
+					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[familiar][items][' + idx + '][title]" placeholder="Заголовок" style="flex:1"><button type="button" class="button move-btn" data-move-up title="Вверх">↑</button><button type="button" class="button move-btn" data-move-down title="Вниз">↓</button><button type="button" class="button" data-remove-item>Удалить</button></div><div class="row"><textarea name="tolstenko_block_defaults[familiar][items][' + idx + '][text]" rows="2" placeholder="Текст"></textarea></div></div>';
+				} else if (key === 'result-list') {
+					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[result][items][' + idx + '][title]" placeholder="Заголовок" style="flex:1"><input type="hidden" class="tolstenko-defaults-icon-id" name="tolstenko_block_defaults[result][items][' + idx + '][ico]" value="0"><button type="button" class="button tolstenko-defaults-pick-icon">Иконка</button><button type="button" class="button move-btn" data-move-up title="Вверх">↑</button><button type="button" class="button move-btn" data-move-down title="Вниз">↓</button><button type="button" class="button" data-remove-item>Удалить</button></div><div class="icon-preview" style="margin-top:8px;"></div><div class="row"><textarea name="tolstenko_block_defaults[result][items][' + idx + '][text]" rows="2" placeholder="Текст"></textarea></div></div>';
 				} else if (key === 'actions-list') {
 					var actionOpts = <?php
 					$opt_html = '<option value="0">— Без ссылки —</option>';
@@ -2590,7 +2786,7 @@ function tolstenko_save_block_defaults_from_request() {
 	$out['blog_section'] = array(
 		'title'          => tolstenko_kses_html( $raw['blog_section']['title'] ?? '' ),
 		'text'           => tolstenko_kses_html( $raw['blog_section']['text'] ?? '' ),
-		'posts_per_page' => isset( $raw['blog_section']['posts_per_page'] ) ? (int) $raw['blog_section']['posts_per_page'] : 6,
+		'posts_per_page' => isset( $raw['blog_section']['posts_per_page'] ) ? (int) $raw['blog_section']['posts_per_page'] : 12,
 		'ids'            => tolstenko_sanitize_service_section_ids( $raw['blog_section']['ids'] ?? array() ),
 	);
 
@@ -2926,6 +3122,72 @@ function tolstenko_save_block_defaults_from_request() {
 			if ( $it !== '' ) {
 				$out['three_steps']['items'][] = sanitize_text_field( $it );
 			}
+		}
+	}
+
+	$out['doubts'] = array(
+		'subtitle' => tolstenko_kses_html( $raw['doubts']['subtitle'] ?? '' ),
+		'title'    => tolstenko_kses_html( $raw['doubts']['title'] ?? '' ),
+		'items'    => array(),
+	);
+	if ( isset( $raw['doubts']['items'] ) && is_array( $raw['doubts']['items'] ) ) {
+		foreach ( $raw['doubts']['items'] as $it ) {
+			if ( ! is_array( $it ) ) {
+				continue;
+			}
+			$row = array(
+				'badge' => sanitize_text_field( $it['badge'] ?? '' ),
+				'title' => tolstenko_kses_html( $it['title'] ?? '' ),
+				'text'  => tolstenko_kses_html( $it['text'] ?? '' ),
+			);
+			if ( $row['badge'] === '' && $row['title'] === '' && $row['text'] === '' ) {
+				continue;
+			}
+			$out['doubts']['items'][] = $row;
+		}
+	}
+
+	$out['familiar'] = array(
+		'subtitle' => tolstenko_kses_html( $raw['familiar']['subtitle'] ?? '' ),
+		'title'    => tolstenko_kses_html( $raw['familiar']['title'] ?? '' ),
+		'text'     => tolstenko_kses_html( $raw['familiar']['text'] ?? '' ),
+		'items'    => array(),
+	);
+	if ( isset( $raw['familiar']['items'] ) && is_array( $raw['familiar']['items'] ) ) {
+		foreach ( $raw['familiar']['items'] as $it ) {
+			if ( ! is_array( $it ) ) {
+				continue;
+			}
+			$row = array(
+				'title' => tolstenko_kses_html( $it['title'] ?? '' ),
+				'text'  => tolstenko_kses_html( $it['text'] ?? '' ),
+			);
+			if ( $row['title'] === '' && $row['text'] === '' ) {
+				continue;
+			}
+			$out['familiar']['items'][] = $row;
+		}
+	}
+
+	$out['result'] = array(
+		'subtitle' => tolstenko_kses_html( $raw['result']['subtitle'] ?? '' ),
+		'title'    => tolstenko_kses_html( $raw['result']['title'] ?? '' ),
+		'items'    => array(),
+	);
+	if ( isset( $raw['result']['items'] ) && is_array( $raw['result']['items'] ) ) {
+		foreach ( $raw['result']['items'] as $it ) {
+			if ( ! is_array( $it ) ) {
+				continue;
+			}
+			$row = array(
+				'ico'   => isset( $it['ico'] ) ? (int) $it['ico'] : 0,
+				'title' => tolstenko_kses_html( $it['title'] ?? '' ),
+				'text'  => tolstenko_kses_html( $it['text'] ?? '' ),
+			);
+			if ( ! $row['ico'] && $row['title'] === '' && $row['text'] === '' ) {
+				continue;
+			}
+			$out['result']['items'][] = $row;
 		}
 	}
 

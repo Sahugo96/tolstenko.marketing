@@ -346,6 +346,104 @@ function tolstenko_kses_html( $html ) {
 }
 
 /**
+ * Allowed tags for inline SVG icons in blocks.
+ *
+ * @return array<string, array<string, bool>>
+ */
+function tolstenko_kses_inline_svg_allowed() {
+	return array(
+		'svg'      => array(
+			'xmlns'       => true,
+			'viewbox'     => true,
+			'width'       => true,
+			'height'      => true,
+			'fill'        => true,
+			'stroke'      => true,
+			'class'       => true,
+			'aria-hidden' => true,
+			'role'        => true,
+			'focusable'   => true,
+		),
+		'path'     => array(
+			'd'               => true,
+			'fill'            => true,
+			'stroke'          => true,
+			'stroke-width'    => true,
+			'stroke-linecap'  => true,
+			'stroke-linejoin' => true,
+			'fill-rule'       => true,
+			'clip-rule'       => true,
+			'opacity'         => true,
+		),
+		'g'        => array(
+			'fill'      => true,
+			'stroke'    => true,
+			'clip-path' => true,
+		),
+		'circle'   => array(
+			'cx'     => true,
+			'cy'     => true,
+			'r'      => true,
+			'fill'   => true,
+			'stroke' => true,
+		),
+		'rect'     => array(
+			'x'      => true,
+			'y'      => true,
+			'width'  => true,
+			'height' => true,
+			'rx'     => true,
+			'fill'   => true,
+			'stroke' => true,
+		),
+		'line'     => array(
+			'x1'     => true,
+			'y1'     => true,
+			'x2'     => true,
+			'y2'     => true,
+			'stroke' => true,
+		),
+		'polyline' => array(
+			'points' => true,
+			'fill'   => true,
+			'stroke' => true,
+		),
+		'polygon'  => array(
+			'points' => true,
+			'fill'   => true,
+			'stroke' => true,
+		),
+		'defs'     => array(),
+		'clipPath' => array(
+			'id' => true,
+		),
+		'use'      => array(
+			'href'      => true,
+			'xlink:href' => true,
+		),
+	);
+}
+
+/**
+ * Inline SVG из текстового поля (дефолты блоков / Gutenberg).
+ *
+ * @param mixed $svg Raw SVG markup.
+ * @return string
+ */
+function tolstenko_sanitize_inline_svg( $svg ) {
+	$svg = trim( (string) $svg );
+	if ( $svg === '' || stripos( $svg, '<svg' ) === false ) {
+		return '';
+	}
+
+	$svg = preg_replace( '/<script\b[^>]*>.*?<\/script>/is', '', $svg );
+	$svg = preg_replace( '/\son\w+\s*=\s*(["\']).*?\1/i', '', $svg );
+	$svg = preg_replace( '/javascript\s*:/i', '', $svg );
+
+	return wp_kses( $svg, tolstenko_kses_inline_svg_allowed() );
+}
+
+/**
  * HTML редактора (.redactor): гарантируем <p>, если редактор их не положил
  * (Gutenberg RichText с tagName=div даёт текст + <strong>/<ul>, без абзацев).
  *
@@ -1358,6 +1456,54 @@ function tolstenko_redirect_service_to_canonical_url() {
 	exit;
 }
 add_action( 'template_redirect', 'tolstenko_redirect_service_to_canonical_url', 5 );
+
+/**
+ * Канонический URL статьи: /blog/{primary-cat}/{slug}/ или /blog/{slug}/.
+ * URL с чужой/старой рубрикой (/blog/yandeks/slug/ после смены главной на seo) → 301.
+ */
+function tolstenko_redirect_blog_to_canonical_url() {
+	if ( is_admin() || wp_doing_ajax() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
+		return;
+	}
+	if ( ! is_singular( 'blog' ) ) {
+		return;
+	}
+
+	$post = get_queried_object();
+	if ( ! ( $post instanceof WP_Post ) || $post->post_name === '' ) {
+		return;
+	}
+
+	$canonical = get_permalink( $post );
+	if ( ! is_string( $canonical ) || $canonical === '' ) {
+		return;
+	}
+
+	$canonical_path = wp_parse_url( $canonical, PHP_URL_PATH );
+	$request_uri    = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+	$request_path   = wp_parse_url( $request_uri, PHP_URL_PATH );
+
+	if ( ! is_string( $canonical_path ) || ! is_string( $request_path ) ) {
+		return;
+	}
+
+	$canonical_path = untrailingslashit( $canonical_path );
+	$request_path   = untrailingslashit( $request_path );
+
+	if ( $canonical_path === '' || $request_path === '' || strcasecmp( $canonical_path, $request_path ) === 0 ) {
+		return;
+	}
+
+	$target = $canonical;
+	$query  = wp_parse_url( $request_uri, PHP_URL_QUERY );
+	if ( is_string( $query ) && $query !== '' ) {
+		$target .= ( strpos( $target, '?' ) === false ? '?' : '&' ) . $query;
+	}
+
+	wp_safe_redirect( $target, 301 );
+	exit;
+}
+add_action( 'template_redirect', 'tolstenko_redirect_blog_to_canonical_url', 5 );
 
 /**
  * /services/{slug}/ попадает в rewrite таксономии (service_category), хотя для услуги без категории

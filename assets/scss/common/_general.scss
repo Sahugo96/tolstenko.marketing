@@ -126,7 +126,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  grid-gap: vw(32px, $mobile);
+  grid-gap: vw(28px, $mobile);
   margin-bottom: vw(50px, $mobile);
   @media (min-width: $desk) {
     grid-gap: vw(32px, $desktop);
@@ -141,15 +141,19 @@ body {
 .section-subtitle {
   text-align: center;
   font-family: $Montserrat;
-  font-size: vw(20px, $mobile);
+  font-size: vw(16px, $mobile);
   font-weight: 500;
   line-height: 1.1;
   text-transform: uppercase;
+  color: var(--brand-accent-yellow-color);
+  margin-bottom: vw(-13px, $mobile);
   @media (min-width: $desk) {
-    font-size: vw(24px, $desktop);
+    font-size: vw(20px, $desktop);
+    margin-bottom: vw(-13px, $desktop);
   }
   @media (min-width: $desk_large) {
-    font-size: vw(24px, $desktop_large);
+    font-size: vw(20px, $desktop_large);
+    margin-bottom: vw(-13px, $desktop_large);
   }
 }
 .section-text {
@@ -193,7 +197,7 @@ body {
 }
 .h2 {
   font-family: $Montserrat;
-  font-size: vw(18px, $mobile);
+  font-size: vw(24px, $mobile);
   font-weight: 600;
   line-height: 1.25;
   letter-spacing: -1%;

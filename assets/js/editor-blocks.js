@@ -2126,6 +2126,266 @@
         ]
     });
 
+    // Сомнения / возражения перед стартом.
+    wp.blocks.registerBlockType('tolstenko/doubts', {
+        title: 'Сомнения',
+        category: 'tolstenko-blocks-new',
+        icon: 'warning',
+        edit: function (props) {
+            var attrs = props.attributes || {};
+            var set = props.setAttributes;
+            var blockProps = useBlockProps ? useBlockProps() : {};
+            var defItems = getDefault('doubts.items', []);
+
+            function normalizeItems(raw) {
+                if (!Array.isArray(raw)) return [];
+                return raw.map(function (it) {
+                    it = it || {};
+                    return {
+                        badge: it.badge || '',
+                        title: it.title || '',
+                        text: it.text || ''
+                    };
+                });
+            }
+
+            var items = normalizeItems(attrs.block_doubts_items);
+            function setItems(next) { set({ block_doubts_items: next.slice() }); }
+            function updateItem(index, patch) {
+                var next = items.slice();
+                next[index] = Object.assign({}, items[index] || {}, patch);
+                setItems(next);
+            }
+
+            var fields = [
+                el('p', { key: 'l', style: { marginBottom: '8px', fontWeight: '600' } }, 'Сомнения'),
+                el('p', { key: 'hint', style: { marginTop: 0, marginBottom: '8px', fontSize: '12px', color: '#757575' } }, 'Пустые поля подставятся из «Дефолты блоков → Сомнения».'),
+                TextControl ? el(TextControl, {
+                    key: 'subtitle',
+                    label: 'Подзаголовок',
+                    value: attrs.block_doubts_subtitle || '',
+                    placeholder: getDefault('doubts.subtitle', 'Развеиваем сомнения'),
+                    onChange: function (v) { set({ block_doubts_subtitle: v }); }
+                }) : null,
+                TextControl ? el(TextControl, {
+                    key: 'title',
+                    label: 'Заголовок',
+                    value: attrs.block_doubts_title || '',
+                    placeholder: getDefault('doubts.title', 'Возражения перед стартом'),
+                    onChange: function (v) { set({ block_doubts_title: v }); }
+                }) : null,
+                renderHeadingTagSelect(attrs, set, 'block_doubts_title_tag', 'Тег заголовка', 'h2'),
+                renderRepeater({
+                    items: items,
+                    onChange: setItems,
+                    renderItem: function (item, index) {
+                        return el('div', { key: 'item-render-' + index }, [
+                            TextControl ? el(TextControl, {
+                                key: 'badge',
+                                label: 'Бейдж',
+                                value: item.badge || '',
+                                onChange: function (v) { updateItem(index, { badge: v }); }
+                            }) : null,
+                            TextControl ? el(TextControl, {
+                                key: 't',
+                                label: 'Заголовок возражения',
+                                value: item.title || '',
+                                onChange: function (v) { updateItem(index, { title: v }); }
+                            }) : null,
+                            TextareaControl ? el(TextareaControl, {
+                                key: 'tx',
+                                label: 'Текст ответа',
+                                value: item.text || '',
+                                onChange: function (v) { updateItem(index, { text: v }); },
+                                rows: 3
+                            }) : null
+                        ]);
+                    },
+                    label: 'Карточки',
+                    addLabel: 'Добавить карточку',
+                    emptyItem: { badge: '', title: '', text: '' },
+                    keyPrefix: 'doubts-items'
+                })
+            ];
+
+            return wrapBlock(blockProps, fields);
+        },
+        save: function () { return null; }
+    });
+
+    // Знакомая ситуация.
+    wp.blocks.registerBlockType('tolstenko/familiar', {
+        title: 'Знакомая ситуация',
+        category: 'tolstenko-blocks-new',
+        icon: 'info',
+        edit: function (props) {
+            var attrs = props.attributes || {};
+            var set = props.setAttributes;
+            var blockProps = useBlockProps ? useBlockProps() : {};
+
+            function normalizeItems(raw) {
+                if (!Array.isArray(raw)) return [];
+                return raw.map(function (it) {
+                    it = it || {};
+                    return {
+                        title: it.title || '',
+                        text: it.text || ''
+                    };
+                });
+            }
+
+            var items = normalizeItems(attrs.block_familiar_items);
+            function setItems(next) { set({ block_familiar_items: next.slice() }); }
+            function updateItem(index, patch) {
+                var next = items.slice();
+                next[index] = Object.assign({}, items[index] || {}, patch);
+                setItems(next);
+            }
+
+            var fields = [
+                el('p', { key: 'l', style: { marginBottom: '8px', fontWeight: '600' } }, 'Знакомая ситуация'),
+                el('p', { key: 'hint', style: { marginTop: 0, marginBottom: '8px', fontSize: '12px', color: '#757575' } }, 'Пустые поля подставятся из «Дефолты блоков → Знакомая ситуация».'),
+                TextControl ? el(TextControl, {
+                    key: 'subtitle',
+                    label: 'Подзаголовок',
+                    value: attrs.block_familiar_subtitle || '',
+                    placeholder: getDefault('familiar.subtitle', 'Знакомая ситуация?'),
+                    onChange: function (v) { set({ block_familiar_subtitle: v }); }
+                }) : null,
+                TextareaControl ? el(TextareaControl, {
+                    key: 'title',
+                    label: 'Заголовок (HTML, span для акцента)',
+                    value: attrs.block_familiar_title || '',
+                    placeholder: getDefault('familiar.title', ''),
+                    onChange: function (v) { set({ block_familiar_title: v }); },
+                    rows: 2
+                }) : null,
+                renderHeadingTagSelect(attrs, set, 'block_familiar_title_tag', 'Тег заголовка', 'h2'),
+                TextareaControl ? el(TextareaControl, {
+                    key: 'text',
+                    label: 'Текст под заголовком',
+                    value: attrs.block_familiar_text || '',
+                    placeholder: getDefault('familiar.text', ''),
+                    onChange: function (v) { set({ block_familiar_text: v }); },
+                    rows: 2
+                }) : null,
+                renderRepeater({
+                    items: items,
+                    onChange: setItems,
+                    renderItem: function (item, index) {
+                        return el('div', { key: 'item-render-' + index }, [
+                            TextControl ? el(TextControl, {
+                                key: 't',
+                                label: 'Заголовок',
+                                value: item.title || '',
+                                onChange: function (v) { updateItem(index, { title: v }); }
+                            }) : null,
+                            TextareaControl ? el(TextareaControl, {
+                                key: 'tx',
+                                label: 'Текст',
+                                value: item.text || '',
+                                onChange: function (v) { updateItem(index, { text: v }); },
+                                rows: 2
+                            }) : null
+                        ]);
+                    },
+                    label: 'Карточки',
+                    addLabel: 'Добавить карточку',
+                    emptyItem: { title: '', text: '' },
+                    keyPrefix: 'familiar-items'
+                })
+            ];
+
+            return wrapBlock(blockProps, fields);
+        },
+        save: function () { return null; }
+    });
+
+    // Результат — гарантии в договоре.
+    wp.blocks.registerBlockType('tolstenko/result', {
+        title: 'Результат',
+        category: 'tolstenko-blocks-new',
+        icon: 'awards',
+        edit: function (props) {
+            var attrs = props.attributes || {};
+            var set = props.setAttributes;
+            var blockProps = useBlockProps ? useBlockProps() : {};
+
+            function normalizeItems(raw) {
+                if (!Array.isArray(raw)) return [];
+                return raw.map(function (it) {
+                    it = it || {};
+                    return {
+                        ico: parseInt(it.ico, 10) || 0,
+                        title: it.title || '',
+                        text: it.text || ''
+                    };
+                });
+            }
+
+            var items = normalizeItems(attrs.block_result_items);
+            function setItems(next) { set({ block_result_items: next.slice() }); }
+            function updateItem(index, patch) {
+                var next = items.slice();
+                next[index] = Object.assign({}, items[index] || {}, patch);
+                setItems(next);
+            }
+
+            var fields = [
+                el('p', { key: 'l', style: { marginBottom: '8px', fontWeight: '600' } }, 'Результат'),
+                el('p', { key: 'hint', style: { marginTop: 0, marginBottom: '8px', fontSize: '12px', color: '#757575' } }, 'Пустые поля подставятся из «Дефолты блоков → Результат».'),
+                TextControl ? el(TextControl, {
+                    key: 'subtitle',
+                    label: 'Подзаголовок',
+                    value: attrs.block_result_subtitle || '',
+                    placeholder: getDefault('result.subtitle', 'Отвечаем за результат'),
+                    onChange: function (v) { set({ block_result_subtitle: v }); }
+                }) : null,
+                TextareaControl ? el(TextareaControl, {
+                    key: 'title',
+                    label: 'Заголовок (HTML, span для акцента)',
+                    value: attrs.block_result_title || '',
+                    placeholder: getDefault('result.title', ''),
+                    onChange: function (v) { set({ block_result_title: v }); },
+                    rows: 2
+                }) : null,
+                renderHeadingTagSelect(attrs, set, 'block_result_title_tag', 'Тег заголовка', 'h2'),
+                renderRepeater({
+                    items: items,
+                    onChange: setItems,
+                    renderItem: function (item, index) {
+                        var icoId = parseInt(item.ico, 10) || 0;
+                        return el('div', { key: 'item-render-' + index }, [
+                            MediaUpload && MediaUploadCheck ? el('div', { key: 'ico', style: { marginBottom: '8px' } }, [
+                                el(MediaUploadCheck, { key: 'muc' }, el(MediaUpload, {
+                                    allowedTypes: ['image'],
+                                    value: icoId,
+                                    onSelect: function (m) { updateItem(index, { ico: m && m.id ? m.id : 0 }); },
+                                    render: function (obj) {
+                                        return el(Button, { isSecondary: true, onClick: obj.open }, icoId ? 'Заменить иконку' : 'Иконка (SVG)');
+                                    }
+                                })),
+                                icoId && Button ? el(Button, {
+                                    key: 'rm-ico', isDestructive: true, isSmall: true, style: { marginLeft: '8px' },
+                                    onClick: function () { updateItem(index, { ico: 0 }); }
+                                }, 'Удалить') : null
+                            ]) : null,
+                            TextControl ? el(TextControl, { key: 't', label: 'Заголовок', value: item.title || '', onChange: function (v) { updateItem(index, { title: v }); } }) : null,
+                            TextareaControl ? el(TextareaControl, { key: 'tx', label: 'Текст', value: item.text || '', onChange: function (v) { updateItem(index, { text: v }); }, rows: 2 }) : null
+                        ]);
+                    },
+                    label: 'Карточки',
+                    addLabel: 'Добавить карточку',
+                    emptyItem: { ico: 0, title: '', text: '' },
+                    keyPrefix: 'result-items'
+                })
+            ];
+
+            return wrapBlock(blockProps, fields);
+        },
+        save: function () { return null; }
+    });
+
     wp.blocks.registerBlockType('tolstenko/faq', {
         title: 'FAQ',
         category: 'tolstenko-blocks-new',
@@ -4079,7 +4339,6 @@
             var blockProps = useBlockProps ? useBlockProps() : {};
             var defTitle = getDefault('blog_section.title', 'Похожие статьи');
             var defText = getDefault('blog_section.text', '');
-            var defPpp = getDefault('blog_section.posts_per_page', 6);
             var selectedIds = Array.isArray(attrs.block_blog_section_ids)
                 ? attrs.block_blog_section_ids.map(function (id) { return parseInt(id, 10); }).filter(function (id) { return id > 0; })
                 : [];
@@ -4122,7 +4381,7 @@
                 el('p', {
                     key: 'h',
                     style: { marginTop: 0, marginBottom: '12px', opacity: 0.7, fontSize: '12px' }
-                }, 'Пустые поля и список статей — из дефолтов «Слайдер статей». Заголовок по умолчанию — «Похожие статьи». Если статьи не выбраны — N новых. На single статьи текущая исключается автоматически.'),
+                }, 'Пустые поля — из дефолтов «Слайдер статей». Выбранные статьи идут первыми; до 12 добиваем свежими. Без выбора — 12 последних. На single текущая статья исключается.'),
                 TextareaControl ? el(TextareaControl, {
                     key: 't',
                     label: 'Заголовок (HTML)',
@@ -4139,19 +4398,9 @@
                     placeholder: defText,
                     onChange: function (v) { set({ block_blog_section_text: v }); }
                 }) : null,
-                TextControl ? el(TextControl, {
-                    key: 'ppp',
-                    label: 'Количество статей, если ничего не выбрано (−1 = все)',
-                    type: 'number',
-                    value: attrs.block_blog_section_posts_per_page != null ? String(attrs.block_blog_section_posts_per_page) : String(defPpp),
-                    onChange: function (v) {
-                        var n = parseInt(v, 10);
-                        set({ block_blog_section_posts_per_page: isNaN(n) ? 6 : n });
-                    }
-                }) : null,
                 FormTokenField ? el(FormTokenField, {
                     key: 'ids',
-                    label: 'Статьи (пусто = дефолты настроек, иначе самые новые)',
+                    label: 'Статьи (пусто = 12 свежих; выбранные первыми, до 12 добиваем)',
                     value: tokens,
                     suggestions: suggestions,
                     onChange: function (nextTokens) {

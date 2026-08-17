@@ -1,0 +1,121 @@
+.familiar {
+  .section-top {
+    @media (min-width: $desk) {
+      text-align: left;
+      align-items: flex-start;
+    }
+  }
+
+  &__title {
+    text-align: center;
+    text-transform: uppercase;
+
+    span {
+      color: var(--brand-accent-yellow-color);
+    }
+
+    @media (min-width: $desk) {
+      text-align: left;
+    }
+  }
+
+  &__text {
+    text-align: center;
+    color: var(--gray-70-color);
+
+    @media (min-width: $desk) {
+      text-align: left;
+    }
+  }
+
+  &__splide.splide {
+    visibility: visible;
+
+    &:not(.is-overflow) .splide__bottom {
+      display: none;
+    }
+
+    @media (min-width: $desk) {
+      .splide__bottom {
+        display: none;
+      }
+    }
+  }
+
+  &__items {
+    counter-reset: familiar-item;
+  }
+
+  &__items.swiper-wrapper {
+    @media (min-width: $desk) {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-gap: vw(20px, $desktop);
+      transform: none !important;
+      width: 100% !important;
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(20px, $desktop_large);
+    }
+  }
+
+  &__item {
+    counter-increment: familiar-item;
+    display: flex;
+    flex-direction: column;
+    grid-gap: vw(15px, $mobile);
+    padding: vw(20px, $mobile);
+    border: 1px solid var(--gray-25-color);
+    background-color: var(--gray-15-color);
+    box-sizing: border-box;
+    height: auto;
+    transition: border-color .3s linear;
+
+    &:hover {
+      border-color: var(--brand-accent-red-color);
+    }
+
+    @media (min-width: $desk) {
+      width: auto !important;
+      margin: 0 !important;
+      grid-gap: vw(15px, $desktop);
+      padding: vw(25px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(15px, $desktop_large);
+      padding: vw(25px, $desktop_large);
+    }
+  }
+
+  &__item-top {
+    display: flex;
+    align-items: flex-start;
+    grid-gap: vw(12px, $mobile);
+
+    @media (min-width: $desk) {
+      grid-gap: vw(12px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(12px, $desktop_large);
+    }
+  }
+
+  &__number {
+    flex-shrink: 0;
+    font-weight: 700;
+    color: var(--brand-accent-red-m-color);
+
+    &::before {
+      content: counter(familiar-item, decimal-leading-zero);
+    }
+  }
+
+  &__item-title {
+    color: var(--white-color);
+    font-weight: 600;
+  }
+
+  &__item-text {
+    color: var(--gray-70-color);
+  }
+}
