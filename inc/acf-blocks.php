@@ -116,7 +116,7 @@ function tolstenko_filter_allowed_blocks_by_post_type( $allowed, $editor_context
         'tolstenko/consultation-tel', 'tolstenko/consultation-free',
         'tolstenko/free-audit', 'tolstenko/solution', 'tolstenko/one-team', 'tolstenko/author', 'tolstenko/different-experiences', 'tolstenko/partners',
         'tolstenko/strategy', 'tolstenko/team-cards', 'tolstenko/tg-channel',
-        'tolstenko/three-steps', 'tolstenko/faq', 'tolstenko/doubts', 'tolstenko/familiar', 'tolstenko/result', 'tolstenko/seo-section', 'tolstenko/hidden-seo',
+        'tolstenko/three-steps', 'tolstenko/faq', 'tolstenko/doubts', 'tolstenko/familiar', 'tolstenko/result', 'tolstenko/promotion', 'tolstenko/pricing', 'tolstenko/seo-section', 'tolstenko/hidden-seo',
     );
 
     if ( $post_type === 'service' ) {
@@ -253,6 +253,8 @@ function tolstenko_enqueue_editor_blocks() {
                 'doubts'                => tolstenko_get_block_defaults( 'doubts' ),
                 'familiar'              => tolstenko_get_block_defaults( 'familiar' ),
                 'result'                => tolstenko_get_block_defaults( 'result' ),
+                'promotion'             => tolstenko_get_block_defaults( 'promotion' ),
+                'pricing'               => tolstenko_get_block_defaults( 'pricing' ),
                 'seo_section'           => tolstenko_get_block_defaults( 'seo_section' ),
                 'we_can'                => tolstenko_get_block_defaults( 'we_can' ),
                 'recomendation'         => tolstenko_get_block_defaults( 'recomendation' ),
@@ -583,6 +585,23 @@ function tolstenko_get_theme_block_attributes() {
             'block_result_title'     => array( 'type' => 'string', 'default' => '' ),
             'block_result_title_tag' => array( 'type' => 'string', 'default' => 'h2' ),
             'block_result_items'     => array( 'type' => 'array', 'default' => array() ),
+            'block_result_text'      => array( 'type' => 'string', 'default' => '' ),
+        ),
+        'promotion' => array(
+            'block_promotion_subtitle'   => array( 'type' => 'string', 'default' => '' ),
+            'block_promotion_title'      => array( 'type' => 'string', 'default' => '' ),
+            'block_promotion_title_tag'  => array( 'type' => 'string', 'default' => 'h2' ),
+            'block_promotion_text'       => array( 'type' => 'string', 'default' => '' ),
+            'block_promotion_items'      => array( 'type' => 'array', 'default' => array() ),
+            'block_promotion_micro_title'=> array( 'type' => 'string', 'default' => '' ),
+            'block_promotion_list'       => array( 'type' => 'array', 'default' => array() ),
+        ),
+        'pricing' => array(
+            'block_pricing_subtitle'     => array( 'type' => 'string', 'default' => '' ),
+            'block_pricing_title'        => array( 'type' => 'string', 'default' => '' ),
+            'block_pricing_title_tag'    => array( 'type' => 'string', 'default' => 'h2' ),
+            'block_pricing_text'         => array( 'type' => 'string', 'default' => '' ),
+            'block_pricing_items'        => array( 'type' => 'array', 'default' => array() ),
         ),
         'faq' => array(
             'block_faq_title'        => array( 'type' => 'string', 'default' => '' ),
@@ -794,6 +813,8 @@ function tolstenko_register_theme_blocks() {
         array( 'name' => 'doubts', 'title' => __( 'Сомнения', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'familiar', 'title' => __( 'Знакомая ситуация', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'result', 'title' => __( 'Результат', 'tolstenko-theme' ), 'category' => $cat_new ),
+        array( 'name' => 'promotion', 'title' => __( 'Продвижение', 'tolstenko-theme' ), 'category' => $cat_new ),
+        array( 'name' => 'pricing', 'title' => __( 'Расценки', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'seo-section', 'title' => __( 'SEO продвижение', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'hidden-seo', 'title' => __( 'Скрытый seo', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'we-can', 'title' => __( 'Мы можем', 'tolstenko-theme' ), 'category' => $cat_partner ),

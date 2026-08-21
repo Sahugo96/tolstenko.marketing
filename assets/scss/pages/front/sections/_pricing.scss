@@ -1,0 +1,195 @@
+.pricing {
+  .section-subtitle {
+    color: var(--brand-accent-yellow-color);
+  }
+
+  &__title {
+    text-align: center;
+    text-transform: uppercase;
+
+    span {
+      color: var(--brand-accent-yellow-color);
+    }
+  }
+
+  &__text {
+    color: var(--gray-70-color);
+    text-align: center;
+    max-width: 660px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  &__items {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-gap: vw(20px, $mobile);
+    align-items: stretch;
+
+    @media (min-width: $desk) {
+      grid-template-columns: repeat(3, 1fr);
+      grid-gap: vw(20px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(20px, $desktop_large);
+    }
+  }
+
+  &__item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: vw(28px, $mobile);
+    border: 1px solid var(--stroke-color);
+    background-color: var(--gray-15-color);
+    border-radius: vw(16px, $mobile);
+    box-sizing: border-box;
+    transition: transform 0.2s, border-color 0.2s;
+
+    @media (min-width: $desk) {
+      padding: vw(32px, $desktop);
+      border-radius: vw(20px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      padding: vw(32px, $desktop_large);
+      border-radius: vw(20px, $desktop_large);
+    }
+
+    &:hover {
+      transform: translateY(-4px);
+      border-color: var(--stroke-2-color);
+    }
+
+    &--featured {
+      background: linear-gradient(165deg, #1c1608, var(--gray-15-color));
+      border: 1.5px solid var(--brand-accent-yellow-color);
+      box-shadow: 0 24px 60px rgba(243, 195, 63, 0.14);
+      transform: scale(1.03);
+
+      &:hover {
+        transform: scale(1.03) translateY(-4px);
+      }
+    }
+  }
+
+  &__item-badge {
+    position: absolute;
+    top: -13px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--brand-accent-red-m-color);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 6px 18px;
+    border-radius: 20px;
+    box-shadow: 0 8px 20px rgba(236, 28, 64, 0.35);
+    white-space: nowrap;
+  }
+
+  &__item-name {
+    color: var(--white-color);
+    font-size: vw(18px, $mobile);
+    font-weight: 900;
+    text-transform: uppercase;
+
+    @media (min-width: $desk) {
+      font-size: vw(20px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      font-size: vw(20px, $desktop_large);
+    }
+  }
+
+  &__item-for {
+    font-size: vw(12.5px, $mobile);
+    color: var(--gray-70-color);
+    margin-top: 6px;
+    min-height: 52px;
+
+    @media (min-width: $desk) {
+      font-size: vw(12.5px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      font-size: vw(12.5px, $desktop_large);
+    }
+  }
+
+  &__item-price {
+    margin: 20px 0 6px;
+    font-size: vw(14px, $mobile);
+    font-weight: 500;
+    line-height: 1;
+
+    @media (min-width: $desk) {
+      font-size: vw(15px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      font-size: vw(15px, $desktop_large);
+    }
+    span {
+      display: inline-block;
+      font-size: vw(28px, $mobile);
+      font-weight: 900;
+      color: var(--brand-accent-yellow-color);
+      line-height: 1;
+
+      @media (min-width: $desk) {
+        font-size: vw(30px, $desktop);
+      }
+      @media (min-width: $desk_large) {
+        font-size: vw(30px, $desktop_large);
+      }
+    }
+  }
+
+  &__item-note {
+    font-size: 12px;
+    color: var(--gray-70-color);
+    margin-bottom: 22px;
+    min-height: 16px;
+  }
+
+  &__item-btn {
+    margin-bottom: 24px;
+    width: 100%;
+    &.default-btn--transparent {
+      background-color: transparent;
+      border: 1px solid var(--brand-accent-yellow-opacity-two-color);
+      @media (any-hover: hover) {
+        &:hover {
+          color: var(--black-color);
+          background-color: var(--white-color);
+          border-color: var(--white-color);
+        }
+      }
+    }
+  }
+
+  &__item-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    grid-gap: 11px;
+    margin-top: auto;
+
+    li {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      font-size: 13px;
+      color: #d6d6db;
+      font-weight: 500;
+
+      svg {
+        flex: 0 0 15px;
+        width: 15px;
+        height: 15px;
+        stroke: var(--brand-accent-yellow-color);
+        margin-top: 2px;
+      }
+    }
+  }
+}

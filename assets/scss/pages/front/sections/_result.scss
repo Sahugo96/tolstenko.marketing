@@ -31,7 +31,7 @@
     flex-direction: column;
     grid-gap: vw(15px, $mobile);
     padding: vw(20px, $mobile);
-    border: 1px solid var(--brand-accent-yellow-opacity-two-color);
+    border: 1px solid var(--brand-accent-yellow-opacity-color);
     background-color: var(--gray-15-color);
     box-sizing: border-box;
 
@@ -47,10 +47,11 @@
 
   &__item-top {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     grid-gap: vw(12px, $mobile);
 
     @media (min-width: $desk) {
+      align-items: flex-start;
       grid-gap: vw(12px, $desktop);
     }
     @media (min-width: $desk_large) {
@@ -65,9 +66,18 @@
     flex-shrink: 0;
     width: vw(40px, $mobile);
     height: vw(40px, $mobile);
-    border: 1px solid var(--brand-accent-yellow-opacity-two-color);
     border-radius: vw(8px, $mobile);
-    background-color: var(--gray-10-color);
+    background-color: var(--brand-accent-yellow-opacity-color);
+    @media (min-width: $desk) {
+      width: vw(44px, $desktop);
+      height: vw(44px, $desktop);
+      border-radius: vw(8px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      width: vw(44px, $desktop_large);
+      height: vw(44px, $desktop_large);
+      border-radius: vw(8px, $desktop_large);
+    }
 
     svg,
     img {
@@ -75,39 +85,20 @@
       width: vw(20px, $mobile);
       height: vw(20px, $mobile);
       object-fit: contain;
-    }
-
-    svg [fill]:not([fill="none"]),
-    svg path:not([fill="none"]) {
-      fill: var(--brand-accent-yellow-color);
-    }
-
-    svg [stroke]:not([stroke="none"]),
-    svg path:not([stroke="none"]) {
-      stroke: var(--brand-accent-yellow-color);
-    }
-
-    @media (min-width: $desk) {
-      width: vw(44px, $desktop);
-      height: vw(44px, $desktop);
-      border-radius: vw(8px, $desktop);
-
-      svg,
-      img {
-        width: vw(22px, $desktop);
-        height: vw(22px, $desktop);
+      @media (min-width: $desk) {
+          width: vw(22px, $desktop);
+          height: vw(22px, $desktop);
       }
-    }
-    @media (min-width: $desk_large) {
-      width: vw(44px, $desktop_large);
-      height: vw(44px, $desktop_large);
-      border-radius: vw(8px, $desktop_large);
-
-      svg,
-      img {
+      @media (min-width: $desk_large) {
         width: vw(22px, $desktop_large);
         height: vw(22px, $desktop_large);
       }
+    }
+
+    svg,
+    svg [stroke]:not([stroke="none"]),
+    svg path:not([stroke="none"]) {
+      stroke: var(--brand-accent-yellow-color);
     }
   }
 
@@ -118,5 +109,24 @@
 
   &__item-text {
     color: var(--gray-70-color);
+  }
+
+  &__text {
+    margin-top: vw(25px, $mobile);
+
+    @media (min-width: $desk) {
+      margin-top: vw(35px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      margin-top: vw(35px, $desktop_large);
+    }
+
+    br {
+      display: none;
+
+      @media (min-width: $desk) {
+        display: block;
+      }
+    }
   }
 }
