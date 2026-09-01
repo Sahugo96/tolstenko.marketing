@@ -141,6 +141,33 @@ document.addEventListener('DOMContentLoaded', () => {
     })();
     // services panel end
 
+    // search results filter (search.php) — фильтр-пилюли как в «Слайдере услуг»
+    (function () {
+        var filterWrap = document.querySelector('.search-results__content');
+        if (!filterWrap) return;
+
+        var radios = filterWrap.parentElement.querySelectorAll('.search-results-filter-radio');
+        var groups = filterWrap.querySelectorAll('.search-results__group');
+
+        if (!radios.length || !groups.length) return;
+
+        function activateGroup(value) {
+            groups.forEach(function (group) {
+                var on = group.getAttribute('data-group') === value;
+                group.classList.toggle('is-active', on);
+                group.hidden = !on;
+            });
+        }
+
+        radios.forEach(function (radio) {
+            radio.addEventListener('change', function () {
+                if (!radio.checked) return;
+                activateGroup(radio.value || '');
+            });
+        });
+    })();
+    // search results filter end
+
 
     // mobile menu (marketing: .header.active + body.lock)
     (function () {
@@ -217,23 +244,34 @@ document.addEventListener('DOMContentLoaded', () => {
     })();
     // search end
     
-    // После успешной отправки CF7 — редирект на страницу «Спасибо» (без устаревшего on_sent_ok)
+    // После успешной отправки CF7 — редирект на страницу «Спасибо» через 5 секунд
+    // (без устаревшего on_sent_ok; поиск — нативная GET-форма, в обработчик не попадает).
     document.addEventListener('wpcf7mailsent', function(ev) {
         if (!ev.detail || !ev.detail.contactFormId) return;
         var form = ev.target && ev.target.tagName === 'FORM' ? ev.target : document.querySelector('#' + (ev.detail.unitTag || '') + ' form');
         if (!form) return;
-        // Модалка заявки: экран «спасибо» внутри .modal
+
+        // URL страницы благодарности: из data-thanks-url контейнера или из конфигурации темы.
+        var thanksUrl = '';
+        var container = form.closest && form.closest('[data-thanks-url]');
+        if (container) {
+            thanksUrl = container.getAttribute('data-thanks-url') || '';
+        }
+        if (!thanksUrl && typeof tolstenkoAjax !== 'undefined' && tolstenkoAjax.thanksUrl) {
+            thanksUrl = tolstenkoAjax.thanksUrl;
+        }
+        if (!thanksUrl) return;
+
+        // Модалка заявки: показываем экран «спасибо» внутри модалки до редиректа
         if (form.closest && form.closest('.modal')) {
             var modalEl = form.closest('.modal');
             modalEl.classList.add('active', 'success');
             document.body.classList.add('lock');
-            return;
         }
-        var container = form.closest && form.closest('[data-thanks-url]');
-        if (!container) return;
-        var thanksUrl = container.getAttribute('data-thanks-url');
-        if (!thanksUrl) return;
-        window.location.href = thanksUrl;
+
+        window.setTimeout(function() {
+            window.location.href = thanksUrl;
+        }, 5000);
     }, false);
 
     // Gutenberg gallery → Fancybox (группа на каждую .wp-block-gallery)

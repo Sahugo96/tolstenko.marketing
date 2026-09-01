@@ -84,7 +84,7 @@ if ( ! $query->have_posts() && $title === '' && $text === '' ) {
 								?>
 							</a>
 							<div class="actions-section__wrapper">
-								<a class="actions-section__title" href="<?php echo esc_url( $permalink ); ?>"><?php the_title(); ?></a>
+								<a class="actions-section__title line-caps-bold-16-15" href="<?php echo esc_url( $permalink ); ?>"><?php the_title(); ?></a>
 								<?php if ( $description !== '' ) : ?>
 									<div class="actions-section__text"><?php echo tolstenko_kses_html( $description ); ?></div>
 								<?php endif; ?>

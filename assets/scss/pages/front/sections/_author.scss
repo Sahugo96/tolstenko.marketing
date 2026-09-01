@@ -346,6 +346,7 @@
     padding: vw(5px, $mobile) vw(14px, $mobile);
     @media (min-width: $desk) {
       height: vw(45px, $desktop);
+      width: min-content;
       grid-gap: vw(10px, $desktop);
       padding: vw(5px, $desktop) vw(14px, $desktop);
     }

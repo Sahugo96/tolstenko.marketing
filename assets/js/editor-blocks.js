@@ -5530,13 +5530,24 @@
                     onChange: function (v) { set({ block_vacancy_content_title: v }); }
                 }) : null,
                 renderHeadingTagSelect(attrs, set, 'block_vacancy_content_title_tag', 'Тег заголовка', 'h2'),
-                TextareaControl ? el(TextareaControl, {
-                    key: 'html',
-                    label: 'Текст',
-                    value: attrs.block_vacancy_content_html || '',
-                    placeholder: 'Пусто = из шаблона вакансии',
-                    onChange: function (v) { set({ block_vacancy_content_html: v }); }
-                }) : null,
+                el('p', { key: 'html-l', style: { margin: '8px 0 4px', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', color: '#1e1e1e' } }, 'Текст'),
+                el('div', { key: 'html-wrap', className: 'tolstenko-richtext-editor' },
+                    RichText ? el(RichText, {
+                        key: 'html',
+                        tagName: 'div',
+                        className: 'tolstenko-vacancy-content-editor',
+                        placeholder: 'Пусто = из шаблона вакансии',
+                        value: attrs.block_vacancy_content_html || '',
+                        onChange: function (v) { set({ block_vacancy_content_html: v }); },
+                        allowedFormats: ['core/bold', 'core/italic', 'core/link', 'core/list', 'core/strikethrough']
+                    }) : (TextareaControl ? el(TextareaControl, {
+                        key: 'html',
+                        label: 'Текст',
+                        value: attrs.block_vacancy_content_html || '',
+                        placeholder: 'Пусто = из шаблона вакансии',
+                        onChange: function (v) { set({ block_vacancy_content_html: v }); }
+                    }) : null)
+                ),
                 TextControl ? el(TextControl, {
                     key: 'apply',
                     label: 'Текст кнопки заявки',

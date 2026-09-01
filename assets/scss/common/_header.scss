@@ -20,6 +20,7 @@
     @media (min-width: $desk) {
       display: flex;
       padding: vw(5px, $desktop) 0;
+      z-index: 16;
     }
     @media (min-width: $desk_large) {
       padding: vw(5px, $desktop_large) 0;
@@ -382,6 +383,8 @@
     background-color: var(--gray-10-color);
     box-shadow: 0 0 2px 0 #ffffff44;
     @media (min-width: $desk) {
+      position: relative;
+      z-index: 16;
       padding: vw(15px, $desktop) 0;
     }
     @media (min-width: $desk_large) {
