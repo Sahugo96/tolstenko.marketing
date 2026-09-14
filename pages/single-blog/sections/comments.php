@@ -15,24 +15,38 @@ if ( ! $post_id || ! $ok_pt ) {
 	return;
 }
 
-$comments = get_post_meta( $post_id, 'blog_comments', true );
+if ( function_exists( 'tolstenko_blog_ensure_post_comment_ids' ) ) {
+	$comments = tolstenko_blog_ensure_post_comment_ids( $post_id );
+} else {
+	$comments = get_post_meta( $post_id, 'blog_comments', true );
+}
 if ( ! is_array( $comments ) ) {
 	$comments = array();
 }
 
 if ( ! function_exists( 'tolstenko_render_blog_comment_item' ) ) {
 	/**
-	 * Разметка кураторского комментария.
-	 *
-	 * @param array $item Comment row.
+	 * @param array $item  Comment row.
+	 * @param int   $depth 0 = корень, 1 = ответ, 2 = ответ второго порядка.
 	 */
-	function tolstenko_render_blog_comment_item( array $item ) {
+	function tolstenko_render_blog_comment_item( array $item, $depth = 0 ) {
+		$depth = (int) $depth;
 		$photo = function_exists( 'tolstenko_get_image_attrs' ) ? tolstenko_get_image_attrs( $item['photo'] ?? array(), 'thumbnail' ) : null;
 		$name  = trim( (string) ( $item['name'] ?? '' ) );
 		$date  = trim( (string) ( $item['date'] ?? '' ) );
 		$text  = trim( (string) ( $item['text'] ?? '' ) );
+		$cid   = function_exists( 'tolstenko_blog_comment_normalize_id' )
+			? tolstenko_blog_comment_normalize_id( $item['id'] ?? '' )
+			: '';
+		$can_reply = ( $depth < 2 && $cid !== '' );
 		?>
-		<li class="comments__item">
+		<li
+			class="comments__item"
+			<?php if ( $cid !== '' ) : ?>
+				id="comment-<?php echo esc_attr( $cid ); ?>"
+				data-comment-id="<?php echo esc_attr( $cid ); ?>"
+			<?php endif; ?>
+		>
 			<article class="comments__article">
 				<?php if ( $photo ) : ?>
 					<div class="comments__avatar">
@@ -69,16 +83,30 @@ if ( ! function_exists( 'tolstenko_render_blog_comment_item' ) ) {
 							<?php echo nl2br( esc_html( $text ) ); ?>
 						</div>
 					<?php endif; ?>
+
+					<?php if ( $can_reply ) : ?>
+						<button
+							type="button"
+							class="comments__reply"
+							data-comment-reply
+							data-comment-id="<?php echo esc_attr( $cid ); ?>"
+							data-comment-author="<?php echo esc_attr( $name ); ?>"
+						>
+							<?php esc_html_e( 'Ответить', 'tolstenko-theme' ); ?>
+						</button>
+					<?php endif; ?>
 				</div>
 			</article>
 
 			<?php
 			$replies = $item['replies'] ?? array();
-			if ( is_array( $replies ) && $replies ) :
+			if ( $depth < 2 && is_array( $replies ) && $replies ) :
 				?>
 				<ol class="children">
 					<?php foreach ( $replies as $reply ) : ?>
-						<?php tolstenko_render_blog_comment_item( $reply ); ?>
+						<?php if ( is_array( $reply ) ) : ?>
+							<?php tolstenko_render_blog_comment_item( $reply, $depth + 1 ); ?>
+						<?php endif; ?>
 					<?php endforeach; ?>
 				</ol>
 			<?php endif; ?>
@@ -86,6 +114,8 @@ if ( ! function_exists( 'tolstenko_render_blog_comment_item' ) ) {
 		<?php
 	}
 }
+
+$form_title = 'ОСТАВИТЬ КОММЕНТАРИЙ';
 ?>
 
 <section class="comments section" id="comments">
@@ -95,7 +125,18 @@ if ( ! function_exists( 'tolstenko_render_blog_comment_item' ) ) {
 				<h2 class="comments__title line-caps-bold-16-15">Комментарий</h2>
 
 				<div class="comments__form form">
-					<span class="comments__form-title line-caps-bold-16-15">ОСТАВИТЬ КОММЕНТАРИЙ</span>
+					<span
+						class="comments__form-title line-caps-bold-16-15"
+						data-comments-form-title
+						data-default-title="<?php echo esc_attr( $form_title ); ?>"
+					><?php echo esc_html( $form_title ); ?></span>
+
+					<div class="comments__reply-hint" data-comments-reply-hint hidden>
+						<span class="comments__reply-hint-text" data-comments-reply-hint-text></span>
+						<button type="button" class="comments__reply-cancel" data-comments-reply-cancel>
+							<?php esc_html_e( 'Отмена', 'tolstenko-theme' ); ?>
+						</button>
+					</div>
 
 					<?php echo do_shortcode( '[contact-form-7 id="5bfc3f8" title="Комментарий"]' ); ?>
 				</div>
@@ -105,7 +146,9 @@ if ( ! function_exists( 'tolstenko_render_blog_comment_item' ) ) {
 				<div class="comments__list-card br-30">
 					<ol class="comments__list">
 						<?php foreach ( $comments as $comment ) : ?>
-							<?php tolstenko_render_blog_comment_item( $comment ); ?>
+							<?php if ( is_array( $comment ) ) : ?>
+								<?php tolstenko_render_blog_comment_item( $comment, 0 ); ?>
+							<?php endif; ?>
 						<?php endforeach; ?>
 					</ol>
 				</div>

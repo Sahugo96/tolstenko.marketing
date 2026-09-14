@@ -20,6 +20,7 @@
     @media (min-width: $desk) {
       display: flex;
       padding: vw(5px, $desktop) 0;
+      z-index: 16;
     }
     @media (min-width: $desk_large) {
       padding: vw(5px, $desktop_large) 0;
@@ -92,6 +93,7 @@
     width: 100%;
     display: block;
     border-top: 1px solid var(--gray-20-color);
+    transition: all .3s linear;
     @media (min-width: $desk) {
       width: auto;
       border: 0;
@@ -127,6 +129,54 @@
         color: var(--brand-accent-yellow-color);
       }
     }
+  }
+  &__menu-list .menu-item-has-children{
+    // display: flex;
+
+    @media (min-width: $desk) {
+      display: none !important;
+    }
+    @media (min-width: $desk_large) {
+      display: none !important;
+    }
+  }
+  &__menu-list .menu-item-has-children > a {
+    position: relative;
+    &::before,
+    &::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: 0;
+      width: vw(14px, $mobile);
+      height: 2px;
+      border-radius: 5px;
+      background-color: var(--white-color);
+      transition: all .3s linear;
+    }
+    &::after {
+      right: 15px;
+      transform: translate(-10%, -50%) rotate(-45deg);
+    }
+    &::before {
+      right: 15px;
+      transform: translate(-75%, -50%) rotate(45deg);
+    }
+  }
+  &__menu-list .menu-item-has-children.open > a {
+    &::after {
+      transform: translate(-10%, -50%) rotate(45deg);
+    }
+    &::before {
+      transform: translate(-75%, -50%) rotate(-45deg);
+    }
+  }
+  &__menu-list .menu-item-has-children:not(.open) .sub-menu .menu-item,
+  &__menu-list .menu-item-has-children:not(.open) .sub-menu .menu-item a {
+    padding-top: 0;
+    padding-bottom: 0;
+    line-height: 0;
+    opacity: 0;
   }
   &__menu-services {
     display: none;
@@ -382,6 +432,8 @@
     background-color: var(--gray-10-color);
     box-shadow: 0 0 2px 0 #ffffff44;
     @media (min-width: $desk) {
+      position: relative;
+      z-index: 16;
       padding: vw(15px, $desktop) 0;
     }
     @media (min-width: $desk_large) {
@@ -522,7 +574,6 @@
       background-color: rgba(#0d0d0d, .5);
     }
   }
-  // Правая часть бара: поиск + меню + заявка. Форма поиска раскрывается только здесь.
   &__bottom-tools {
     display: flex;
     align-items: center;
@@ -544,7 +595,6 @@
       }
     }
   }
-  // Поиск сразу после «услуги»; .active — на всю ширину .header__bottom-tools
   &__search {
     display: none;
     position: static;
@@ -655,7 +705,6 @@
       border-radius: vw(60px, $desktop_large);
     }
   }
-
   &__modal-btn {
     width: 100%;
     display: none;

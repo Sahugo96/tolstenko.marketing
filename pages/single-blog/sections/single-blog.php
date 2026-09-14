@@ -220,7 +220,7 @@ $has_sidebar = (
 								<div class="<?php echo esc_attr( $bem ); ?>__right-name line-caps-bold-13-15"><?php echo esc_html( $sidebar_name ); ?></div>
 							<?php endif; ?>
 							<?php if ( $sidebar_text !== '' ) : ?>
-								<div class="<?php echo esc_attr( $bem ); ?>__right-text paragraph-15-25"><?php echo nl2br( esc_html( wp_strip_all_tags( $sidebar_text ) ) ); ?></div>
+								<div class="<?php echo esc_attr( $bem ); ?>__right-text paragraph-13-20"><?php echo nl2br( esc_html( wp_strip_all_tags( $sidebar_text ) ) ); ?></div>
 							<?php endif; ?>
 							<?php get_template_part( 'modules/socials/socials-rgb' ); ?>
 							<a class="<?php echo esc_attr( $bem ); ?>__right-btn default-btn default-btn--red" href="<?php echo esc_url( $sidebar_btn_url ); ?>"><?php echo esc_html( $sidebar_btn ); ?></a>

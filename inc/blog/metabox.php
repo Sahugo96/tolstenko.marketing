@@ -78,16 +78,23 @@ function tolstenko_blog_render_metabox( $post ) {
 	}
 	$actions = array_map( 'intval', $actions );
 
-	$comments = tolstenko_blog_meta( $post->ID, 'blog_comments', array() );
-	if ( ! is_array( $comments ) ) {
-		$comments = array();
-	}
-
 	$exclude_ids = ( $post->post_type === 'actions' ) ? array( (int) $post->ID ) : array();
 	$author_label = ( $post->post_type === 'blog' )
 		? __( 'Автор статьи', 'tolstenko-theme' )
 		: __( 'Автор', 'tolstenko-theme' );
 	$show_comments_ui = ( $post->post_type !== 'case' );
+
+	$comments = tolstenko_blog_meta( $post->ID, 'blog_comments', array() );
+	if ( ! is_array( $comments ) ) {
+		$comments = array();
+	}
+	if ( $show_comments_ui && function_exists( 'tolstenko_blog_ensure_comment_ids' ) ) {
+		$ensured  = tolstenko_blog_ensure_comment_ids( $comments );
+		$comments = $ensured['comments'];
+		if ( $ensured['changed'] ) {
+			update_post_meta( $post->ID, 'blog_comments', $comments );
+		}
+	}
 
 	if ( function_exists( 'tolstenko_post_select_print_assets' ) ) {
 		tolstenko_post_select_print_assets();
@@ -103,6 +110,7 @@ function tolstenko_blog_render_metabox( $post ) {
 		.tolstenko-blog-box .tolstenko-blog-actions-select{width:100%}
 		.tolstenko-blog-box .tolstenko-bc-item{border:1px solid #dcdcde;background:#fff;padding:12px;margin:0 0 10px;width:100%;box-sizing:border-box}
 		.tolstenko-blog-box .tolstenko-bc-item.is-reply{margin-left:24px;background:#f6f7f7}
+		.tolstenko-blog-box .tolstenko-bc-item.is-nested{margin-left:48px}
 		.tolstenko-blog-box .tolstenko-bc-grid{display:grid;grid-template-columns:90px 1fr;gap:12px}
 		.tolstenko-blog-box .tolstenko-bc-preview img{max-width:80px;height:auto;display:block;margin-bottom:6px}
 		.tolstenko-blog-box .tolstenko-bc-fields label{display:block;font-weight:600;margin:0 0 4px}
@@ -175,17 +183,20 @@ function tolstenko_blog_render_metabox( $post ) {
 
 			<div data-bc-list>
 				<?php foreach ( $comments as $i => $comment ) : ?>
-					<?php tolstenko_blog_render_comment_admin_row( (string) $i, is_array( $comment ) ? $comment : array(), false ); ?>
+					<?php tolstenko_blog_render_comment_admin_row( (string) $i, is_array( $comment ) ? $comment : array(), 0 ); ?>
 				<?php endforeach; ?>
 			</div>
 
 			<p><button type="button" class="button" data-bc-add><?php esc_html_e( 'Добавить комментарий', 'tolstenko-theme' ); ?></button></p>
 
 			<template data-bc-tpl>
-				<?php tolstenko_blog_render_comment_admin_row( '__INDEX__', array(), false ); ?>
+				<?php tolstenko_blog_render_comment_admin_row( '__INDEX__', array(), 0 ); ?>
 			</template>
 			<template data-bc-reply-tpl>
-				<?php tolstenko_blog_render_comment_admin_row( '__INDEX__', array(), true ); ?>
+				<?php tolstenko_blog_render_comment_admin_row( '__INDEX__', array(), 1 ); ?>
+			</template>
+			<template data-bc-nested-reply-tpl>
+				<?php tolstenko_blog_render_comment_admin_row( '__INDEX__', array(), 2 ); ?>
 			</template>
 		</div>
 		<?php endif; ?>
@@ -199,6 +210,7 @@ function tolstenko_blog_render_metabox( $post ) {
 		const list = root.querySelector('[data-bc-list]');
 		const tpl = root.querySelector('[data-bc-tpl]');
 		const replyTpl = root.querySelector('[data-bc-reply-tpl]');
+		const nestedTpl = root.querySelector('[data-bc-nested-reply-tpl]');
 
 		function uid(){ return Date.now().toString() + Math.floor(Math.random()*1000).toString(); }
 
@@ -238,15 +250,34 @@ function tolstenko_blog_render_metabox( $post ) {
 				return;
 			}
 			const addReply = e.target.closest('[data-bc-add-reply]');
-			if (addReply && replyTpl) {
+			if (addReply) {
 				const item = addReply.closest('.tolstenko-bc-item');
-				const replies = item && item.querySelector('[data-bc-replies]');
-				const parentIndex = item && item.getAttribute('data-bc-index');
-				if (!replies || !parentIndex) return;
-				const html = replyTpl.innerHTML
-					.replace(/__PARENT__/g, parentIndex)
-					.replace(/__INDEX__/g, uid());
-				replies.insertAdjacentHTML('beforeend', html);
+				let repliesBox = null;
+				if (item) {
+					for (let i = 0; i < item.children.length; i++) {
+						if (item.children[i].hasAttribute && item.children[i].hasAttribute('data-bc-replies')) {
+							repliesBox = item.children[i];
+							break;
+						}
+					}
+				}
+				const itemIndex = item && item.getAttribute('data-bc-index');
+				if (!repliesBox || !itemIndex) return;
+				let html = '';
+				if (item.classList.contains('is-reply')) {
+					const rootItem = item.parentElement && item.parentElement.closest('.tolstenko-bc-item');
+					const rootIndex = rootItem && rootItem.getAttribute('data-bc-index');
+					if (!nestedTpl || !rootIndex) return;
+					html = nestedTpl.innerHTML
+						.replace(/__ROOT__/g, rootIndex)
+						.replace(/__PARENT__/g, itemIndex)
+						.replace(/__INDEX__/g, uid());
+				} else if (replyTpl) {
+					html = replyTpl.innerHTML
+						.replace(/__PARENT__/g, itemIndex)
+						.replace(/__INDEX__/g, uid());
+				}
+				if (html) repliesBox.insertAdjacentHTML('beforeend', html);
 				return;
 			}
 			const remove = e.target.closest('[data-bc-remove]');
@@ -264,14 +295,19 @@ function tolstenko_blog_render_metabox( $post ) {
 /**
  * @param string $index Row index.
  * @param array  $item  Comment data.
- * @param bool   $is_reply Is nested reply row.
+ * @param int    $depth 0 = корень, 1 = ответ, 2 = ответ второго порядка.
  */
-function tolstenko_blog_render_comment_admin_row( $index, array $item, $is_reply = false ) {
+function tolstenko_blog_render_comment_admin_row( $index, array $item, $depth = 0 ) {
+	$depth = (int) $depth;
 	$photo = (int) ( $item['photo'] ?? 0 );
 	$url   = $photo ? (string) wp_get_attachment_image_url( $photo, 'thumbnail' ) : '';
 
-	if ( $is_reply ) {
-		// Parent placeholder replaced in JS; for existing rows use real parent index via name path.
+	if ( $depth >= 2 ) {
+		$root   = isset( $item['_root'] ) ? (string) $item['_root'] : '__ROOT__';
+		$parent = isset( $item['_parent'] ) ? (string) $item['_parent'] : '__PARENT__';
+		$base   = 'tolstenko_blog_comments[' . $root . '][replies][' . $parent . '][replies][' . $index . ']';
+		$class  = 'tolstenko-bc-item is-reply is-nested';
+	} elseif ( $depth === 1 ) {
 		$parent = isset( $item['_parent'] ) ? (string) $item['_parent'] : '__PARENT__';
 		$base   = 'tolstenko_blog_comments[' . $parent . '][replies][' . $index . ']';
 		$class  = 'tolstenko-bc-item is-reply';
@@ -281,6 +317,7 @@ function tolstenko_blog_render_comment_admin_row( $index, array $item, $is_reply
 	}
 	?>
 	<div class="<?php echo esc_attr( $class ); ?>" data-bc-index="<?php echo esc_attr( $index ); ?>">
+		<input type="hidden" name="<?php echo esc_attr( $base . '[id]' ); ?>" value="<?php echo esc_attr( (string) ( $item['id'] ?? '' ) ); ?>">
 		<div class="tolstenko-bc-grid">
 			<div>
 				<div class="tolstenko-bc-preview" data-bc-preview>
@@ -303,14 +340,14 @@ function tolstenko_blog_render_comment_admin_row( $index, array $item, $is_reply
 				<textarea name="<?php echo esc_attr( $base . '[text]' ); ?>" rows="3"><?php echo esc_textarea( (string) ( $item['text'] ?? '' ) ); ?></textarea>
 				<p>
 					<button type="button" class="button-link-delete" data-bc-remove><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button>
-					<?php if ( ! $is_reply ) : ?>
+					<?php if ( $depth < 2 ) : ?>
 						<button type="button" class="button button-small" data-bc-add-reply><?php esc_html_e( 'Добавить ответ', 'tolstenko-theme' ); ?></button>
 					<?php endif; ?>
 				</p>
 			</div>
 		</div>
 
-		<?php if ( ! $is_reply ) : ?>
+		<?php if ( $depth < 2 ) : ?>
 			<div class="tolstenko-bc-replies" data-bc-replies>
 				<?php
 				$replies = $item['replies'] ?? array();
@@ -319,8 +356,14 @@ function tolstenko_blog_render_comment_admin_row( $index, array $item, $is_reply
 						if ( ! is_array( $reply ) ) {
 							continue;
 						}
-						$reply['_parent'] = $index;
-						tolstenko_blog_render_comment_admin_row( (string) $ri, $reply, true );
+						if ( $depth === 0 ) {
+							$reply['_parent'] = $index;
+							tolstenko_blog_render_comment_admin_row( (string) $ri, $reply, 1 );
+						} else {
+							$reply['_root']   = isset( $item['_parent'] ) ? (string) $item['_parent'] : '__PARENT__';
+							$reply['_parent'] = $index;
+							tolstenko_blog_render_comment_admin_row( (string) $ri, $reply, 2 );
+						}
 					}
 				}
 				?>
@@ -383,12 +426,16 @@ function tolstenko_blog_save_metabox( $post_id, $post ) {
  * @return array
  */
 function tolstenko_blog_sanitize_comments( array $rows ) {
-	$out = array();
+	$out  = array();
+	$used = array();
 	foreach ( $rows as $row ) {
 		if ( ! is_array( $row ) ) {
 			continue;
 		}
 		$item = array(
+			'id'    => function_exists( 'tolstenko_blog_comment_unique_id' )
+				? tolstenko_blog_comment_unique_id( $row['id'] ?? '', $used )
+				: sanitize_text_field( (string) ( $row['id'] ?? '' ) ),
 			'photo' => (int) ( $row['photo'] ?? 0 ),
 			'name'  => sanitize_text_field( (string) ( $row['name'] ?? '' ) ),
 			'date'  => sanitize_text_field( (string) ( $row['date'] ?? '' ) ),
@@ -403,13 +450,40 @@ function tolstenko_blog_sanitize_comments( array $rows ) {
 					continue;
 				}
 				$r = array(
+					'id'    => function_exists( 'tolstenko_blog_comment_unique_id' )
+						? tolstenko_blog_comment_unique_id( $reply['id'] ?? '', $used )
+						: sanitize_text_field( (string) ( $reply['id'] ?? '' ) ),
 					'photo' => (int) ( $reply['photo'] ?? 0 ),
 					'name'  => sanitize_text_field( (string) ( $reply['name'] ?? '' ) ),
 					'date'  => sanitize_text_field( (string) ( $reply['date'] ?? '' ) ),
 					'time'  => sanitize_text_field( (string) ( $reply['time'] ?? '' ) ),
 					'text'  => sanitize_textarea_field( (string) ( $reply['text'] ?? '' ) ),
 				);
-				if ( $r['name'] === '' && $r['text'] === '' && ! $r['photo'] ) {
+				$nested_out = array();
+				$nested     = $reply['replies'] ?? array();
+				if ( is_array( $nested ) ) {
+					foreach ( $nested as $nested_item ) {
+						if ( ! is_array( $nested_item ) ) {
+							continue;
+						}
+						$n = array(
+							'id'    => function_exists( 'tolstenko_blog_comment_unique_id' )
+								? tolstenko_blog_comment_unique_id( $nested_item['id'] ?? '', $used )
+								: sanitize_text_field( (string) ( $nested_item['id'] ?? '' ) ),
+							'photo' => (int) ( $nested_item['photo'] ?? 0 ),
+							'name'  => sanitize_text_field( (string) ( $nested_item['name'] ?? '' ) ),
+							'date'  => sanitize_text_field( (string) ( $nested_item['date'] ?? '' ) ),
+							'time'  => sanitize_text_field( (string) ( $nested_item['time'] ?? '' ) ),
+							'text'  => sanitize_textarea_field( (string) ( $nested_item['text'] ?? '' ) ),
+						);
+						if ( $n['name'] === '' && $n['text'] === '' && ! $n['photo'] ) {
+							continue;
+						}
+						$nested_out[] = $n;
+					}
+				}
+				$r['replies'] = $nested_out;
+				if ( $r['name'] === '' && $r['text'] === '' && ! $r['photo'] && empty( $nested_out ) ) {
 					continue;
 				}
 				$replies_out[] = $r;

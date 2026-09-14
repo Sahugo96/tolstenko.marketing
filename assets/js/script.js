@@ -1,5 +1,4 @@
 
-
 document.addEventListener('DOMContentLoaded', () => {
     // thanks page: redirect to home after 20 seconds
     (function() {
@@ -48,6 +47,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
             link.setAttribute('rel', rel.join(' '));
+        });
+    })();
+
+    (function () {
+        var sub_menu = document.querySelectorAll('.header__menu-list .menu-item-has-children > a');
+        if (!sub_menu) return;
+
+        sub_menu.forEach(function (item) {
+            item.addEventListener('click', function (event) {
+                event.preventDefault();
+                item.parentElement.classList.toggle('open');
+            });
         });
     })();
 
@@ -141,6 +152,33 @@ document.addEventListener('DOMContentLoaded', () => {
     })();
     // services panel end
 
+    // search results filter (search.php) — фильтр-пилюли как в «Слайдере услуг»
+    (function () {
+        var filterWrap = document.querySelector('.search-results__content');
+        if (!filterWrap) return;
+
+        var radios = filterWrap.parentElement.querySelectorAll('.search-results-filter-radio');
+        var groups = filterWrap.querySelectorAll('.search-results__group');
+
+        if (!radios.length || !groups.length) return;
+
+        function activateGroup(value) {
+            groups.forEach(function (group) {
+                var on = group.getAttribute('data-group') === value;
+                group.classList.toggle('is-active', on);
+                group.hidden = !on;
+            });
+        }
+
+        radios.forEach(function (radio) {
+            radio.addEventListener('change', function () {
+                if (!radio.checked) return;
+                activateGroup(radio.value || '');
+            });
+        });
+    })();
+    // search results filter end
+
 
     // mobile menu (marketing: .header.active + body.lock)
     (function () {
@@ -217,23 +255,35 @@ document.addEventListener('DOMContentLoaded', () => {
     })();
     // search end
     
-    // После успешной отправки CF7 — редирект на страницу «Спасибо» (без устаревшего on_sent_ok)
+    // После успешной отправки CF7 — редирект на страницу «Спасибо» через 5 секунд
+    // (без устаревшего on_sent_ok; поиск — нативная GET-форма, в обработчик не попадает).
     document.addEventListener('wpcf7mailsent', function(ev) {
         if (!ev.detail || !ev.detail.contactFormId) return;
         var form = ev.target && ev.target.tagName === 'FORM' ? ev.target : document.querySelector('#' + (ev.detail.unitTag || '') + ' form');
         if (!form) return;
-        // Модалка заявки: экран «спасибо» внутри .modal
+        if (form.closest && form.closest('#comments, .comments__form')) return;
+
+        // URL страницы благодарности: из data-thanks-url контейнера или из конфигурации темы.
+        var thanksUrl = '';
+        var container = form.closest && form.closest('[data-thanks-url]');
+        if (container) {
+            thanksUrl = container.getAttribute('data-thanks-url') || '';
+        }
+        if (!thanksUrl && typeof tolstenkoAjax !== 'undefined' && tolstenkoAjax.thanksUrl) {
+            thanksUrl = tolstenkoAjax.thanksUrl;
+        }
+        if (!thanksUrl) return;
+
+        // Модалка заявки: показываем экран «спасибо» внутри модалки до редиректа
         if (form.closest && form.closest('.modal')) {
             var modalEl = form.closest('.modal');
             modalEl.classList.add('active', 'success');
             document.body.classList.add('lock');
-            return;
         }
-        var container = form.closest && form.closest('[data-thanks-url]');
-        if (!container) return;
-        var thanksUrl = container.getAttribute('data-thanks-url');
-        if (!thanksUrl) return;
-        window.location.href = thanksUrl;
+
+        window.setTimeout(function() {
+            window.location.href = thanksUrl;
+        }, 5000);
     }, false);
 
     // Gutenberg gallery → Fancybox (группа на каждую .wp-block-gallery)
@@ -1962,5 +2012,97 @@ document.addEventListener('DOMContentLoaded', () => {
         sections.forEach(function (el) { observer.observe(el); });
         checkAll(observer);
         window.addEventListener('scroll', function () { checkAll(observer); }, { passive: true });
+    })();
+
+    (function () {
+        var section = document.getElementById('comments');
+        if (!section) return;
+
+        var formWrap = section.querySelector('.comments__form');
+        if (!formWrap) return;
+
+        var titleEl = formWrap.querySelector('[data-comments-form-title]') || formWrap.querySelector('.comments__form-title');
+        var defaultTitle = titleEl ? (titleEl.getAttribute('data-default-title') || titleEl.textContent || '') : '';
+        var hint = formWrap.querySelector('[data-comments-reply-hint]');
+        var hintText = formWrap.querySelector('[data-comments-reply-hint-text]');
+        var cancel = formWrap.querySelector('[data-comments-reply-cancel]');
+
+        function getParentInput() {
+            var input = formWrap.querySelector('input[name="tolstenko_parent_comment"]');
+            if (input) return input;
+            var cf7form = formWrap.querySelector('.wpcf7-form') || formWrap.querySelector('form');
+            if (!cf7form) return null;
+            input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'tolstenko_parent_comment';
+            input.value = '';
+            cf7form.appendChild(input);
+            return input;
+        }
+
+        function clearTargets() {
+            section.querySelectorAll('.comments__item.is-reply-target').forEach(function (item) {
+                item.classList.remove('is-reply-target');
+            });
+        }
+
+        function setReply(id, author) {
+            var input = getParentInput();
+            if (input) input.value = id || '';
+            if (titleEl) {
+                titleEl.textContent = id ? 'ОТВЕТИТЬ' : defaultTitle;
+            }
+            formWrap.classList.toggle('is-reply', !!id);
+            clearTargets();
+            if (id) {
+                var target = section.querySelector('.comments__item[data-comment-id="' + id + '"]');
+                if (target) target.classList.add('is-reply-target');
+            }
+            if (hint) {
+                if (id) {
+                    hint.hidden = false;
+                    if (hintText) {
+                        hintText.textContent = author ? ('Ответ для ' + author) : 'Ответ на комментарий';
+                    }
+                } else {
+                    hint.hidden = true;
+                    if (hintText) hintText.textContent = '';
+                }
+            }
+        }
+
+        function resetReply() {
+            setReply('', '');
+        }
+
+        section.addEventListener('click', function (e) {
+            var btn = e.target.closest('[data-comment-reply]');
+            if (!btn || !section.contains(btn)) return;
+            e.preventDefault();
+            var id = btn.getAttribute('data-comment-id') || '';
+            var author = btn.getAttribute('data-comment-author') || '';
+            var input = getParentInput();
+            if (input && input.value === id) {
+                resetReply();
+                return;
+            }
+            setReply(id, author);
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            var field = formWrap.querySelector('input[type="text"], textarea');
+            if (field) field.focus();
+        });
+
+        if (cancel) {
+            cancel.addEventListener('click', function (e) {
+                e.preventDefault();
+                resetReply();
+            });
+        }
+
+        document.addEventListener('wpcf7mailsent', function (ev) {
+            var sentForm = ev.target && ev.target.closest ? ev.target.closest('form') : null;
+            if (!sentForm || !formWrap.contains(sentForm)) return;
+            resetReply();
+        });
     })();
 })

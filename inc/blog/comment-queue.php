@@ -158,7 +158,8 @@ function tolstenko_comment_queue_cf7_hidden_fields( $hidden ) {
 		return $hidden;
 	}
 
-	$hidden['tolstenko_target_post_id'] = (string) $post_id;
+	$hidden['tolstenko_target_post_id']    = (string) $post_id;
+	$hidden['tolstenko_parent_comment']    = '';
 	return $hidden;
 }
 
@@ -223,6 +224,26 @@ function tolstenko_comment_queue_capture_cf7( $contact_form ) {
 		return;
 	}
 
+	$parent_id = $data['tolstenko_parent_comment'] ?? '';
+	if ( is_array( $parent_id ) ) {
+		$parent_id = (string) reset( $parent_id );
+	} else {
+		$parent_id = (string) $parent_id;
+	}
+	if ( function_exists( 'tolstenko_blog_comment_normalize_id' ) ) {
+		$parent_id = tolstenko_blog_comment_normalize_id( $parent_id );
+	} else {
+		$parent_id = '';
+	}
+
+	$parent_name = '';
+	if ( $parent_id !== '' && function_exists( 'tolstenko_blog_get_root_comment' ) ) {
+		$parent_row = tolstenko_blog_get_root_comment( $target_id, $parent_id );
+		if ( is_array( $parent_row ) ) {
+			$parent_name = sanitize_text_field( (string) ( $parent_row['name'] ?? '' ) );
+		}
+	}
+
 	update_post_meta( $queue_id, '_tolstenko_target_post_id', $target_id );
 	update_post_meta( $queue_id, '_tolstenko_cmt_name', $name );
 	update_post_meta( $queue_id, '_tolstenko_cmt_phone', $phone );
@@ -230,6 +251,8 @@ function tolstenko_comment_queue_capture_cf7( $contact_form ) {
 	update_post_meta( $queue_id, '_tolstenko_cmt_date', wp_date( 'd.m.Y', $now ) );
 	update_post_meta( $queue_id, '_tolstenko_cmt_time', wp_date( 'H:i', $now ) );
 	update_post_meta( $queue_id, '_tolstenko_cmt_photo', tolstenko_get_default_comment_avatar_id() );
+	update_post_meta( $queue_id, '_tolstenko_cmt_parent', $parent_id );
+	update_post_meta( $queue_id, '_tolstenko_cmt_parent_name', $parent_name );
 	update_post_meta( $queue_id, '_tolstenko_published', 0 );
 }
 
@@ -274,13 +297,29 @@ function tolstenko_comment_queue_meta( $post_id, $key, $default = '' ) {
 function tolstenko_comment_queue_render_metabox( $post ) {
 	wp_nonce_field( 'tolstenko_comment_queue_save', 'tolstenko_comment_queue_nonce' );
 
-	$target = (int) tolstenko_comment_queue_meta( $post->ID, '_tolstenko_target_post_id', 0 );
-	$name   = (string) tolstenko_comment_queue_meta( $post->ID, '_tolstenko_cmt_name', '' );
-	$phone  = (string) tolstenko_comment_queue_meta( $post->ID, '_tolstenko_cmt_phone', '' );
-	$text   = (string) tolstenko_comment_queue_meta( $post->ID, '_tolstenko_cmt_text', '' );
-	$date   = (string) tolstenko_comment_queue_meta( $post->ID, '_tolstenko_cmt_date', '' );
-	$photo  = (int) tolstenko_comment_queue_meta( $post->ID, '_tolstenko_cmt_photo', 0 );
-	$url    = $photo ? (string) wp_get_attachment_image_url( $photo, 'thumbnail' ) : '';
+	$target      = (int) tolstenko_comment_queue_meta( $post->ID, '_tolstenko_target_post_id', 0 );
+	$name        = (string) tolstenko_comment_queue_meta( $post->ID, '_tolstenko_cmt_name', '' );
+	$phone       = (string) tolstenko_comment_queue_meta( $post->ID, '_tolstenko_cmt_phone', '' );
+	$text        = (string) tolstenko_comment_queue_meta( $post->ID, '_tolstenko_cmt_text', '' );
+	$date        = (string) tolstenko_comment_queue_meta( $post->ID, '_tolstenko_cmt_date', '' );
+	$photo       = (int) tolstenko_comment_queue_meta( $post->ID, '_tolstenko_cmt_photo', 0 );
+	$url         = $photo ? (string) wp_get_attachment_image_url( $photo, 'thumbnail' ) : '';
+	$parent_id   = (string) tolstenko_comment_queue_meta( $post->ID, '_tolstenko_cmt_parent', '' );
+	if ( function_exists( 'tolstenko_blog_comment_normalize_id' ) ) {
+		$parent_id = tolstenko_blog_comment_normalize_id( $parent_id );
+	}
+	$parent_name = (string) tolstenko_comment_queue_meta( $post->ID, '_tolstenko_cmt_parent_name', '' );
+	$parent_live = ( $parent_id !== '' && $target && function_exists( 'tolstenko_blog_get_root_comment' ) )
+		? tolstenko_blog_get_root_comment( $target, $parent_id )
+		: null;
+	$parent_label = '';
+	if ( is_array( $parent_live ) ) {
+		$parent_label = trim( (string) ( $parent_live['name'] ?? '' ) );
+	}
+	if ( $parent_label === '' ) {
+		$parent_label = $parent_name;
+	}
+	$parent_missing = ( $parent_id !== '' && ! is_array( $parent_live ) );
 	?>
 	<style>
 		.tolstenko-cq-grid{display:grid;grid-template-columns:120px 1fr;gap:16px;max-width:720px}
@@ -288,6 +327,9 @@ function tolstenko_comment_queue_render_metabox( $post ) {
 		.tolstenko-cq-grid input[type=text],.tolstenko-cq-grid textarea{width:100%}
 		.tolstenko-cq-preview{width:96px;height:96px;background:#f0f0f1;border:1px solid #c3c4c7;display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:8px}
 		.tolstenko-cq-preview img{max-width:100%;max-height:100%;display:block}
+		.tolstenko-cq-parent{margin-top:12px;padding:12px;background:#f6f7f7;border:1px solid #c3c4c7}
+		.tolstenko-cq-parent.is-missing{border-color:#d63638;background:#fcf0f1}
+		.tolstenko-cq-parent label{font-weight:400}
 	</style>
 	<div class="tolstenko-cq-grid">
 		<div>
@@ -330,6 +372,27 @@ function tolstenko_comment_queue_render_metabox( $post ) {
 					—
 				<?php endif; ?>
 			</p>
+			<?php if ( $parent_id !== '' ) : ?>
+				<div class="tolstenko-cq-parent<?php echo $parent_missing ? ' is-missing' : ''; ?>">
+					<input type="hidden" name="tolstenko_cq_parent" value="<?php echo esc_attr( $parent_id ); ?>">
+					<p>
+						<strong><?php esc_html_e( 'Ответ на', 'tolstenko-theme' ); ?>:</strong>
+						<?php echo $parent_label !== '' ? esc_html( $parent_label ) : esc_html__( 'комментарий', 'tolstenko-theme' ); ?>
+						<code><?php echo esc_html( $parent_id ); ?></code>
+					</p>
+					<?php if ( $parent_missing ) : ?>
+						<p class="description" style="color:#b32d2e;">
+							<?php esc_html_e( 'Родительский комментарий в статье не найден. Отметьте «Опубликовать как корневой», нажмите «Обновить», затем «Одобрить».', 'tolstenko-theme' ); ?>
+						</p>
+					<?php endif; ?>
+					<p>
+						<label>
+							<input type="checkbox" name="tolstenko_cq_as_root" value="1">
+							<?php esc_html_e( 'Опубликовать как корневой комментарий', 'tolstenko-theme' ); ?>
+						</label>
+					</p>
+				</div>
+			<?php endif; ?>
 		</div>
 	</div>
 	<script>
@@ -415,6 +478,19 @@ function tolstenko_comment_queue_save( $post_id, $post ) {
 	update_post_meta( $post_id, '_tolstenko_cmt_text', $text );
 	update_post_meta( $post_id, '_tolstenko_cmt_photo', $photo );
 
+	$as_root = ! empty( $_POST['tolstenko_cq_as_root'] );
+	if ( $as_root ) {
+		update_post_meta( $post_id, '_tolstenko_cmt_parent', '' );
+	} elseif ( isset( $_POST['tolstenko_cq_parent'] ) ) {
+		$parent_save = (string) wp_unslash( $_POST['tolstenko_cq_parent'] );
+		if ( function_exists( 'tolstenko_blog_comment_normalize_id' ) ) {
+			$parent_save = tolstenko_blog_comment_normalize_id( $parent_save );
+		} else {
+			$parent_save = '';
+		}
+		update_post_meta( $post_id, '_tolstenko_cmt_parent', $parent_save );
+	}
+
 	if ( $name !== '' && $post->post_title !== $name ) {
 		remove_action( 'save_post_' . TOLSTENKO_BLOG_COMMENT_QUEUE_PT, 'tolstenko_comment_queue_save', 10 );
 		wp_update_post(
@@ -455,7 +531,39 @@ function tolstenko_comment_queue_approve( $queue_id ) {
 		'text'  => (string) get_post_meta( $queue_id, '_tolstenko_cmt_text', true ),
 	);
 
-	if ( ! function_exists( 'tolstenko_append_blog_comment' ) || ! tolstenko_append_blog_comment( $target, $item ) ) {
+	$parent_id = (string) get_post_meta( $queue_id, '_tolstenko_cmt_parent', true );
+	if ( function_exists( 'tolstenko_blog_comment_normalize_id' ) ) {
+		$parent_id = tolstenko_blog_comment_normalize_id( $parent_id );
+	} else {
+		$parent_id = '';
+	}
+
+	if ( $parent_id !== '' ) {
+		if ( function_exists( 'tolstenko_blog_ensure_post_comment_ids' ) ) {
+			tolstenko_blog_ensure_post_comment_ids( $target );
+		}
+		$parent_row = function_exists( 'tolstenko_blog_get_root_comment' )
+			? tolstenko_blog_get_root_comment( $target, $parent_id )
+			: null;
+		if ( ! is_array( $parent_row ) ) {
+			return new WP_Error(
+				'parent',
+				__( 'Родительский комментарий не найден. Отметьте «Опубликовать как корневой», нажмите «Обновить», затем снова «Одобрить».', 'tolstenko-theme' )
+			);
+		}
+		$comments_now = get_post_meta( $target, 'blog_comments', true );
+		$found_parent = ( is_array( $comments_now ) && function_exists( 'tolstenko_blog_find_comment' ) )
+			? tolstenko_blog_find_comment( $comments_now, $parent_id )
+			: null;
+		if ( $found_parent && (int) ( $found_parent['depth'] ?? 0 ) >= 2 ) {
+			return new WP_Error(
+				'parent_depth',
+				__( 'На ответы второго уровня отвечать нельзя. Отметьте «Опубликовать как корневой» или выберите другой комментарий.', 'tolstenko-theme' )
+			);
+		}
+	}
+
+	if ( ! function_exists( 'tolstenko_append_blog_comment' ) || ! tolstenko_append_blog_comment( $target, $item, $parent_id ) ) {
 		return new WP_Error( 'append', __( 'Не удалось добавить комментарий в статью (пустое имя/текст?).', 'tolstenko-theme' ) );
 	}
 
@@ -550,6 +658,7 @@ function tolstenko_comment_queue_columns( $columns ) {
 		$new[ $key ] = $label;
 		if ( $key === 'title' ) {
 			$new['tolstenko_cq_target'] = __( 'Статья', 'tolstenko-theme' );
+			$new['tolstenko_cq_type']    = __( 'Тип', 'tolstenko-theme' );
 			$new['tolstenko_cq_phone']  = __( 'Телефон', 'tolstenko-theme' );
 			$new['tolstenko_cq_status'] = __( 'Публикация', 'tolstenko-theme' );
 		}
@@ -572,6 +681,22 @@ function tolstenko_comment_queue_column_content( $column, $post_id ) {
 			echo '<br><code>#' . (int) $target . '</code>';
 		} else {
 			echo '—';
+		}
+		return;
+	}
+	if ( $column === 'tolstenko_cq_type' ) {
+		$parent = (string) get_post_meta( $post_id, '_tolstenko_cmt_parent', true );
+		if ( function_exists( 'tolstenko_blog_comment_normalize_id' ) ) {
+			$parent = tolstenko_blog_comment_normalize_id( $parent );
+		}
+		if ( $parent !== '' ) {
+			esc_html_e( 'Ответ', 'tolstenko-theme' );
+			$name = (string) get_post_meta( $post_id, '_tolstenko_cmt_parent_name', true );
+			if ( $name !== '' ) {
+				echo '<br><span class="description">' . esc_html( $name ) . '</span>';
+			}
+		} else {
+			esc_html_e( 'Комментарий', 'tolstenko-theme' );
 		}
 		return;
 	}

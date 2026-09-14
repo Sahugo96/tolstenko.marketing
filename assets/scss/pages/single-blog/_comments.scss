@@ -1,25 +1,13 @@
 .comments {
-  // scroll-margin-top: vw(100px, $mobile);
+  scroll-margin-top: vw(100px, $mobile);
 
-  // @media (min-width: $desk) {
-  //   scroll-margin-top: vw(100px, $desktop);
-  // }
+  @media (min-width: $desk) {
+    scroll-margin-top: vw(100px, $desktop);
+  }
 
-  // @media (min-width: $desk_large) {
-  //   scroll-margin-top: vw(100px, $desktop_large);
-  // }
-
-  // &__anchor {
-  //   scroll-margin-top: vw(100px, $mobile);
-
-  //   @media (min-width: $desk) {
-  //     scroll-margin-top: vw(100px, $desktop);
-  //   }
-
-  //   @media (min-width: $desk_large) {
-  //     scroll-margin-top: vw(100px, $desktop_large);
-  //   }
-  // }
+  @media (min-width: $desk_large) {
+    scroll-margin-top: vw(100px, $desktop_large);
+  }
 
   &__wrapper {
     display: flex;
@@ -72,6 +60,75 @@
     }
     @media (min-width: $desk_large) {
       margin-bottom: vw(15px, $desktop_large);
+    }
+  }
+
+  &__reply-hint {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    grid-gap: vw(12px, $mobile);
+    margin: 0 0 vw(15px, $mobile);
+    padding: vw(10px, $mobile) vw(12px, $mobile);
+    border: 1px solid var(--brand-accent-yellow-opacity-two-color);
+    border-radius: vw(10px, $mobile);
+    background-color: var(--gray-15-color);
+    color: var(--gray-70-color);
+
+    &[hidden] {
+      display: none;
+    }
+
+    @media (min-width: $desk) {
+      grid-gap: vw(12px, $desktop);
+      margin-bottom: vw(15px, $desktop);
+      padding: vw(10px, $desktop) vw(14px, $desktop);
+      border-radius: vw(10px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(12px, $desktop_large);
+      margin-bottom: vw(15px, $desktop_large);
+      padding: vw(10px, $desktop_large) vw(14px, $desktop_large);
+      border-radius: vw(10px, $desktop_large);
+    }
+  }
+
+  &__reply-hint-text {
+    min-width: 0;
+    font-size: vw(13px, $mobile);
+    line-height: 1.3;
+    @media (min-width: $desk) {
+      font-size: vw(13px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      font-size: vw(13px, $desktop_large);
+    }
+  }
+
+  &__reply-cancel {
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--brand-accent-yellow-color);
+    font: inherit;
+    font-size: vw(13px, $mobile);
+    line-height: 1;
+    text-transform: uppercase;
+    cursor: pointer;
+
+    @media (min-width: $desk) {
+      font-size: vw(13px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      font-size: vw(13px, $desktop_large);
+    }
+
+    @media (any-hover: hover) {
+      &:hover {
+        color: var(--white-color);
+      }
     }
   }
 
@@ -158,11 +215,14 @@
     list-style: none;
     padding: vw(20px, $mobile) 0;
     border-bottom: 1px solid var(--gray-20-color);
+    scroll-margin-top: vw(100px, $mobile);
     @media (min-width: $desk) {
       padding: vw(24px, $desktop) 0;
+      scroll-margin-top: vw(100px, $desktop);
     }
     @media (min-width: $desk_large) {
       padding: vw(24px, $desktop_large) 0;
+      scroll-margin-top: vw(100px, $desktop_large);
     }
 
     &:last-child {
@@ -302,5 +362,50 @@
   &__text {
     margin: 0;
     color: var(--gray-70-color);
+  }
+
+  &__reply {
+    margin: vw(12px, $mobile) 0 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--brand-accent-yellow-color);
+    font: inherit;
+    font-size: vw(13px, $mobile);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+    cursor: pointer;
+
+    @media (min-width: $desk) {
+      margin-top: vw(12px, $desktop);
+      font-size: vw(13px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      margin-top: vw(12px, $desktop_large);
+      font-size: vw(13px, $desktop_large);
+    }
+
+    @media (any-hover: hover) {
+      &:hover {
+        color: var(--white-color);
+      }
+    }
+  }
+
+  &__item.is-reply-target > .comments__article {
+    outline: 1px solid var(--brand-accent-yellow-opacity-two-color);
+    outline-offset: vw(8px, $mobile);
+    border-radius: vw(8px, $mobile);
+
+    @media (min-width: $desk) {
+      outline-offset: vw(8px, $desktop);
+      border-radius: vw(8px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      outline-offset: vw(8px, $desktop_large);
+      border-radius: vw(8px, $desktop_large);
+    }
   }
 }

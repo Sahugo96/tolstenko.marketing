@@ -81,13 +81,13 @@
     padding: vw(15px, $mobile) vw(25px, $mobile) vw(15px, $mobile) vw(20px, $mobile);
     background-color: var(--gray-15-color);
     @media (min-width: $desk) {
-      max-width: vw(376px, $desktop);
+      max-width: vw(440px, $desktop);
       border-radius: vw(15px, $desktop);
       grid-gap: vw(15px, $desktop);
       padding: vw(15px, $desktop) vw(25px, $desktop) vw(15px, $desktop) vw(20px, $desktop);
     }
     @media (min-width: $desk_large) {
-      max-width: vw(376px, $desktop_large);
+      max-width: vw(440px, $desktop_large);
       border-radius: vw(15px, $desktop_large);
       grid-gap: vw(15px, $desktop_large);
       padding: vw(15px, $desktop_large) vw(25px, $desktop_large) vw(15px, $desktop_large) vw(20px, $desktop_large);

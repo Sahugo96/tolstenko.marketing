@@ -299,6 +299,9 @@
             || (details.medium && details.medium.source_url)
             || (details.medium_large && details.medium_large.source_url)
             || (details.large && details.large.source_url)
+            || (details.full && details.full.source_url)
+            || media.source_url
+            || media.url
             || '';
     }
 
@@ -313,6 +316,60 @@
             return 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
         }
         return item.url || '';
+    }
+
+    /**
+     * Поле выбора иконки для карточек блоков темы (Результат, Продвижение и т.п.).
+     * Показывает превью выбранной иконки в редакторе и сохраняет attachment ID в атрибут.
+     */
+    function TolstenkoIconField(props) {
+        if (!MediaUpload || !MediaUploadCheck) {
+            return null;
+        }
+        var value = parseInt(props.value, 10) || 0;
+        var onSelect = props.onSelect || function () {};
+        var onClear = props.onClear || function () {};
+        var keyPrefix = props.keyPrefix || ('icon-field-' + value);
+
+        var mediaRecord = null;
+        if (useSelect) {
+            mediaRecord = useSelect(function (sel) {
+                if (!value) return null;
+                if (!(sel && sel('core') && sel('core').getMedia)) return null;
+                return sel('core').getMedia(value) || null;
+            }, [value]);
+        }
+        var mediaUrl = mediaRecord ? (pickPreviewUrlFromMedia(mediaRecord) || '') : '';
+        var placeholderUrl = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+
+        return el('div', { key: keyPrefix + '-wrap', style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '8px' } }, [
+            value ? el('img', {
+                key: keyPrefix + '-preview',
+                src: mediaUrl || placeholderUrl,
+                alt: '',
+                style: { width: '44px', height: '44px', objectFit: 'contain', border: '1px solid #ddd', borderRadius: '4px', background: '#fff' }
+            }) : el('span', {
+                key: keyPrefix + '-ph',
+                style: { width: '44px', height: '44px', border: '1px dashed #ccc', borderRadius: '4px', display: 'inline-block', background: '#fff' }
+            }),
+            el(MediaUploadCheck, { key: keyPrefix + '-muc' }, el(MediaUpload, {
+                allowedTypes: ['image'],
+                value: value || undefined,
+                onSelect: function (m) {
+                    var id = (m && m.id) ? (parseInt(m.id, 10) || 0) : 0;
+                    onSelect(id);
+                },
+                render: function (obj) {
+                    return el(Button, { isSecondary: true, onClick: obj.open }, value ? 'Заменить иконку' : 'Иконка (SVG)');
+                }
+            })),
+            value && Button ? el(Button, {
+                key: keyPrefix + '-rm',
+                isDestructive: true,
+                isSmall: true,
+                onClick: function () { onClear(); }
+            }, 'Удалить') : null
+        ]);
     }
 
     // ======== НОВАЯ УНИВЕРСАЛЬНАЯ ФУНКЦИЯ ДЛЯ РЕПИТЕРОВ ========
@@ -2349,6 +2406,14 @@
                     onChange: function (v) { set({ block_result_title: v }); },
                     rows: 2
                 }) : null,
+                TextareaControl ? el(TextareaControl, {
+                    key: 'text',
+                    label: 'Текст после карточек',
+                    value: attrs.block_result_text || '',
+                    placeholder: getDefault('result.text', ''),
+                    onChange: function (v) { set({ block_result_text: v }); },
+                    rows: 3
+                }) : null,
                 renderHeadingTagSelect(attrs, set, 'block_result_title_tag', 'Тег заголовка', 'h2'),
                 renderRepeater({
                     items: items,
@@ -2356,20 +2421,13 @@
                     renderItem: function (item, index) {
                         var icoId = parseInt(item.ico, 10) || 0;
                         return el('div', { key: 'item-render-' + index }, [
-                            MediaUpload && MediaUploadCheck ? el('div', { key: 'ico', style: { marginBottom: '8px' } }, [
-                                el(MediaUploadCheck, { key: 'muc' }, el(MediaUpload, {
-                                    allowedTypes: ['image'],
-                                    value: icoId,
-                                    onSelect: function (m) { updateItem(index, { ico: m && m.id ? m.id : 0 }); },
-                                    render: function (obj) {
-                                        return el(Button, { isSecondary: true, onClick: obj.open }, icoId ? 'Заменить иконку' : 'Иконка (SVG)');
-                                    }
-                                })),
-                                icoId && Button ? el(Button, {
-                                    key: 'rm-ico', isDestructive: true, isSmall: true, style: { marginLeft: '8px' },
-                                    onClick: function () { updateItem(index, { ico: 0 }); }
-                                }, 'Удалить') : null
-                            ]) : null,
+                            el(TolstenkoIconField, {
+                                key: 'ico-' + index,
+                                value: icoId,
+                                keyPrefix: 'result-ico-' + index,
+                                onSelect: function (id) { updateItem(index, { ico: id }); },
+                                onClear: function () { updateItem(index, { ico: 0 }); }
+                            }),
                             TextControl ? el(TextControl, { key: 't', label: 'Заголовок', value: item.title || '', onChange: function (v) { updateItem(index, { title: v }); } }) : null,
                             TextareaControl ? el(TextareaControl, { key: 'tx', label: 'Текст', value: item.text || '', onChange: function (v) { updateItem(index, { text: v }); }, rows: 2 }) : null
                         ]);
@@ -2379,6 +2437,361 @@
                     emptyItem: { ico: 0, title: '', text: '' },
                     keyPrefix: 'result-items'
                 })
+            ];
+
+            return wrapBlock(blockProps, fields);
+        },
+        save: function () { return null; }
+    });
+
+    wp.blocks.registerBlockType('tolstenko/promotion', {
+        title: 'Продвижение',
+        category: 'tolstenko-blocks-new',
+        icon: 'trending-up',
+        edit: function (props) {
+            var attrs = props.attributes || {};
+            var set = props.setAttributes;
+            var blockProps = useBlockProps ? useBlockProps() : {};
+
+            function normalizeItems(raw) {
+                if (!Array.isArray(raw)) return [];
+                return raw.map(function (it) {
+                    it = it || {};
+                    return {
+                        ico: parseInt(it.ico, 10) || 0,
+                        title: it.title || '',
+                        text: it.text || ''
+                    };
+                });
+            }
+
+            var items = normalizeItems(attrs.block_promotion_items);
+            function setItems(next) { set({ block_promotion_items: next.slice() }); }
+            function updateItem(index, patch) {
+                var next = items.slice();
+                next[index] = Object.assign({}, items[index] || {}, patch);
+                setItems(next);
+            }
+
+            function normalizeList(raw) {
+                if (!Array.isArray(raw)) return [];
+                return raw.map(function (li) {
+                    if (li && typeof li === 'object') return li.text || '';
+                    return String(li || '');
+                });
+            }
+
+            var list = normalizeList(attrs.block_promotion_list);
+            function setList(next) { set({ block_promotion_list: next.slice() }); }
+            function updateList(index, value) {
+                var next = list.slice();
+                next[index] = value;
+                setList(next);
+            }
+
+            var fields = [
+                el('p', { key: 'l', style: { marginBottom: '8px', fontWeight: '600' } }, 'Продвижение'),
+                el('p', { key: 'hint', style: { marginTop: 0, marginBottom: '8px', fontSize: '12px', color: '#757575' } }, 'Пустые поля подставятся из «Дефолты блоков → Продвижение».'),
+                TextControl ? el(TextControl, {
+                    key: 'subtitle',
+                    label: 'Подзаголовок',
+                    value: attrs.block_promotion_subtitle || '',
+                    placeholder: getDefault('promotion.subtitle', 'Результат, а не позиции'),
+                    onChange: function (v) { set({ block_promotion_subtitle: v }); }
+                }) : null,
+                TextareaControl ? el(TextareaControl, {
+                    key: 'title',
+                    label: 'Заголовок (HTML, span для акцента)',
+                    value: attrs.block_promotion_title || '',
+                    placeholder: getDefault('promotion.title', ''),
+                    onChange: function (v) { set({ block_promotion_title: v }); },
+                    rows: 2
+                }) : null,
+                renderHeadingTagSelect(attrs, set, 'block_promotion_title_tag', 'Тег заголовка', 'h2'),
+                TextareaControl ? el(TextareaControl, {
+                    key: 'text',
+                    label: 'Текст слева',
+                    value: attrs.block_promotion_text || '',
+                    placeholder: getDefault('promotion.text', ''),
+                    onChange: function (v) { set({ block_promotion_text: v }); },
+                    rows: 3
+                }) : null,
+                renderRepeater({
+                    items: items,
+                    onChange: setItems,
+                    renderItem: function (item, index) {
+                        var icoId = parseInt(item.ico, 10) || 0;
+                        return el('div', { key: 'item-render-' + index }, [
+                            el(TolstenkoIconField, {
+                                key: 'ico-' + index,
+                                value: icoId,
+                                keyPrefix: 'promotion-ico-' + index,
+                                onSelect: function (id) { updateItem(index, { ico: id }); },
+                                onClear: function () { updateItem(index, { ico: 0 }); }
+                            }),
+                            TextControl ? el(TextControl, { key: 't', label: 'Заголовок', value: item.title || '', onChange: function (v) { updateItem(index, { title: v }); } }) : null,
+                            TextareaControl ? el(TextareaControl, { key: 'tx', label: 'Текст', value: item.text || '', onChange: function (v) { updateItem(index, { text: v }); }, rows: 2 }) : null
+                        ]);
+                    },
+                    label: 'Карточки слева',
+                    addLabel: 'Добавить карточку',
+                    emptyItem: { ico: 0, title: '', text: '' },
+                    keyPrefix: 'promotion-items'
+                }),
+                TextControl ? el(TextControl, {
+                    key: 'micro_title',
+                    label: 'Микрозаголовок справа',
+                    value: attrs.block_promotion_micro_title || '',
+                    placeholder: getDefault('promotion.micro_title', ''),
+                    onChange: function (v) { set({ block_promotion_micro_title: v }); }
+                }) : null,
+                renderRepeater({
+                    items: list,
+                    onChange: setList,
+                    renderItem: function (item, index) {
+                        return el('div', { key: 'list-render-' + index }, [
+                            TextControl ? el(TextControl, {
+                                key: 'li',
+                                label: 'Пункт',
+                                value: item || '',
+                                onChange: function (v) { updateList(index, v); }
+                            }) : null
+                        ]);
+                    },
+                    label: 'Список справа',
+                    addLabel: 'Добавить пункт',
+                    emptyItem: '',
+                    keyPrefix: 'promotion-list'
+                })
+            ];
+
+            return wrapBlock(blockProps, fields);
+        },
+        save: function () { return null; }
+    });
+
+    wp.blocks.registerBlockType('tolstenko/pricing', {
+        title: 'Расценки',
+        category: 'tolstenko-blocks-new',
+        icon: 'money-alt',
+        edit: function (props) {
+            var attrs = props.attributes || {};
+            var set = props.setAttributes;
+            var blockProps = useBlockProps ? useBlockProps() : {};
+
+            function normalizeItems(raw) {
+                if (!Array.isArray(raw)) return [];
+                return raw.map(function (it) {
+                    it = it || {};
+                    var list = Array.isArray(it.list) ? it.list.map(function (li) {
+                        return (li && typeof li === 'object') ? (li.text || '') : String(li || '');
+                    }) : [];
+                    return {
+                        name: it.name || '',
+                        for: it.for || '',
+                        price: it.price || '',
+                        note: it.note || '',
+                        badge: it.badge || '',
+                        btn_text: it.btn_text || '',
+                        btn_url: it.btn_url || '',
+                        list: list
+                    };
+                });
+            }
+
+            var items = normalizeItems(attrs.block_pricing_items);
+            function setItems(next) { set({ block_pricing_items: next.slice() }); }
+            function updateItem(index, patch) {
+                var next = items.slice();
+                next[index] = Object.assign({}, items[index] || {}, patch);
+                setItems(next);
+            }
+            function updateListItem(itemIndex, listIndex, value) {
+                var next = items.slice();
+                var list = (next[itemIndex].list || []).slice();
+                list[listIndex] = value;
+                next[itemIndex] = Object.assign({}, next[itemIndex], { list: list });
+                setItems(next);
+            }
+
+            var fields = [
+                el('p', { key: 'l', style: { marginBottom: '8px', fontWeight: '600' } }, 'Расценки'),
+                el('p', { key: 'hint', style: { marginTop: 0, marginBottom: '8px', fontSize: '12px', color: '#757575' } }, 'Пустые поля подставятся из «Дефолты блоков → Расценки».'),
+                TextControl ? el(TextControl, {
+                    key: 'subtitle',
+                    label: 'Подзаголовок',
+                    value: attrs.block_pricing_subtitle || '',
+                    placeholder: getDefault('pricing.subtitle', 'Пакеты продвижения'),
+                    onChange: function (v) { set({ block_pricing_subtitle: v }); }
+                }) : null,
+                TextareaControl ? el(TextareaControl, {
+                    key: 'title',
+                    label: 'Заголовок (HTML, span для акцента)',
+                    value: attrs.block_pricing_title || '',
+                    placeholder: getDefault('pricing.title', ''),
+                    onChange: function (v) { set({ block_pricing_title: v }); },
+                    rows: 2
+                }) : null,
+                renderHeadingTagSelect(attrs, set, 'block_pricing_title_tag', 'Тег заголовка', 'h2'),
+                TextareaControl ? el(TextareaControl, {
+                    key: 'text',
+                    label: 'Текст под заголовком',
+                    value: attrs.block_pricing_text || '',
+                    placeholder: getDefault('pricing.text', ''),
+                    onChange: function (v) { set({ block_pricing_text: v }); },
+                    rows: 3
+                }) : null,
+                renderRepeater({
+                    items: items,
+                    onChange: setItems,
+                    renderItem: function (item, index) {
+                        return el('div', { key: 'item-render-' + index }, [
+                            TextControl ? el(TextControl, {
+                                key: 'name', label: 'Название тарифа', value: item.name || '',
+                                onChange: function (v) { updateItem(index, { name: v }); }
+                            }) : null,
+                            TextControl ? el(TextControl, {
+                                key: 'badge', label: 'Бейдж (пусто = обычный)', value: item.badge || '',
+                                onChange: function (v) { updateItem(index, { badge: v }); }
+                            }) : null,
+                            TextareaControl ? el(TextareaControl, {
+                                key: 'for', label: 'Для кого (описание)', value: item.for || '',
+                                onChange: function (v) { updateItem(index, { for: v }); }, rows: 2
+                            }) : null,
+                            TextControl ? el(TextControl, {
+                                key: 'price', label: 'Цена (от 150 000 ₽/мес)', value: item.price || '',
+                                onChange: function (v) { updateItem(index, { price: v }); }
+                            }) : null,
+                            TextControl ? el(TextControl, {
+                                key: 'note', label: 'Примечание (KPI)', value: item.note || '',
+                                onChange: function (v) { updateItem(index, { note: v }); }
+                            }) : null,
+                            TextControl ? el(TextControl, {
+                                key: 'btn_text', label: 'Текст кнопки', value: item.btn_text || '',
+                                onChange: function (v) { updateItem(index, { btn_text: v }); }
+                            }) : null,
+                            TextControl ? el(TextControl, {
+                                key: 'btn_url', label: 'Ссылка кнопки (пусто = модалка)', value: item.btn_url || '',
+                                onChange: function (v) { updateItem(index, { btn_url: v }); }
+                            }) : null,
+                            renderRepeater({
+                                items: item.list || [],
+                                onChange: function (next) { updateItem(index, { list: next }); },
+                                renderItem: function (li, liIndex) {
+                                    return TextControl ? el(TextControl, {
+                                        key: 'li', label: 'Пункт «Что входит»', value: li || '',
+                                        onChange: function (v) { updateListItem(index, liIndex, v); }
+                                    }) : null;
+                                },
+                                label: 'Список «Что входит»',
+                                addLabel: 'Добавить пункт',
+                                emptyItem: '',
+                                keyPrefix: 'pricing-list-' + index
+                            })
+                        ]);
+                    },
+                    label: 'Тарифы',
+                    addLabel: 'Добавить тариф',
+                    emptyItem: { name: '', for: '', price: '', note: '', badge: '', btn_text: '', btn_url: '', list: [] },
+                    keyPrefix: 'pricing-items'
+                })
+            ];
+
+            return wrapBlock(blockProps, fields);
+        },
+        save: function () { return null; }
+    });
+
+    wp.blocks.registerBlockType('tolstenko/not-the-end', {
+        title: 'Ещё не конец',
+        category: 'tolstenko-blocks-new',
+        icon: 'format-chat',
+        edit: function (props) {
+            var attrs = props.attributes || {};
+            var set = props.setAttributes;
+            var blockProps = useBlockProps ? useBlockProps() : {};
+            var iconId = parseInt(attrs.block_not_the_end_icon, 10) || 0;
+
+            function normalizeAvatars(raw) {
+                if (!Array.isArray(raw)) return [];
+                return raw.map(function (it) {
+                    if (typeof it === 'number') return { image: parseInt(it, 10) || 0 };
+                    it = it || {};
+                    return { image: parseInt(it.image || it.id, 10) || 0 };
+                });
+            }
+
+            var avatars = normalizeAvatars(attrs.block_not_the_end_avatars);
+            function setAvatars(next) { set({ block_not_the_end_avatars: next.slice() }); }
+            function updateAvatar(index, patch) {
+                var next = avatars.slice();
+                next[index] = Object.assign({}, avatars[index] || {}, patch);
+                setAvatars(next);
+            }
+
+            var fields = [
+                el('p', { key: 'l', style: { marginBottom: '8px', fontWeight: '600' } }, 'Ещё не конец'),
+                el('p', { key: 'hint', style: { marginTop: 0, marginBottom: '8px', fontSize: '12px', color: '#757575' } }, 'Пустые поля подставятся из «Дефолты блоков → Ещё не конец». Ссылка по умолчанию — #comments.'),
+                TextareaControl ? el(TextareaControl, {
+                    key: 'title',
+                    label: 'Заголовок (HTML, span для акцента, br)',
+                    value: attrs.block_not_the_end_title || '',
+                    placeholder: getDefault('not_the_end.title', ''),
+                    onChange: function (v) { set({ block_not_the_end_title: v }); },
+                    rows: 2
+                }) : null,
+                TextareaControl ? el(TextareaControl, {
+                    key: 'text',
+                    label: 'Текст',
+                    value: attrs.block_not_the_end_text || '',
+                    placeholder: getDefault('not_the_end.text', ''),
+                    onChange: function (v) { set({ block_not_the_end_text: v }); },
+                    rows: 3
+                }) : null,
+                el('div', { key: 'icon', style: { marginTop: '8px' } }, [
+                    el('p', { key: 'il', style: { marginBottom: '6px', fontWeight: '600' } }, 'Иконка слева (пусто = чат по умолчанию)'),
+                    el(TolstenkoIconField, {
+                        key: 'ico',
+                        value: iconId,
+                        keyPrefix: 'not-the-end-ico',
+                        onSelect: function (id) { set({ block_not_the_end_icon: id }); },
+                        onClear: function () { set({ block_not_the_end_icon: 0 }); }
+                    })
+                ]),
+                renderRepeater({
+                    items: avatars,
+                    onChange: setAvatars,
+                    renderItem: function (item, index) {
+                        var imgId = parseInt(item.image, 10) || 0;
+                        return el('div', { key: 'ava-render-' + index }, [
+                            el(TolstenkoIconField, {
+                                key: 'ava-' + index,
+                                value: imgId,
+                                keyPrefix: 'not-the-end-ava-' + index,
+                                onSelect: function (id) { updateAvatar(index, { image: id }); },
+                                onClear: function () { updateAvatar(index, { image: 0 }); }
+                            })
+                        ]);
+                    },
+                    label: 'Аватары превью чата',
+                    addLabel: 'Добавить аватар',
+                    emptyItem: { image: 0 },
+                    keyPrefix: 'not-the-end-avatars'
+                }),
+                TextControl ? el(TextControl, {
+                    key: 'btn_text',
+                    label: 'Текст кнопки',
+                    value: attrs.block_not_the_end_btn_text || '',
+                    placeholder: getDefault('not_the_end.btn_text', 'Читать комментарии'),
+                    onChange: function (v) { set({ block_not_the_end_btn_text: v }); }
+                }) : null,
+                TextControl ? el(TextControl, {
+                    key: 'btn_url',
+                    label: 'Ссылка (якорь или URL)',
+                    value: attrs.block_not_the_end_btn_url || '',
+                    placeholder: getDefault('not_the_end.btn_url', '#comments'),
+                    onChange: function (v) { set({ block_not_the_end_btn_url: v }); }
+                }) : null
             ];
 
             return wrapBlock(blockProps, fields);
@@ -5257,13 +5670,24 @@
                     onChange: function (v) { set({ block_vacancy_content_title: v }); }
                 }) : null,
                 renderHeadingTagSelect(attrs, set, 'block_vacancy_content_title_tag', 'Тег заголовка', 'h2'),
-                TextareaControl ? el(TextareaControl, {
-                    key: 'html',
-                    label: 'Текст',
-                    value: attrs.block_vacancy_content_html || '',
-                    placeholder: 'Пусто = из шаблона вакансии',
-                    onChange: function (v) { set({ block_vacancy_content_html: v }); }
-                }) : null,
+                el('p', { key: 'html-l', style: { margin: '8px 0 4px', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', color: '#1e1e1e' } }, 'Текст'),
+                el('div', { key: 'html-wrap', className: 'tolstenko-richtext-editor' },
+                    RichText ? el(RichText, {
+                        key: 'html',
+                        tagName: 'div',
+                        className: 'tolstenko-vacancy-content-editor',
+                        placeholder: 'Пусто = из шаблона вакансии',
+                        value: attrs.block_vacancy_content_html || '',
+                        onChange: function (v) { set({ block_vacancy_content_html: v }); },
+                        allowedFormats: ['core/bold', 'core/italic', 'core/link', 'core/list', 'core/strikethrough']
+                    }) : (TextareaControl ? el(TextareaControl, {
+                        key: 'html',
+                        label: 'Текст',
+                        value: attrs.block_vacancy_content_html || '',
+                        placeholder: 'Пусто = из шаблона вакансии',
+                        onChange: function (v) { set({ block_vacancy_content_html: v }); }
+                    }) : null)
+                ),
                 TextControl ? el(TextControl, {
                     key: 'apply',
                     label: 'Текст кнопки заявки',

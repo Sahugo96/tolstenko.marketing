@@ -26,6 +26,10 @@ $title_tag = function_exists( 'tolstenko_normalize_heading_tag' )
 	? tolstenko_normalize_heading_tag( $block_attrs['block_result_title_tag'] ?? 'h2', 'h2' )
 	: 'h2';
 
+$text = isset( $block_attrs['block_result_text'] ) && trim( (string) $block_attrs['block_result_text'] ) !== ''
+	? (string) $block_attrs['block_result_text']
+	: (string) ( $defaults['text'] ?? '' );
+
 $items     = array();
 $raw_items = ! empty( $block_attrs['block_result_items'] ) && is_array( $block_attrs['block_result_items'] )
 	? $block_attrs['block_result_items']
@@ -46,7 +50,7 @@ foreach ( $raw_items as $it ) {
 	$items[] = $row;
 }
 
-if ( $subtitle === '' && $title === '' && empty( $items ) ) {
+if ( $subtitle === '' && $title === '' && $text === '' && empty( $items ) ) {
 	return;
 }
 
@@ -124,6 +128,10 @@ $has_item_ico = static function ( $item ) use ( $render_item_ico ) {
 						</div>
 					<?php endforeach; ?>
 				</div>
+			<?php endif; ?>
+
+			<?php if ( $text !== '' ) : ?>
+				<p class="result__text paragraph-15-25"><?php echo tolstenko_kses_html( $text ); ?></p>
 			<?php endif; ?>
 		</div>
 	</div>

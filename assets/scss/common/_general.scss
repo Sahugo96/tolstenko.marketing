@@ -142,7 +142,7 @@ body {
   text-align: center;
   font-family: $Montserrat;
   font-size: vw(16px, $mobile);
-  font-weight: 500;
+  font-weight: 700;
   line-height: 1.1;
   text-transform: uppercase;
   color: var(--brand-accent-yellow-color);
@@ -499,6 +499,19 @@ body {
   }
   @media (min-width: $desk_large) {
     font-size: vw(13px, $desktop_large);
+  }
+}
+.line-16-18 {
+  font-family: $Montserrat;
+  font-size: vw(16px, $mobile);
+  font-weight: 400;
+  line-height: 1.188;
+  letter-spacing: -1%;
+  @media (min-width: $desk) {
+    font-size: vw(16px, $desktop);
+  }
+  @media (min-width: $desk_large) {
+    font-size: vw(16px, $desktop_large);
   }
 }
 .paragraph-15-25 {

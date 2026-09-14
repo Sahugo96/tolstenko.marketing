@@ -147,7 +147,7 @@ $list_svg = '<svg class="hero__list-svg" viewBox="0 0 30 30" fill="none" xmlns="
 			<?php endif; ?>
 
 			<?php if ( $text !== '' ) : ?>
-				<div class="hero__text line-13-15"><?php echo tolstenko_kses_html( $text ); ?></div>
+				<div class="hero__text line-16-18"><?php echo tolstenko_kses_html( $text ); ?></div>
 			<?php endif; ?>
 
 			<?php if ( ! empty( $items ) ) : ?>

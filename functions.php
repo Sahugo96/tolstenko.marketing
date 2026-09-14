@@ -239,11 +239,20 @@ function tolstenko_theme_scripts() {
         )
     );
 
+    // URL страницы «Спасибо»: сначала страница со slug thanks, затем ok-thanks;
+    // относительный путь — без http/https mismatch на локалке (как restUrl выше).
+    $thanks_page = get_page_by_path( 'thanks' );
+    if ( ! $thanks_page instanceof WP_Post ) {
+        $thanks_page = get_page_by_path( 'ok-thanks' );
+    }
+    $thanks_url = $thanks_page instanceof WP_Post ? (string) get_permalink( $thanks_page ) : home_url( '/thanks/' );
+
     wp_localize_script(
         'tolstenko-main',
         'tolstenkoAjax',
         array(
-            'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+            'ajaxUrl'   => admin_url( 'admin-ajax.php' ),
+            'thanksUrl' => wp_make_link_relative( $thanks_url ),
         )
     );
 

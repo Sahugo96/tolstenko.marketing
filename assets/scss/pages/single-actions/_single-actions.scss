@@ -356,17 +356,17 @@
       padding: vw(50px, $mobile) vw(20px, $mobile);
     
       @media (min-width: $desk) {
-        padding: vw(56px, $desktop) vw(50px, $desktop);
+        padding: vw(20px, $desktop) vw(30px, $desktop);
       }
       @media (min-width: $desk_large) {
-        padding: vw(56px, $desktop_large) vw(50px, $desktop_large);
+        padding: vw(20px, $desktop_large) vw(30px, $desktop_large);
       }
       &:has( > .blockquote__right) {
         @media (min-width: $desk) {
-          padding: vw(50px, $desktop) vw(20px, $desktop);
+          padding: vw(30px, $desktop) vw(30px, $desktop);
         }
         @media (min-width: $desk_large) {
-          padding: vw(50px, $desktop_large) vw(20px, $desktop_large);
+          padding: vw(30px, $desktop_large) vw(30px, $desktop_large);
         }
       }
     }

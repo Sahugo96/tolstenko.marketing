@@ -74,9 +74,13 @@
     flex-shrink: 0;
     padding: vw(6px, $mobile) vw(10px, $mobile);
     border-radius: vw(6px, $mobile);
-    color: var(--white-color);
-    background-color: var(--brand-accent-red-color);
+    // color: var(--white-color);
+    // background-color: var(--brand-accent-red-color);
     white-space: nowrap;
+    text-transform: uppercase;
+    background-color: #ff000033;
+    color: #ff2e52;
+    font-weight: 800;
 
     @media (min-width: $desk) {
       padding: vw(6px, $desktop) vw(12px, $desktop);

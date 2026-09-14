@@ -1,0 +1,202 @@
+.search-results {
+
+  &-title {
+    font-size: vw(24px, $mobile);
+    margin-bottom: vw(24px, $mobile);
+
+    @media (min-width: $desk) {
+      font-size: vw(24px, $desktop);
+      margin-bottom: vw(24px, $desktop);
+    }
+
+    @media (min-width: $desk_large) {
+      font-size: vw(24px, $desktop_large);
+      margin-bottom: vw(24px, $desktop_large);
+    }
+  }
+
+  &-query {
+    font-weight: 700;
+  }
+
+  &-empty {
+    font-size: vw(18px, $mobile);
+
+    @media (min-width: $desk) {
+      font-size: vw(18px, $desktop);
+    }
+
+    @media (min-width: $desk_large) {
+      font-size: vw(18px, $desktop_large);
+    }
+  }
+
+  // Фильтр-пилюли (как в «Слайдере услуг») — стили из modules/_filter.scss уже подключены,
+  // здесь только отступы.
+  &__filter {
+    margin-top: vw(20px, $mobile);
+
+    @media (min-width: $desk) {
+      margin-top: vw(20px, $desktop);
+    }
+
+    @media (min-width: $desk_large) {
+      margin-top: vw(20px, $desktop_large);
+    }
+  }
+
+  // Контент с группами результатов
+  &__content {
+    margin-top: vw(20px, $mobile);
+
+    @media (min-width: $desk) {
+      margin-top: vw(20px, $desktop);
+    }
+
+    @media (min-width: $desk_large) {
+      margin-top: vw(20px, $desktop_large);
+    }
+  }
+
+  &__group {
+    display: none;
+
+    &.is-active {
+      display: block;
+    }
+
+    // Вакансии — 2 колонки на ПК.
+    &--vacancy {
+      .search-results-grid--cards {
+        @media (min-width: $desk) {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+    }
+  }
+
+  // Сетки карточек
+  &-grid {
+    &--cards {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: vw(20px, $mobile);
+
+      @media (min-width: $desk) {
+        grid-template-columns: repeat(3, 1fr);
+        gap: vw(20px, $desktop);
+      }
+
+      @media (min-width: $desk_large) {
+        gap: vw(20px, $desktop_large);
+      }
+    }
+
+    &--actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: vw(20px, $mobile);
+
+      @media (min-width: $desk) {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: vw(20px, $desktop);
+      }
+
+      @media (min-width: $desk_large) {
+        gap: vw(20px, $desktop_large);
+      }
+    }
+  }
+
+  // Карточки в сетке (service/blog/vacancy)
+  .search-results-card {
+    height: 100%;
+  }
+
+  // Простой список (сервисные страницы / прочие типы)
+  &-pages {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: vw(10px, $mobile);
+
+    @media (min-width: $desk) {
+      gap: vw(14px, $desktop);
+    }
+
+    @media (min-width: $desk_large) {
+      gap: vw(14px, $desktop_large);
+    }
+
+    &__link {
+      color: var(--white-color);
+      transition: color .3s linear;
+
+      @media (any-hover: hover) {
+        &:hover {
+          color: var(--brand-accent-yellow-color);
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+
+  &-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  &-item {
+    margin-bottom: vw(20px, $mobile);
+
+    @media (min-width: $desk) {
+      margin-bottom: vw(20px, $desktop);
+    }
+
+    @media (min-width: $desk_large) {
+      margin-bottom: vw(20px, $desktop_large);
+    }
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  &-link {
+    font-size: vw(18px, $mobile);
+    color: var(--white-color);
+    transition: color .3s linear;
+
+    @media (min-width: $desk) {
+      font-size: vw(18px, $desktop);
+    }
+
+    @media (min-width: $desk_large) {
+      font-size: vw(18px, $desktop_large);
+    }
+
+    @media (any-hover: hover) {
+      &:hover {
+        color: var(--brand-accent-yellow-color);
+        text-decoration: underline;
+      }
+    }
+  }
+
+  &-excerpt {
+    margin: vw(8px, $mobile) 0 0;
+    color: var(--gray-70-color);
+
+    @media (min-width: $desk) {
+      margin: vw(8px, $desktop) 0 0;
+    }
+
+    @media (min-width: $desk_large) {
+      margin: vw(8px, $desktop_large) 0 0;
+    }
+  }
+}
