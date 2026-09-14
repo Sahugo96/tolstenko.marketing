@@ -261,10 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!ev.detail || !ev.detail.contactFormId) return;
         var form = ev.target && ev.target.tagName === 'FORM' ? ev.target : document.querySelector('#' + (ev.detail.unitTag || '') + ' form');
         if (!form) return;
-<<<<<<< HEAD
         if (form.closest && form.closest('#comments, .comments__form')) return;
-=======
->>>>>>> 495660f316784f2853c0b1a0d8816f9b1f98a92c
 
         // URL страницы благодарности: из data-thanks-url контейнера или из конфигурации темы.
         var thanksUrl = '';

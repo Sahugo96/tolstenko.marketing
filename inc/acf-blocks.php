@@ -116,11 +116,8 @@ function tolstenko_filter_allowed_blocks_by_post_type( $allowed, $editor_context
         'tolstenko/consultation-tel', 'tolstenko/consultation-free',
         'tolstenko/free-audit', 'tolstenko/solution', 'tolstenko/one-team', 'tolstenko/author', 'tolstenko/different-experiences', 'tolstenko/partners',
         'tolstenko/strategy', 'tolstenko/team-cards', 'tolstenko/tg-channel',
-<<<<<<< HEAD
         'tolstenko/three-steps', 'tolstenko/faq', 'tolstenko/doubts', 'tolstenko/familiar', 'tolstenko/result', 'tolstenko/promotion', 'tolstenko/pricing', 'tolstenko/not-the-end', 'tolstenko/seo-section', 'tolstenko/hidden-seo',
-=======
         'tolstenko/three-steps', 'tolstenko/faq', 'tolstenko/doubts', 'tolstenko/familiar', 'tolstenko/result', 'tolstenko/promotion', 'tolstenko/pricing', 'tolstenko/seo-section', 'tolstenko/hidden-seo',
->>>>>>> 495660f316784f2853c0b1a0d8816f9b1f98a92c
     );
 
     if ( $post_type === 'service' ) {
@@ -259,10 +256,7 @@ function tolstenko_enqueue_editor_blocks() {
                 'result'                => tolstenko_get_block_defaults( 'result' ),
                 'promotion'             => tolstenko_get_block_defaults( 'promotion' ),
                 'pricing'               => tolstenko_get_block_defaults( 'pricing' ),
-<<<<<<< HEAD
                 'not_the_end'           => tolstenko_get_block_defaults( 'not_the_end' ),
-=======
->>>>>>> 495660f316784f2853c0b1a0d8816f9b1f98a92c
                 'seo_section'           => tolstenko_get_block_defaults( 'seo_section' ),
                 'we_can'                => tolstenko_get_block_defaults( 'we_can' ),
                 'recomendation'         => tolstenko_get_block_defaults( 'recomendation' ),
@@ -610,7 +604,6 @@ function tolstenko_get_theme_block_attributes() {
             'block_pricing_title_tag'    => array( 'type' => 'string', 'default' => 'h2' ),
             'block_pricing_text'         => array( 'type' => 'string', 'default' => '' ),
             'block_pricing_items'        => array( 'type' => 'array', 'default' => array() ),
-<<<<<<< HEAD
         ),
         'not-the-end' => array(
             'block_not_the_end_title'    => array( 'type' => 'string', 'default' => '' ),
@@ -619,8 +612,6 @@ function tolstenko_get_theme_block_attributes() {
             'block_not_the_end_avatars'  => array( 'type' => 'array', 'default' => array() ),
             'block_not_the_end_btn_text' => array( 'type' => 'string', 'default' => '' ),
             'block_not_the_end_btn_url'  => array( 'type' => 'string', 'default' => '' ),
-=======
->>>>>>> 495660f316784f2853c0b1a0d8816f9b1f98a92c
         ),
         'faq' => array(
             'block_faq_title'        => array( 'type' => 'string', 'default' => '' ),
@@ -834,10 +825,7 @@ function tolstenko_register_theme_blocks() {
         array( 'name' => 'result', 'title' => __( 'Результат', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'promotion', 'title' => __( 'Продвижение', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'pricing', 'title' => __( 'Расценки', 'tolstenko-theme' ), 'category' => $cat_new ),
-<<<<<<< HEAD
         array( 'name' => 'not-the-end', 'title' => __( 'Ещё не конец', 'tolstenko-theme' ), 'category' => $cat_new ),
-=======
->>>>>>> 495660f316784f2853c0b1a0d8816f9b1f98a92c
         array( 'name' => 'seo-section', 'title' => __( 'SEO продвижение', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'hidden-seo', 'title' => __( 'Скрытый seo', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'we-can', 'title' => __( 'Мы можем', 'tolstenko-theme' ), 'category' => $cat_partner ),
