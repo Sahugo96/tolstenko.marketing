@@ -514,6 +514,19 @@ body {
     font-size: vw(16px, $desktop_large);
   }
 }
+.line-15-18 {
+  font-family: $Montserrat;
+  font-size: vw(15px, $mobile);
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -1%;
+  @media (min-width: $desk) {
+    font-size: vw(15px, $desktop);
+  }
+  @media (min-width: $desk_large) {
+    font-size: vw(15px, $desktop_large);
+  }
+}
 .paragraph-15-25 {
   font-family: $Montserrat;
   font-size: vw(15px, $mobile);

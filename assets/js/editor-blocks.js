@@ -2543,7 +2543,6 @@
                                     onClick: function () { updateItem(index, { ico: 0 }); }
                                 }, 'Удалить') : null
                             ]) : null,
->>>>>>> 495660f316784f2853c0b1a0d8816f9b1f98a92c
                             TextControl ? el(TextControl, { key: 't', label: 'Заголовок', value: item.title || '', onChange: function (v) { updateItem(index, { title: v }); } }) : null,
                             TextareaControl ? el(TextareaControl, { key: 'tx', label: 'Текст', value: item.text || '', onChange: function (v) { updateItem(index, { text: v }); }, rows: 2 }) : null
                         ]);

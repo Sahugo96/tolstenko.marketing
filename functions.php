@@ -586,8 +586,8 @@ function tolstenko_get_root_page_class() {
         return 'article-page';
     }
 
-    // Страница спасибо (thanks.html)
-    if ( is_page( array( 'thanks', 'ok-thanks' ) ) ) {
+    // Страница спасибо (thanks.html / thanks-com.html)
+    if ( is_page( array( 'thanks', 'thanks-com', 'ok-thanks' ) ) ) {
         return 'thanks-page';
     }
 

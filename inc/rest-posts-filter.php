@@ -459,7 +459,7 @@ function tolstenko_render_blog_archive_sidebar() {
 			<div class="blog-section__right-text paragraph-15-25"><?php echo tolstenko_kses_html( $sb['text'] ); ?></div>
 		<?php endif; ?>
 		<?php get_template_part( 'modules/socials/socials-rgb' ); ?>
-		<a class="free-audit__btn default-btn default-btn--red" href="<?php echo esc_url( $sb['btn_url'] ); ?>"><?php echo esc_html( $sb['btn'] ); ?></a>
+		<a class="blog-section__right-btn default-btn default-btn--red" href="<?php echo esc_url( $sb['btn_url'] ); ?>"><?php echo esc_html( $sb['btn'] ); ?></a>
 	</div>
 	<?php
 }

@@ -147,7 +147,7 @@ $list_svg = '<svg class="hero__list-svg" viewBox="0 0 30 30" fill="none" xmlns="
 			<?php endif; ?>
 
 			<?php if ( $text !== '' ) : ?>
-				<div class="hero__text line-16-18"><?php echo tolstenko_kses_html( $text ); ?></div>
+				<div class="hero__text line-15-18"><?php echo tolstenko_kses_html( $text ); ?></div>
 			<?php endif; ?>
 
 			<?php if ( ! empty( $items ) ) : ?>
@@ -155,7 +155,7 @@ $list_svg = '<svg class="hero__list-svg" viewBox="0 0 30 30" fill="none" xmlns="
 					<?php foreach ( $items as $item_text ) : ?>
 						<div class="hero__list-item">
 							<?php echo $list_svg; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG ?>
-							<p class="hero__list-text line-13-15"><?php echo tolstenko_kses_html( $item_text ); ?></p>
+							<p class="hero__list-text line-15-18"><?php echo tolstenko_kses_html( $item_text ); ?></p>
 						</div>
 					<?php endforeach; ?>
 				</div>

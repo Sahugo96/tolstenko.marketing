@@ -15,62 +15,29 @@ get_header();
 
 $query = get_search_query();
 
-// Группируем результаты по типу записи (исключаем «Города»).
+// Группируем результаты по типу записи (исключаем «Города», «Вакансии», «Акции» и сервисные страницы).
 $groups = array();
-$pages  = array();
 
 if ( have_posts() ) {
 	while ( have_posts() ) {
 		the_post();
 		$loop_post = get_post();
 		// Пропускаем записи без заголовка или постоянной ссылки —
-		// иначе в разметке появляются пустые <li> (например, search-results-pages__item).
+		// иначе в разметке появляются пустые <li>.
 		if ( ! $loop_post instanceof WP_Post || '' === get_the_title( $loop_post ) || '' === (string) get_permalink( $loop_post ) ) {
 			continue;
 		}
 		$pt = get_post_type();
-		if ( $pt === 'city' ) {
+		// Исключаем из выдачи: города, вакансии, акции и сервисные страницы (page).
+		if ( in_array( $pt, array( 'city', 'vacancy', 'actions', 'page' ), true ) ) {
 			continue;
 		}
-		if ( $pt === 'page' ) {
-			$pages[] = $loop_post;
-		} else {
-			$groups[ $pt ][] = $loop_post;
-		}
+		$groups[ $pt ][] = $loop_post;
 	}
 	wp_reset_postdata();
 }
 
-// Дополнительно ищем «Сервисные страницы» (post_type=page) по заголовку через LIKE,
-// т.к. WordPress не всегда включает страницы в основной поисковый запрос,
-// а полнотекстовый поиск MySQL игнорирует короткие запросы (< 4 символов).
-if ( trim( (string) $query ) !== '' ) {
-	global $wpdb;
-	$like       = $wpdb->esc_like( $query );
-	$found_page = $wpdb->get_col(
-		$wpdb->prepare(
-			"SELECT ID FROM {$wpdb->posts} WHERE post_type = %s AND post_status = %s AND post_title LIKE %s ORDER BY post_date DESC",
-			'page',
-			'publish',
-			'%' . $like . '%'
-		)
-	);
-	if ( is_array( $found_page ) && ! empty( $found_page ) ) {
-		$page_ids = array_map( 'intval', wp_list_pluck( $pages, 'ID' ) );
-		foreach ( $found_page as $found_id ) {
-			$found_id = (int) $found_id;
-			if ( $found_id > 0 && ! in_array( $found_id, $page_ids, true ) ) {
-				$page_post = get_post( $found_id );
-				// Та же проверка, что и в основном цикле: без заголовка/ссылки не показываем.
-				if ( $page_post instanceof WP_Post && '' !== get_the_title( $page_post ) && '' !== (string) get_permalink( $page_post ) ) {
-					$pages[] = $page_post;
-				}
-			}
-		}
-	}
-}
-
-// Собираем фильтры: сначала типы записей, потом сервисные страницы.
+// Собираем фильтры: типы записей (без городов, вакансий, акций и сервисных страниц).
 $tabs = array();
 foreach ( $groups as $pt => $posts ) {
 	$pto = get_post_type_object( $pt );
@@ -81,13 +48,6 @@ foreach ( $groups as $pt => $posts ) {
 		'key'   => $pt,
 		'label' => $pto->labels->name,
 		'posts' => $posts,
-	);
-}
-if ( $pages ) {
-	$tabs[] = array(
-		'key'   => 'pages',
-		'label' => __( 'Сервисные страницы', 'tolstenko-theme' ),
-		'posts' => $pages,
 	);
 }
 
@@ -136,23 +96,9 @@ $first_key   = ! empty( $tabs ) ? $tabs[0]['key'] : '';
 
 			<div class="search-results__content">
 				<?php foreach ( $tabs as $i => $tab ) : ?>
-					<div class="search-results__group<?php echo 0 === $i ? ' is-active' : ''; ?><?php echo 'vacancy' === $tab['key'] ? ' search-results__group--vacancy' : ''; ?>" data-group="<?php echo esc_attr( $tab['key'] ); ?>">
+					<div class="search-results__group<?php echo 0 === $i ? ' is-active' : ''; ?>" data-group="<?php echo esc_attr( $tab['key'] ); ?>">
 						<?php
 						switch ( $tab['key'] ) {
-							case 'pages':
-								?>
-								<ul class="search-results-pages fade-in-element">
-									<?php foreach ( $tab['posts'] as $page_post ) : ?>
-										<li class="search-results-pages__item">
-											<a href="<?php echo esc_url( get_permalink( $page_post ) ); ?>" class="search-results-pages__link lead-20-25">
-												<?php echo esc_html( get_the_title( $page_post ) ); ?>
-											</a>
-										</li>
-									<?php endforeach; ?>
-								</ul>
-								<?php
-								break;
-
 							case 'service':
 								?>
 								<div class="search-results-grid search-results-grid--cards">
@@ -177,33 +123,6 @@ $first_key   = ! empty( $tabs ) ? $tabs[0]['key'] : '';
 										set_query_var( 'tolstenko_blog_card_class', 'blog-section__item blog-card blog-card--same fade-in-element search-results-card' );
 										set_query_var( 'tolstenko_blog_card_same', true );
 										get_template_part( 'template-parts/blocks/blog-card' );
-										?>
-									<?php endforeach; ?>
-								</div>
-								<?php
-								break;
-
-							case 'vacancy':
-								?>
-								<div class="search-results-grid search-results-grid--cards">
-									<?php foreach ( $tab['posts'] as $card_post ) : ?>
-										<?php
-										set_query_var( 'tolstenko_vacancy_post', $card_post );
-										set_query_var( 'tolstenko_vacancy_card_class', 'vacancies-section__item br-30 fade-in-element search-results-card' );
-										get_template_part( 'template-parts/blocks/vacancy-card' );
-										?>
-									<?php endforeach; ?>
-								</div>
-								<?php
-								break;
-
-							case 'actions':
-								?>
-								<div class="search-results-grid search-results-grid--actions">
-									<?php foreach ( $tab['posts'] as $card_post ) : ?>
-										<?php
-										set_query_var( 'tolstenko_search_action_post', $card_post );
-										get_template_part( 'template-parts/blocks/search-action-card' );
 										?>
 									<?php endforeach; ?>
 								</div>

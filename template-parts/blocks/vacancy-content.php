@@ -122,7 +122,7 @@ if ( $title === '' && $content === '' && ! $has_sidebar ) {
 								<div class="single-vacancy__right-text paragraph-15-25"><?php echo tolstenko_kses_html( $text ); ?></div>
 							<?php endif; ?>
 							<?php get_template_part( 'modules/socials/socials-rgb' ); ?>
-							<a class="free-audit__btn default-btn default-btn--red" href="<?php echo esc_url( $sidebar_btn_url ); ?>"><?php echo esc_html( $sidebar_btn ); ?></a>
+							<a class="single-vacancy__right-btn default-btn default-btn--red" href="<?php echo esc_url( $sidebar_btn_url ); ?>"><?php echo esc_html( $sidebar_btn ); ?></a>
 						</div>
 					</div>
 				</div>

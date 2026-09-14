@@ -1,9 +1,9 @@
 
 document.addEventListener('DOMContentLoaded', () => {
-    // thanks page: redirect to home after 20 seconds
+    // thanks pages: redirect to home after 20 seconds
     (function() {
         var path = (window.location.pathname || '').replace(/\/+$/, '');
-        if (path !== '/thanks') return;
+        if (path !== '/thanks' && path !== '/thanks-com') return;
         window.setTimeout(function() {
             window.location.href = '/';
         }, 20000);
@@ -261,16 +261,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!ev.detail || !ev.detail.contactFormId) return;
         var form = ev.target && ev.target.tagName === 'FORM' ? ev.target : document.querySelector('#' + (ev.detail.unitTag || '') + ' form');
         if (!form) return;
-        if (form.closest && form.closest('#comments, .comments__form')) return;
 
         // URL страницы благодарности: из data-thanks-url контейнера или из конфигурации темы.
         var thanksUrl = '';
-        var container = form.closest && form.closest('[data-thanks-url]');
-        if (container) {
-            thanksUrl = container.getAttribute('data-thanks-url') || '';
-        }
-        if (!thanksUrl && typeof tolstenkoAjax !== 'undefined' && tolstenkoAjax.thanksUrl) {
-            thanksUrl = tolstenkoAjax.thanksUrl;
+        // Форма комментариев — при успешной отправке ведём на отдельную страницу /thanks-com/.
+        if (form.closest && form.closest('#comments, .comments__form')) {
+            thanksUrl = '/thanks-com/';
+        } else {
+            var container = form.closest && form.closest('[data-thanks-url]');
+            if (container) {
+                thanksUrl = container.getAttribute('data-thanks-url') || '';
+            }
+            if (!thanksUrl && typeof tolstenkoAjax !== 'undefined' && tolstenkoAjax.thanksUrl) {
+                thanksUrl = tolstenkoAjax.thanksUrl;
+            }
         }
         if (!thanksUrl) return;
 

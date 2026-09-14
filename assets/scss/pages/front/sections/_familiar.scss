@@ -113,9 +113,11 @@
   &__item-title {
     color: var(--white-color);
     font-weight: 600;
+    @include line-camp(2);
   }
 
   &__item-text {
+    margin-top: auto;
     color: var(--gray-70-color);
   }
 }
