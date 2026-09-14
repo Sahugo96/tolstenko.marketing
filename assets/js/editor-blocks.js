@@ -2522,6 +2522,7 @@
                     renderItem: function (item, index) {
                         var icoId = parseInt(item.ico, 10) || 0;
                         return el('div', { key: 'item-render-' + index }, [
+<<<<<<< HEAD
                             el(TolstenkoIconField, {
                                 key: 'ico-' + index,
                                 value: icoId,
@@ -2529,6 +2530,22 @@
                                 onSelect: function (id) { updateItem(index, { ico: id }); },
                                 onClear: function () { updateItem(index, { ico: 0 }); }
                             }),
+=======
+                            MediaUpload && MediaUploadCheck ? el('div', { key: 'ico', style: { marginBottom: '8px' } }, [
+                                el(MediaUploadCheck, { key: 'muc' }, el(MediaUpload, {
+                                    allowedTypes: ['image'],
+                                    value: icoId,
+                                    onSelect: function (m) { updateItem(index, { ico: m && m.id ? m.id : 0 }); },
+                                    render: function (obj) {
+                                        return el(Button, { isSecondary: true, onClick: obj.open }, icoId ? 'Заменить иконку' : 'Иконка (SVG)');
+                                    }
+                                })),
+                                icoId && Button ? el(Button, {
+                                    key: 'rm-ico', isDestructive: true, isSmall: true, style: { marginLeft: '8px' },
+                                    onClick: function () { updateItem(index, { ico: 0 }); }
+                                }, 'Удалить') : null
+                            ]) : null,
+>>>>>>> 495660f316784f2853c0b1a0d8816f9b1f98a92c
                             TextControl ? el(TextControl, { key: 't', label: 'Заголовок', value: item.title || '', onChange: function (v) { updateItem(index, { title: v }); } }) : null,
                             TextareaControl ? el(TextareaControl, { key: 'tx', label: 'Текст', value: item.text || '', onChange: function (v) { updateItem(index, { text: v }); }, rows: 2 }) : null
                         ]);
@@ -2702,6 +2719,7 @@
         save: function () { return null; }
     });
 
+<<<<<<< HEAD
     wp.blocks.registerBlockType('tolstenko/not-the-end', {
         title: 'Ещё не конец',
         category: 'tolstenko-blocks-new',
@@ -2799,6 +2817,8 @@
         save: function () { return null; }
     });
 
+=======
+>>>>>>> 495660f316784f2853c0b1a0d8816f9b1f98a92c
     wp.blocks.registerBlockType('tolstenko/faq', {
         title: 'FAQ',
         category: 'tolstenko-blocks-new',

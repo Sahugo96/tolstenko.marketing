@@ -514,6 +514,7 @@ function tolstenko_block_defaults_schema() {
 				),
 			),
 		),
+<<<<<<< HEAD
 		'not_the_end' => array(
 			'title'    => 'Это ещё не конец 👇<br><span>Дальше — опыт тех, кто уже прошёл этот путь</span>',
 			'text'     => 'Люди делятся своим опытом и рассказывают, что помогло им увеличить трафик, получать больше заявок и продавать больше.',
@@ -525,6 +526,8 @@ function tolstenko_block_defaults_schema() {
 			'btn_text' => 'Читать комментарии',
 			'btn_url'  => '#comments',
 		),
+=======
+>>>>>>> 495660f316784f2853c0b1a0d8816f9b1f98a92c
 		'faq' => array(
 			'title'      => 'Частые вопросы',
 			'text'       => 'Ответы на популярные вопросы о работе с нами.',
@@ -1286,7 +1289,10 @@ function tolstenko_render_block_defaults_admin_page() {
 				<button type="button" class="tolstenko-df-tab" data-panel="result" data-group="main"><?php esc_html_e( 'Результат', 'tolstenko-theme' ); ?></button>
 				<button type="button" class="tolstenko-df-tab" data-panel="promotion" data-group="main"><?php esc_html_e( 'Продвижение', 'tolstenko-theme' ); ?></button>
 				<button type="button" class="tolstenko-df-tab" data-panel="pricing" data-group="main"><?php esc_html_e( 'Расценки', 'tolstenko-theme' ); ?></button>
+<<<<<<< HEAD
 				<button type="button" class="tolstenko-df-tab" data-panel="not_the_end" data-group="main"><?php esc_html_e( 'Ещё не конец', 'tolstenko-theme' ); ?></button>
+=======
+>>>>>>> 495660f316784f2853c0b1a0d8816f9b1f98a92c
 				<button type="button" class="tolstenko-df-tab" data-panel="strategy" data-group="main"><?php esc_html_e( 'Стратегия', 'tolstenko-theme' ); ?></button>
 				<button type="button" class="tolstenko-df-tab" data-panel="author" data-group="main"><?php esc_html_e( 'Автор', 'tolstenko-theme' ); ?></button>
 				<button type="button" class="tolstenko-df-tab" data-panel="team_cards" data-group="main"><?php esc_html_e( 'Команда', 'tolstenko-theme' ); ?></button>
@@ -2404,6 +2410,7 @@ function tolstenko_render_block_defaults_admin_page() {
 			</div>
 		</div>
 
+<<<<<<< HEAD
 		<div class="tolstenko-df-panel" data-panel="not_the_end" data-group="main">
 			<?php
 			$nte = $all['not_the_end'] ?? array();
@@ -2447,6 +2454,8 @@ function tolstenko_render_block_defaults_admin_page() {
 			<div class="row"><input type="text" name="tolstenko_block_defaults[not_the_end][btn_url]" value="<?php echo esc_attr( $nte['btn_url'] ?? '' ); ?>" style="width:100%" placeholder="Ссылка кнопки (например #comments)"></div>
 		</div>
 
+=======
+>>>>>>> 495660f316784f2853c0b1a0d8816f9b1f98a92c
 		<div class="tolstenko-df-panel" data-panel="faq">
 			<div class="row"><input type="text" name="tolstenko_block_defaults[faq][title]" value="<?php echo esc_attr( $faq['title'] ?? '' ); ?>" style="width:100%" placeholder="Заголовок"></div>
 			<div class="row"><textarea name="tolstenko_block_defaults[faq][text]" rows="3" placeholder="Текст под заголовком"><?php echo esc_textarea( $faq['text'] ?? '' ); ?></textarea></div>
@@ -2695,8 +2704,11 @@ function tolstenko_render_block_defaults_admin_page() {
 					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[promotion][items][' + idx + '][title]" placeholder="Заголовок" style="flex:1"><input type="hidden" class="tolstenko-defaults-icon-id" name="tolstenko_block_defaults[promotion][items][' + idx + '][ico]" value="0"><button type="button" class="button tolstenko-defaults-pick-icon">Иконка</button><button type="button" class="button move-btn" data-move-up title="Вверх">↑</button><button type="button" class="button move-btn" data-move-down title="Вниз">↓</button><button type="button" class="button" data-remove-item>Удалить</button></div><div class="icon-preview" style="margin-top:8px;"></div><div class="row"><textarea name="tolstenko_block_defaults[promotion][items][' + idx + '][text]" rows="2" placeholder="Текст"></textarea></div></div>';
 				} else if (key === 'promotion-list') {
 					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[promotion][list][' + idx + ']" placeholder="Текст пункта"><button type="button" class="button move-btn" data-move-up title="Вверх">↑</button><button type="button" class="button move-btn" data-move-down title="Вниз">↓</button><button type="button" class="button" data-remove-item>Удалить</button></div></div>';
+<<<<<<< HEAD
 				} else if (key === 'not-the-end-avatars') {
 					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="hidden" class="tolstenko-defaults-icon-id" name="tolstenko_block_defaults[not_the_end][avatars][' + idx + '][image]" value="0"><button type="button" class="button tolstenko-defaults-pick-icon">Фото</button><button type="button" class="button move-btn" data-move-up title="Вверх">↑</button><button type="button" class="button move-btn" data-move-down title="Вниз">↓</button><button type="button" class="button" data-remove-item>Удалить</button></div><div class="icon-preview" style="margin-top:8px;"></div></div>';
+=======
+>>>>>>> 495660f316784f2853c0b1a0d8816f9b1f98a92c
 				} else if (key === 'result-list') {
 					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[result][items][' + idx + '][title]" placeholder="Заголовок" style="flex:1"><input type="hidden" class="tolstenko-defaults-icon-id" name="tolstenko_block_defaults[result][items][' + idx + '][ico]" value="0"><button type="button" class="button tolstenko-defaults-pick-icon">Иконка</button><button type="button" class="button move-btn" data-move-up title="Вверх">↑</button><button type="button" class="button move-btn" data-move-down title="Вниз">↓</button><button type="button" class="button" data-remove-item>Удалить</button></div><div class="icon-preview" style="margin-top:8px;"></div><div class="row"><textarea name="tolstenko_block_defaults[result][items][' + idx + '][text]" rows="2" placeholder="Текст"></textarea></div></div>';
 				} else if (key === 'actions-list') {
@@ -3518,6 +3530,7 @@ function tolstenko_save_block_defaults_from_request() {
 		}
 	}
 
+<<<<<<< HEAD
 	$nte_btn_url = trim( (string) ( $raw['not_the_end']['btn_url'] ?? '' ) );
 	if ( $nte_btn_url !== '' && '#' === $nte_btn_url[0] ) {
 		$nte_btn_url = sanitize_text_field( $nte_btn_url );
@@ -3545,6 +3558,8 @@ function tolstenko_save_block_defaults_from_request() {
 		}
 	}
 
+=======
+>>>>>>> 495660f316784f2853c0b1a0d8816f9b1f98a92c
 	$out['faq'] = array(
 		'title'        => tolstenko_kses_html( $raw['faq']['title'] ?? ''  ),
 		'text'         => tolstenko_kses_html( $raw['faq']['text'] ?? ''  ),
