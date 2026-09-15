@@ -1,0 +1,200 @@
+#usp {
+  .wrap {
+    background: var(--gray-10-color);
+    border-radius: vw(26px, $mobile);
+    padding: vw(32px, $mobile) vw(20px, $mobile);
+
+    @media (min-width: $desk) {
+      border-radius: vw(26px, $desktop);
+      padding: vw(48px, $desktop) vw(40px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      border-radius: vw(26px, $desktop_large);
+      padding: vw(48px, $desktop_large) vw(40px, $desktop_large);
+    }
+  }
+
+  .h-lead {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    grid-gap: vw(16px, $mobile);
+    margin-bottom: vw(32px, $mobile);
+
+    @media (min-width: $desk) {
+      grid-gap: vw(20px, $desktop);
+      margin-bottom: vw(40px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(20px, $desktop_large);
+      margin-bottom: vw(40px, $desktop_large);
+    }
+  }
+
+  .eyebrow {
+    font-family: $Montserrat;
+    font-size: vw(16px, $mobile);
+    font-weight: 700;
+    line-height: 1.1;
+    text-transform: uppercase;
+    color: var(--brand-accent-yellow-color);
+
+    @media (min-width: $desk) {
+      font-size: vw(20px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      font-size: vw(20px, $desktop_large);
+    }
+  }
+
+  .h-lead h1,
+  .h-lead h2,
+  .h-lead h3,
+  .h-lead h4,
+  .h-lead h5,
+  .h-lead h6 {
+    font-family: $Montserrat;
+    font-size: vw(24px, $mobile);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -1%;
+    text-transform: uppercase;
+    color: var(--white-color);
+    text-align: center;
+
+    @media (min-width: $desk) {
+      font-size: vw(32px, $desktop);
+      letter-spacing: -3%;
+      line-height: 1.166;
+    }
+    @media (min-width: $desk_large) {
+      font-size: vw(32px, $desktop_large);
+    }
+  }
+
+  .gold {
+    color: var(--brand-accent-yellow-color);
+  }
+
+  .section-sub {
+    font-family: $Montserrat;
+    font-size: vw(15px, $mobile);
+    font-weight: 400;
+    line-height: 1.66;
+    letter-spacing: -1%;
+    text-align: center;
+    color: var(--gray-70-color);
+    max-width: 42em;
+
+    @media (min-width: $desk) {
+      font-size: vw(15px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      font-size: vw(15px, $desktop_large);
+    }
+  }
+
+  .usp-grid {
+    counter-reset: usp-item;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-gap: vw(16px, $mobile);
+
+    @media (min-width: $desk) {
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-gap: vw(20px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(20px, $desktop_large);
+    }
+  }
+
+  .usp {
+    counter-increment: usp-item;
+    display: flex;
+    flex-direction: column;
+    grid-gap: vw(12px, $mobile);
+    padding: vw(20px, $mobile);
+    border: 1px solid var(--gray-25-color);
+    background-color: transparent;
+    border-radius: vw(20px, $mobile);
+    box-sizing: border-box;
+
+    @media (min-width: $desk) {
+      grid-gap: vw(15px, $desktop);
+      padding: vw(24px, $desktop);
+      border-radius: vw(20px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(15px, $desktop_large);
+      padding: vw(24px, $desktop_large);
+      border-radius: vw(20px, $desktop_large);
+    }
+  }
+
+  .head {
+    display: flex;
+    align-items: flex-start;
+    grid-gap: vw(10px, $mobile);
+
+    @media (min-width: $desk) {
+      grid-gap: vw(12px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(12px, $desktop_large);
+    }
+  }
+
+  .n {
+    flex-shrink: 0;
+    font-family: $Montserrat;
+    font-size: vw(15px, $mobile);
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--brand-accent-yellow-color);
+
+    @media (min-width: $desk) {
+      font-size: vw(15px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      font-size: vw(15px, $desktop_large);
+    }
+
+    &::before {
+      content: counter(usp-item, decimal-leading-zero);
+    }
+  }
+
+  .head b {
+    font-family: $Montserrat;
+    font-size: vw(16px, $mobile);
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--white-color);
+
+    @media (min-width: $desk) {
+      font-size: vw(20px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      font-size: vw(20px, $desktop_large);
+    }
+  }
+
+  .usp > p {
+    margin-top: auto;
+    font-family: $Montserrat;
+    font-size: vw(15px, $mobile);
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: -1%;
+    color: var(--gray-70-color);
+
+    @media (min-width: $desk) {
+      font-size: vw(15px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      font-size: vw(15px, $desktop_large);
+    }
+  }
+}

@@ -2358,6 +2358,94 @@
         save: function () { return null; }
     });
 
+    // Наш подход.
+    wp.blocks.registerBlockType('tolstenko/usp', {
+        title: 'Наш подход',
+        category: 'tolstenko-blocks-new',
+        icon: 'awards',
+        edit: function (props) {
+            var attrs = props.attributes || {};
+            var set = props.setAttributes;
+            var blockProps = useBlockProps ? useBlockProps() : {};
+
+            function normalizeItems(raw) {
+                if (!Array.isArray(raw)) return [];
+                return raw.map(function (it) {
+                    it = it || {};
+                    return {
+                        title: it.title || '',
+                        text: it.text || ''
+                    };
+                });
+            }
+
+            var items = normalizeItems(attrs.block_usp_items);
+            function setItems(next) { set({ block_usp_items: next.slice() }); }
+            function updateItem(index, patch) {
+                var next = items.slice();
+                next[index] = Object.assign({}, items[index] || {}, patch);
+                setItems(next);
+            }
+
+            var fields = [
+                el('p', { key: 'l', style: { marginBottom: '8px', fontWeight: '600' } }, 'Наш подход'),
+                el('p', { key: 'hint', style: { marginTop: 0, marginBottom: '8px', fontSize: '12px', color: '#757575' } }, 'Пустые поля подставятся из «Дефолты блоков → Наш подход».'),
+                TextControl ? el(TextControl, {
+                    key: 'subtitle',
+                    label: 'Надзаголовок',
+                    value: attrs.block_usp_subtitle || '',
+                    placeholder: getDefault('usp.subtitle', 'Наш подход'),
+                    onChange: function (v) { set({ block_usp_subtitle: v }); }
+                }) : null,
+                TextareaControl ? el(TextareaControl, {
+                    key: 'title',
+                    label: 'Заголовок (HTML, span.gold для акцента)',
+                    value: attrs.block_usp_title || '',
+                    placeholder: getDefault('usp.title', ''),
+                    onChange: function (v) { set({ block_usp_title: v }); },
+                    rows: 2
+                }) : null,
+                renderHeadingTagSelect(attrs, set, 'block_usp_title_tag', 'Тег заголовка', 'h2'),
+                TextareaControl ? el(TextareaControl, {
+                    key: 'text',
+                    label: 'Текст под заголовком',
+                    value: attrs.block_usp_text || '',
+                    placeholder: getDefault('usp.text', ''),
+                    onChange: function (v) { set({ block_usp_text: v }); },
+                    rows: 2
+                }) : null,
+                renderRepeater({
+                    items: items,
+                    onChange: setItems,
+                    renderItem: function (item, index) {
+                        return el('div', { key: 'item-render-' + index }, [
+                            TextControl ? el(TextControl, {
+                                key: 't',
+                                label: 'Заголовок',
+                                value: item.title || '',
+                                onChange: function (v) { updateItem(index, { title: v }); }
+                            }) : null,
+                            TextareaControl ? el(TextareaControl, {
+                                key: 'tx',
+                                label: 'Текст',
+                                value: item.text || '',
+                                onChange: function (v) { updateItem(index, { text: v }); },
+                                rows: 2
+                            }) : null
+                        ]);
+                    },
+                    label: 'Принципы',
+                    addLabel: 'Добавить карточку',
+                    emptyItem: { title: '', text: '' },
+                    keyPrefix: 'usp-items'
+                })
+            ];
+
+            return wrapBlock(blockProps, fields);
+        },
+        save: function () { return null; }
+    });
+
     // Результат — гарантии в договоре.
     wp.blocks.registerBlockType('tolstenko/result', {
         title: 'Результат',

@@ -401,6 +401,37 @@ function tolstenko_block_defaults_schema() {
 				),
 			),
 		),
+		'usp' => array(
+			'subtitle' => 'Наш подход',
+			'title'    => 'Почему это не «ещё одно <span class="gold">SEO</span>»',
+			'text'     => 'Шесть принципов, которые отличают нас от «серых» и шаблонных агентств.',
+			'items'    => array(
+				array(
+					'title' => 'Считаем в заявках и деньгах',
+					'text'  => 'Отчётность строим вокруг обращений и стоимости заявки. Позиции — средство, а не цель.',
+				),
+				array(
+					'title' => 'Прозрачность: видно, за что платите',
+					'text'  => 'План на месяц вперёд, регулярный отчёт, понятный язык без «магии SEO».',
+				),
+				array(
+					'title' => 'Финансовые гарантии в договоре',
+					'text'  => 'Фиксируем KPI. Не достигли в срок — дорабатываем за свой счёт.',
+				),
+				array(
+					'title' => 'Только белые методы',
+					'text'  => 'Без накрутки поведенческих факторов — без риска потерять сайт под фильтром.',
+				),
+				array(
+					'title' => 'Погружаемся в бизнес',
+					'text'  => 'Разбираем продукт, ЦА и конкурентов. Страницы — под реальные запросы, а не шаблон.',
+				),
+				array(
+					'title' => 'Фокус на окупаемости',
+					'text'  => 'Считаем потенциал и срок возврата вложений ещё до старта работ.',
+				),
+			),
+		),
 		'result' => array(
 			'subtitle' => 'Отвечаем за результат',
 			'title'    => 'Наши гарантии <span>в договоре</span>',
@@ -1283,6 +1314,7 @@ function tolstenko_render_block_defaults_admin_page() {
 				<button type="button" class="tolstenko-df-tab" data-panel="three_steps" data-group="main"><?php esc_html_e( 'Три шага', 'tolstenko-theme' ); ?></button>
 				<button type="button" class="tolstenko-df-tab" data-panel="doubts" data-group="main"><?php esc_html_e( 'Сомнения', 'tolstenko-theme' ); ?></button>
 				<button type="button" class="tolstenko-df-tab" data-panel="familiar" data-group="main"><?php esc_html_e( 'Знакомая ситуация', 'tolstenko-theme' ); ?></button>
+				<button type="button" class="tolstenko-df-tab" data-panel="usp" data-group="main"><?php esc_html_e( 'Наш подход', 'tolstenko-theme' ); ?></button>
 				<button type="button" class="tolstenko-df-tab" data-panel="result" data-group="main"><?php esc_html_e( 'Результат', 'tolstenko-theme' ); ?></button>
 				<button type="button" class="tolstenko-df-tab" data-panel="promotion" data-group="main"><?php esc_html_e( 'Продвижение', 'tolstenko-theme' ); ?></button>
 				<button type="button" class="tolstenko-df-tab" data-panel="pricing" data-group="main"><?php esc_html_e( 'Расценки', 'tolstenko-theme' ); ?></button>
@@ -2074,6 +2106,7 @@ function tolstenko_render_block_defaults_admin_page() {
 		$ts  = $all['three_steps'] ?? array();
 		$doubts = $all['doubts'] ?? array();
 		$familiar = $all['familiar'] ?? array();
+		$usp = $all['usp'] ?? array();
 		$result = $all['result'] ?? array();
 		$faq = $all['faq'] ?? array();
 		$seo_section = $all['seo_section'] ?? array();
@@ -2266,6 +2299,30 @@ function tolstenko_render_block_defaults_admin_page() {
 					<?php endforeach; ?>
 				</div>
 				<div class="actions"><button type="button" class="button" data-add-item="familiar-list"><?php esc_html_e( 'Добавить карточку', 'tolstenko-theme' ); ?></button></div>
+			</div>
+		</div>
+
+		<div class="tolstenko-df-panel" data-panel="usp" data-group="main">
+			<div class="row"><input type="text" name="tolstenko_block_defaults[usp][subtitle]" value="<?php echo esc_attr( $usp['subtitle'] ?? '' ); ?>" style="width:100%" placeholder="Надзаголовок"></div>
+			<div class="row"><textarea name="tolstenko_block_defaults[usp][title]" rows="2" style="width:100%" placeholder="Заголовок (HTML, span.gold для акцента)"><?php echo esc_textarea( $usp['title'] ?? '' ); ?></textarea></div>
+			<div class="row"><textarea name="tolstenko_block_defaults[usp][text]" rows="2" style="width:100%" placeholder="Текст под заголовком"><?php echo esc_textarea( $usp['text'] ?? '' ); ?></textarea></div>
+			<div class="row">
+				<div class="muted"><?php esc_html_e( 'Принципы', 'tolstenko-theme' ); ?></div>
+				<div data-repeater-list="usp-list">
+					<?php foreach ( (array) ( $usp['items'] ?? array() ) as $idx => $it ) : ?>
+						<?php $it = is_array( $it ) ? $it : array(); ?>
+						<div class="repeater-item" data-repeater-item>
+							<div class="cols">
+								<input type="text" name="tolstenko_block_defaults[usp][items][<?php echo (int) $idx; ?>][title]" value="<?php echo esc_attr( $it['title'] ?? '' ); ?>" placeholder="Заголовок" style="flex:1">
+								<button type="button" class="button move-btn" data-move-up title="Вверх">↑</button>
+								<button type="button" class="button move-btn" data-move-down title="Вниз">↓</button>
+								<button type="button" class="button" data-remove-item><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button>
+							</div>
+							<div class="row"><textarea name="tolstenko_block_defaults[usp][items][<?php echo (int) $idx; ?>][text]" rows="2" placeholder="Текст"><?php echo esc_textarea( $it['text'] ?? '' ); ?></textarea></div>
+						</div>
+					<?php endforeach; ?>
+				</div>
+				<div class="actions"><button type="button" class="button" data-add-item="usp-list"><?php esc_html_e( 'Добавить карточку', 'tolstenko-theme' ); ?></button></div>
 			</div>
 		</div>
 
@@ -2518,6 +2575,7 @@ function tolstenko_render_block_defaults_admin_page() {
 			three_steps: 'main',
 			doubts: 'main',
 			familiar: 'main',
+			usp: 'main',
 			result: 'main',
 			not_the_end: 'main',
 			strategy: 'main',
@@ -2691,6 +2749,8 @@ function tolstenko_render_block_defaults_admin_page() {
 					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[doubts][items][' + idx + '][badge]" placeholder="Бейдж (Цена)"><input type="text" name="tolstenko_block_defaults[doubts][items][' + idx + '][title]" placeholder="Заголовок возражения" style="flex:1"><button type="button" class="button move-btn" data-move-up title="Вверх">↑</button><button type="button" class="button move-btn" data-move-down title="Вниз">↓</button><button type="button" class="button" data-remove-item>Удалить</button></div><div class="row"><textarea name="tolstenko_block_defaults[doubts][items][' + idx + '][text]" rows="3" placeholder="Текст ответа"></textarea></div></div>';
 				} else if (key === 'familiar-list') {
 					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[familiar][items][' + idx + '][title]" placeholder="Заголовок" style="flex:1"><button type="button" class="button move-btn" data-move-up title="Вверх">↑</button><button type="button" class="button move-btn" data-move-down title="Вниз">↓</button><button type="button" class="button" data-remove-item>Удалить</button></div><div class="row"><textarea name="tolstenko_block_defaults[familiar][items][' + idx + '][text]" rows="2" placeholder="Текст"></textarea></div></div>';
+				} else if (key === 'usp-list') {
+					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[usp][items][' + idx + '][title]" placeholder="Заголовок" style="flex:1"><button type="button" class="button move-btn" data-move-up title="Вверх">↑</button><button type="button" class="button move-btn" data-move-down title="Вниз">↓</button><button type="button" class="button" data-remove-item>Удалить</button></div><div class="row"><textarea name="tolstenko_block_defaults[usp][items][' + idx + '][text]" rows="2" placeholder="Текст"></textarea></div></div>';
 				} else if (key === 'promotion-items-list') {
 					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[promotion][items][' + idx + '][title]" placeholder="Заголовок" style="flex:1"><input type="hidden" class="tolstenko-defaults-icon-id" name="tolstenko_block_defaults[promotion][items][' + idx + '][ico]" value="0"><button type="button" class="button tolstenko-defaults-pick-icon">Иконка</button><button type="button" class="button move-btn" data-move-up title="Вверх">↑</button><button type="button" class="button move-btn" data-move-down title="Вниз">↓</button><button type="button" class="button" data-remove-item>Удалить</button></div><div class="icon-preview" style="margin-top:8px;"></div><div class="row"><textarea name="tolstenko_block_defaults[promotion][items][' + idx + '][text]" rows="2" placeholder="Текст"></textarea></div></div>';
 				} else if (key === 'promotion-list') {
@@ -3423,6 +3483,28 @@ function tolstenko_save_block_defaults_from_request() {
 				continue;
 			}
 			$out['familiar']['items'][] = $row;
+		}
+	}
+
+	$out['usp'] = array(
+		'subtitle' => tolstenko_kses_html( $raw['usp']['subtitle'] ?? '' ),
+		'title'    => tolstenko_kses_html( $raw['usp']['title'] ?? '' ),
+		'text'     => tolstenko_kses_html( $raw['usp']['text'] ?? '' ),
+		'items'    => array(),
+	);
+	if ( isset( $raw['usp']['items'] ) && is_array( $raw['usp']['items'] ) ) {
+		foreach ( $raw['usp']['items'] as $it ) {
+			if ( ! is_array( $it ) ) {
+				continue;
+			}
+			$row = array(
+				'title' => tolstenko_kses_html( $it['title'] ?? '' ),
+				'text'  => tolstenko_kses_html( $it['text'] ?? '' ),
+			);
+			if ( $row['title'] === '' && $row['text'] === '' ) {
+				continue;
+			}
+			$out['usp']['items'][] = $row;
 		}
 	}
 
