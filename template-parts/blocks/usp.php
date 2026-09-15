@@ -52,35 +52,35 @@ if ( $subtitle === '' && $title === '' && $text === '' && empty( $items ) ) {
 	return;
 }
 ?>
-<section class="section" id="usp">
+<section class="usp section anim">
 	<div class="container">
-		<div class="wrap">
+		<div class="usp__inner">
 			<?php if ( $subtitle !== '' || $title !== '' || $text !== '' ) : ?>
-				<div class="h-lead center">
+				<div class="section-top">
 					<?php if ( $subtitle !== '' ) : ?>
-						<span class="eyebrow"><?php echo tolstenko_kses_html( $subtitle ); ?></span>
+						<p class="section-subtitle"><?php echo tolstenko_kses_html( $subtitle ); ?></p>
 					<?php endif; ?>
 					<?php if ( $title !== '' ) : ?>
-						<<?php echo esc_attr( $title_tag ); ?>><?php echo tolstenko_kses_html( $title ); ?></<?php echo esc_attr( $title_tag ); ?>>
+						<<?php echo esc_attr( $title_tag ); ?> class="usp__title h2"><?php echo tolstenko_kses_html( $title ); ?></<?php echo esc_attr( $title_tag ); ?>>
 					<?php endif; ?>
 					<?php if ( $text !== '' ) : ?>
-						<p class="section-sub"><?php echo tolstenko_kses_html( $text ); ?></p>
+						<p class="usp__text paragraph-15-25"><?php echo tolstenko_kses_html( $text ); ?></p>
 					<?php endif; ?>
 				</div>
 			<?php endif; ?>
 
 			<?php if ( ! empty( $items ) ) : ?>
-				<div class="usp-grid">
+				<div class="usp__items">
 					<?php foreach ( $items as $item ) : ?>
-						<div class="usp">
-							<div class="head">
-								<span class="n" aria-hidden="true"></span>
+						<div class="usp__item br-20">
+							<div class="usp__item-top">
+								<span class="usp__number lead-20-25" aria-hidden="true"></span>
 								<?php if ( $item['title'] !== '' ) : ?>
-									<b><?php echo tolstenko_kses_html( $item['title'] ); ?></b>
+									<span class="usp__item-title lead-20-25"><?php echo tolstenko_kses_html( $item['title'] ); ?></span>
 								<?php endif; ?>
 							</div>
 							<?php if ( $item['text'] !== '' ) : ?>
-								<p><?php echo tolstenko_kses_html( $item['text'] ); ?></p>
+								<p class="usp__item-text paragraph-15-25"><?php echo tolstenko_kses_html( $item['text'] ); ?></p>
 							<?php endif; ?>
 						</div>
 					<?php endforeach; ?>

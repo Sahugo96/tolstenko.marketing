@@ -403,7 +403,7 @@ function tolstenko_block_defaults_schema() {
 		),
 		'usp' => array(
 			'subtitle' => 'Наш подход',
-			'title'    => 'Почему это не «ещё одно <span class="gold">SEO</span>»',
+			'title'    => 'Почему это не «ещё одно <span>SEO</span>»',
 			'text'     => 'Шесть принципов, которые отличают нас от «серых» и шаблонных агентств.',
 			'items'    => array(
 				array(
@@ -2304,7 +2304,7 @@ function tolstenko_render_block_defaults_admin_page() {
 
 		<div class="tolstenko-df-panel" data-panel="usp" data-group="main">
 			<div class="row"><input type="text" name="tolstenko_block_defaults[usp][subtitle]" value="<?php echo esc_attr( $usp['subtitle'] ?? '' ); ?>" style="width:100%" placeholder="Надзаголовок"></div>
-			<div class="row"><textarea name="tolstenko_block_defaults[usp][title]" rows="2" style="width:100%" placeholder="Заголовок (HTML, span.gold для акцента)"><?php echo esc_textarea( $usp['title'] ?? '' ); ?></textarea></div>
+			<div class="row"><textarea name="tolstenko_block_defaults[usp][title]" rows="2" style="width:100%" placeholder="Заголовок (HTML, span для акцента)"><?php echo esc_textarea( $usp['title'] ?? '' ); ?></textarea></div>
 			<div class="row"><textarea name="tolstenko_block_defaults[usp][text]" rows="2" style="width:100%" placeholder="Текст под заголовком"><?php echo esc_textarea( $usp['text'] ?? '' ); ?></textarea></div>
 			<div class="row">
 				<div class="muted"><?php esc_html_e( 'Принципы', 'tolstenko-theme' ); ?></div>

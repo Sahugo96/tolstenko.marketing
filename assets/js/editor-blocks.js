@@ -2399,7 +2399,7 @@
                 }) : null,
                 TextareaControl ? el(TextareaControl, {
                     key: 'title',
-                    label: 'Заголовок (HTML, span.gold для акцента)',
+                    label: 'Заголовок (HTML, span для акцента)',
                     value: attrs.block_usp_title || '',
                     placeholder: getDefault('usp.title', ''),
                     onChange: function (v) { set({ block_usp_title: v }); },
