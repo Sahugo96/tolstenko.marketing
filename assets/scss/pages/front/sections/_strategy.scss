@@ -1,13 +1,6 @@
 .strategy {
   &__title {
     text-align: center;
-
-    @media (min-width: $desk) {
-      max-width: vw(530px, $desktop);
-    }
-    @media (min-width: $desk_large) {
-      max-width: vw(530px, $desktop_large);
-    }
   }
 
   &__scroll {

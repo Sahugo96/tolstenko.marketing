@@ -189,7 +189,7 @@
 }
 
 /* TOC статьи/акции: h2 нумерация + вложенные h3 с акцентной линией (пока SCSS не пересобран). */
-.single-blog__toc,
+/* .single-blog__toc,
 .single-actions__toc {
   display: flex;
   flex-direction: column;
@@ -248,4 +248,4 @@
   .single-actions__toc-link:hover {
     color: var(--white-color);
   }
-}
+} */

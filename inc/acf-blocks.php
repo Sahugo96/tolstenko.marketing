@@ -116,8 +116,8 @@ function tolstenko_filter_allowed_blocks_by_post_type( $allowed, $editor_context
         'tolstenko/consultation-tel', 'tolstenko/consultation-free',
         'tolstenko/free-audit', 'tolstenko/solution', 'tolstenko/one-team', 'tolstenko/author', 'tolstenko/different-experiences', 'tolstenko/partners',
         'tolstenko/strategy', 'tolstenko/team-cards', 'tolstenko/tg-channel',
-        'tolstenko/three-steps', 'tolstenko/faq', 'tolstenko/doubts', 'tolstenko/familiar', 'tolstenko/result', 'tolstenko/promotion', 'tolstenko/pricing', 'tolstenko/not-the-end', 'tolstenko/seo-section', 'tolstenko/hidden-seo',
-        'tolstenko/three-steps', 'tolstenko/faq', 'tolstenko/doubts', 'tolstenko/familiar', 'tolstenko/result', 'tolstenko/promotion', 'tolstenko/pricing', 'tolstenko/seo-section', 'tolstenko/hidden-seo',
+        'tolstenko/three-steps', 'tolstenko/faq', 'tolstenko/doubts', 'tolstenko/familiar', 'tolstenko/too-long', 'tolstenko/result', 'tolstenko/promotion', 'tolstenko/pricing', 'tolstenko/not-the-end', 'tolstenko/seo-section', 'tolstenko/hidden-seo',
+        'tolstenko/three-steps', 'tolstenko/faq', 'tolstenko/doubts', 'tolstenko/familiar', 'tolstenko/too-long', 'tolstenko/result', 'tolstenko/promotion', 'tolstenko/pricing', 'tolstenko/seo-section', 'tolstenko/hidden-seo',
     );
 
     if ( $post_type === 'service' ) {
@@ -253,6 +253,7 @@ function tolstenko_enqueue_editor_blocks() {
                 'faq'                   => tolstenko_get_block_defaults( 'faq' ),
                 'doubts'                => tolstenko_get_block_defaults( 'doubts' ),
                 'familiar'              => tolstenko_get_block_defaults( 'familiar' ),
+                'too_long'              => tolstenko_get_block_defaults( 'too_long' ),
                 'result'                => tolstenko_get_block_defaults( 'result' ),
                 'promotion'             => tolstenko_get_block_defaults( 'promotion' ),
                 'pricing'               => tolstenko_get_block_defaults( 'pricing' ),
@@ -582,6 +583,13 @@ function tolstenko_get_theme_block_attributes() {
             'block_familiar_text'      => array( 'type' => 'string', 'default' => '' ),
             'block_familiar_items'     => array( 'type' => 'array', 'default' => array() ),
         ),
+        'too-long' => array(
+            'block_too_long_subtitle'  => array( 'type' => 'string', 'default' => '' ),
+            'block_too_long_title'     => array( 'type' => 'string', 'default' => '' ),
+            'block_too_long_title_tag' => array( 'type' => 'string', 'default' => 'h2' ),
+            'block_too_long_text'      => array( 'type' => 'string', 'default' => '' ),
+            'block_too_long_items'     => array( 'type' => 'array', 'default' => array() ),
+        ),
         'result' => array(
             'block_result_subtitle'  => array( 'type' => 'string', 'default' => '' ),
             'block_result_title'     => array( 'type' => 'string', 'default' => '' ),
@@ -822,6 +830,7 @@ function tolstenko_register_theme_blocks() {
         array( 'name' => 'faq', 'title' => __( 'FAQ', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'doubts', 'title' => __( 'Сомнения', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'familiar', 'title' => __( 'Знакомая ситуация', 'tolstenko-theme' ), 'category' => $cat_new ),
+        array( 'name' => 'too-long', 'title' => __( 'А это не слишком долго?', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'result', 'title' => __( 'Результат', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'promotion', 'title' => __( 'Продвижение', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'pricing', 'title' => __( 'Расценки', 'tolstenko-theme' ), 'category' => $cat_new ),

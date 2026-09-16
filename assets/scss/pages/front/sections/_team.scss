@@ -8,15 +8,9 @@
     
     @media (min-width: $desk) {
       grid-gap: vw(15px, $desktop);
-      max-width: vw(650px, $desktop);
-      margin-left: auto;
-      margin-right: auto;
     }
     @media (min-width: $desk_large) {
       grid-gap: vw(15px, $desktop_large);
-      max-width: vw(650px, $desktop_large);
-      margin-left: auto;
-      margin-right: auto;
     }
   }
   &__text {

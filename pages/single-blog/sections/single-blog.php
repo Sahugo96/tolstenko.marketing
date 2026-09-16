@@ -198,6 +198,9 @@ $has_sidebar = (
 									<?php endforeach; ?>
 								</ol>
 							</div>
+							<label class="<?php echo esc_attr( $bem ); ?>__content-article-toggle">
+								<input type="checkbox">
+							</label>
 						</div>
 					<?php endif; ?>
 

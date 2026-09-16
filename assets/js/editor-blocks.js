@@ -2358,6 +2358,101 @@
         save: function () { return null; }
     });
 
+    // А это не слишком долго?
+    wp.blocks.registerBlockType('tolstenko/too-long', {
+        title: 'А это не слишком долго?',
+        category: 'tolstenko-blocks-new',
+        icon: 'clock',
+        edit: function (props) {
+            var attrs = props.attributes || {};
+            var set = props.setAttributes;
+            var blockProps = useBlockProps ? useBlockProps() : {};
+
+            function normalizeItems(raw) {
+                if (!Array.isArray(raw)) return [];
+                return raw.map(function (it) {
+                    it = it || {};
+                    return {
+                        label: it.label || '',
+                        title: it.title || '',
+                        text: it.text || ''
+                    };
+                });
+            }
+
+            var items = normalizeItems(attrs.block_too_long_items);
+            function setItems(next) { set({ block_too_long_items: next.slice() }); }
+            function updateItem(index, patch) {
+                var next = items.slice();
+                next[index] = Object.assign({}, items[index] || {}, patch);
+                setItems(next);
+            }
+
+            var fields = [
+                el('p', { key: 'l', style: { marginBottom: '8px', fontWeight: '600' } }, 'А это не слишком долго?'),
+                el('p', { key: 'hint', style: { marginTop: 0, marginBottom: '8px', fontSize: '12px', color: '#757575' } }, 'Пустые поля подставятся из «Дефолты блоков → А это не слишком долго?».'),
+                TextControl ? el(TextControl, {
+                    key: 'subtitle',
+                    label: 'Надзаголовок',
+                    value: attrs.block_too_long_subtitle || '',
+                    placeholder: getDefault('too_long.subtitle', '«А это не слишком долго?»'),
+                    onChange: function (v) { set({ block_too_long_subtitle: v }); }
+                }) : null,
+                TextareaControl ? el(TextareaControl, {
+                    key: 'title',
+                    label: 'Заголовок (HTML, span для акцента)',
+                    value: attrs.block_too_long_title || '',
+                    placeholder: getDefault('too_long.title', ''),
+                    onChange: function (v) { set({ block_too_long_title: v }); },
+                    rows: 2
+                }) : null,
+                renderHeadingTagSelect(attrs, set, 'block_too_long_title_tag', 'Тег заголовка', 'h2'),
+                TextareaControl ? el(TextareaControl, {
+                    key: 'text',
+                    label: 'Текст под карточками',
+                    value: attrs.block_too_long_text || '',
+                    placeholder: getDefault('too_long.text', ''),
+                    onChange: function (v) { set({ block_too_long_text: v }); },
+                    rows: 2
+                }) : null,
+                renderRepeater({
+                    items: items,
+                    onChange: setItems,
+                    renderItem: function (item, index) {
+                        return el('div', { key: 'item-render-' + index }, [
+                            TextControl ? el(TextControl, {
+                                key: 'lb',
+                                label: 'Срок',
+                                value: item.label || '',
+                                onChange: function (v) { updateItem(index, { label: v }); }
+                            }) : null,
+                            TextControl ? el(TextControl, {
+                                key: 't',
+                                label: 'Заголовок',
+                                value: item.title || '',
+                                onChange: function (v) { updateItem(index, { title: v }); }
+                            }) : null,
+                            TextareaControl ? el(TextareaControl, {
+                                key: 'tx',
+                                label: 'Текст',
+                                value: item.text || '',
+                                onChange: function (v) { updateItem(index, { text: v }); },
+                                rows: 2
+                            }) : null
+                        ]);
+                    },
+                    label: 'Этапы',
+                    addLabel: 'Добавить карточку',
+                    emptyItem: { label: '', title: '', text: '' },
+                    keyPrefix: 'too-long-items'
+                })
+            ];
+
+            return wrapBlock(blockProps, fields);
+        },
+        save: function () { return null; }
+    });
+
     // Результат — гарантии в договоре.
     wp.blocks.registerBlockType('tolstenko/result', {
         title: 'Результат',

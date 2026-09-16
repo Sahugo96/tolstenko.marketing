@@ -582,6 +582,31 @@ function tolstenko_get_single_blog_director( $post_id = 0 ) {
 }
 
 /**
+ * Транслит кириллицы в латиницу для якорей TOC.
+ *
+ * @param string $text Heading text.
+ * @return string
+ */
+function tolstenko_transliterate_slug( $text ) {
+	$map = array(
+		'А' => 'A', 'Б' => 'B', 'В' => 'V', 'Г' => 'G', 'Д' => 'D', 'Е' => 'E', 'Ё' => 'Yo', 'Ж' => 'Zh', 'З' => 'Z',
+		'И' => 'I', 'Й' => 'J', 'К' => 'K', 'Л' => 'L', 'М' => 'M', 'Н' => 'N', 'О' => 'O', 'П' => 'P', 'Р' => 'R',
+		'С' => 'S', 'Т' => 'T', 'У' => 'U', 'Ф' => 'F', 'Х' => 'H', 'Ц' => 'C', 'Ч' => 'Ch', 'Ш' => 'Sh', 'Щ' => 'Shh',
+		'Ъ' => '', 'Ы' => 'Y', 'Ь' => '', 'Э' => 'E', 'Ю' => 'Yu', 'Я' => 'Ya',
+		'а' => 'a', 'б' => 'b', 'в' => 'v', 'г' => 'g', 'д' => 'd', 'е' => 'e', 'ё' => 'yo', 'ж' => 'zh', 'з' => 'z',
+		'и' => 'i', 'й' => 'j', 'к' => 'k', 'л' => 'l', 'м' => 'm', 'н' => 'n', 'о' => 'o', 'п' => 'p', 'р' => 'r',
+		'с' => 's', 'т' => 't', 'у' => 'u', 'ф' => 'f', 'х' => 'h', 'ц' => 'c', 'ч' => 'ch', 'ш' => 'sh', 'щ' => 'shh',
+		'ъ' => '', 'ы' => 'y', 'ь' => '', 'э' => 'e', 'ю' => 'yu', 'я' => 'ya',
+		'І' => 'I', 'Ї' => 'Yi', 'Є' => 'Ye', 'Ґ' => 'G',
+		'і' => 'i', 'ї' => 'yi', 'є' => 'ye', 'ґ' => 'g',
+	);
+
+	$slug = sanitize_title( strtr( (string) $text, $map ) );
+
+	return $slug !== '' ? $slug : 'section';
+}
+
+/**
  * Собирает иерархический TOC (h2 → пункты 1..n, h3 → вложенные) и проставляет id.
  *
  * @param string $html Content HTML.
@@ -626,11 +651,7 @@ function tolstenko_prepare_blog_toc( $html ) {
 				return $matches[0];
 			}
 
-			$base_id = sanitize_title( $text );
-			if ( $base_id === '' ) {
-				$base_id = 'section';
-			}
-
+			$base_id   = tolstenko_transliterate_slug( $text );
 			$unique_id = $base_id;
 			$suffix    = 2;
 			while ( isset( $used_toc_ids[ $unique_id ] ) ) {
@@ -658,9 +679,7 @@ function tolstenko_prepare_blog_toc( $html ) {
 				$toc_items[] = $entry;
 			}
 
-			if ( preg_match( '/\sid=(["\']).*?\1/i', $attrs ) ) {
-				return $matches[0];
-			}
+			$attrs = preg_replace( '/\s+id=(["\']).*?\1/i', '', $attrs );
 
 			return '<h' . $level . $attrs . ' id="' . esc_attr( $unique_id ) . '">' . $body . '</h' . $level . '>';
 		},

@@ -10,12 +10,6 @@
   }
   &__title {
     text-align: center;
-    @media (min-width: $desk) {
-      max-width: vw(600px, $desktop);
-    }
-    @media (min-width: $desk_large) {
-      max-width: vw(600px, $desktop_large);
-    }
   }
   &__text {
     text-align: center;

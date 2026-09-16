@@ -34,13 +34,13 @@ if ( $is_placeholder ) {
 }
 ?>
 <article class="<?php echo esc_attr( $extra_class ); ?>">
-	<div class="case-card__image<?php echo $is_placeholder ? ' case-card__image--placeholder' : ''; ?>">
+	<a class="case-card__image<?php echo $is_placeholder ? ' case-card__image--placeholder' : ''; ?>" href="<?php echo esc_url( $link ); ?>">
 		<img src="<?php echo esc_url( $image_url ); ?>" alt="<?php echo esc_attr( $image_alt ); ?>" loading="lazy">
-	</div>
+	</a>
 
 	<div class="case-card__wrapper">
 		<?php if ( $title !== '' ) : ?>
-			<h3 class="case-card__title"><?php echo esc_html( $title ); ?></h3>
+			<a class="case-card__title" href="<?php echo esc_url( $link ); ?>"><?php echo esc_html( $title ); ?></a>
 		<?php endif; ?>
 
 		<?php if ( $text !== '' ) : ?>

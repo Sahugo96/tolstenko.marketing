@@ -130,7 +130,8 @@ body {
   margin-bottom: vw(50px, $mobile);
   @media (min-width: $desk) {
     grid-gap: vw(32px, $desktop);
-    margin-bottom: vw(50px, $desktop);
+    max-width: 80%;
+    margin: 0 auto vw(50px, $desktop);
   }
   @media (min-width: $desk_large) {
     grid-gap: vw(32px, $desktop_large);

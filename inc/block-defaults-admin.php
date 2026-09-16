@@ -401,6 +401,28 @@ function tolstenko_block_defaults_schema() {
 				),
 			),
 		),
+		'too_long' => array(
+			'subtitle' => '«А это не слишком долго?»',
+			'title'    => 'Когда SEO начинает <span>приносить заявки</span>',
+			'text'     => 'Одинакового срока «для всех» не бывает. Но прогресс виден уже по пути — по росту заявок по новым запросам, а не только по финальным позициям.',
+			'items'    => array(
+				array(
+					'label' => '1-3 месяц',
+					'title' => 'Фундамент и старт роста',
+					'text'  => 'Аудит, стратегия, техника. Рост видимости и первые точки роста по заявкам.',
+				),
+				array(
+					'label' => '3-6 месяц',
+					'title' => 'Заметный рост',
+					'text'  => 'Позиции и целевой трафик растут, появляются стабильные заявки, работаем над конверсией.',
+				),
+				array(
+					'label' => 'От 6 месяца',
+					'title' => 'Окупаемость и масштаб',
+					'text'  => 'SEO окупается, масштабируем решения, расширяем структуру и регионы.',
+				),
+			),
+		),
 		'result' => array(
 			'subtitle' => 'Отвечаем за результат',
 			'title'    => 'Наши гарантии <span>в договоре</span>',
@@ -1283,6 +1305,7 @@ function tolstenko_render_block_defaults_admin_page() {
 				<button type="button" class="tolstenko-df-tab" data-panel="three_steps" data-group="main"><?php esc_html_e( 'Три шага', 'tolstenko-theme' ); ?></button>
 				<button type="button" class="tolstenko-df-tab" data-panel="doubts" data-group="main"><?php esc_html_e( 'Сомнения', 'tolstenko-theme' ); ?></button>
 				<button type="button" class="tolstenko-df-tab" data-panel="familiar" data-group="main"><?php esc_html_e( 'Знакомая ситуация', 'tolstenko-theme' ); ?></button>
+				<button type="button" class="tolstenko-df-tab" data-panel="too_long" data-group="main"><?php esc_html_e( 'А это не слишком долго?', 'tolstenko-theme' ); ?></button>
 				<button type="button" class="tolstenko-df-tab" data-panel="result" data-group="main"><?php esc_html_e( 'Результат', 'tolstenko-theme' ); ?></button>
 				<button type="button" class="tolstenko-df-tab" data-panel="promotion" data-group="main"><?php esc_html_e( 'Продвижение', 'tolstenko-theme' ); ?></button>
 				<button type="button" class="tolstenko-df-tab" data-panel="pricing" data-group="main"><?php esc_html_e( 'Расценки', 'tolstenko-theme' ); ?></button>
@@ -2074,6 +2097,7 @@ function tolstenko_render_block_defaults_admin_page() {
 		$ts  = $all['three_steps'] ?? array();
 		$doubts = $all['doubts'] ?? array();
 		$familiar = $all['familiar'] ?? array();
+		$too_long = $all['too_long'] ?? array();
 		$result = $all['result'] ?? array();
 		$faq = $all['faq'] ?? array();
 		$seo_section = $all['seo_section'] ?? array();
@@ -2266,6 +2290,31 @@ function tolstenko_render_block_defaults_admin_page() {
 					<?php endforeach; ?>
 				</div>
 				<div class="actions"><button type="button" class="button" data-add-item="familiar-list"><?php esc_html_e( 'Добавить карточку', 'tolstenko-theme' ); ?></button></div>
+			</div>
+		</div>
+
+		<div class="tolstenko-df-panel" data-panel="too_long" data-group="main">
+			<div class="row"><input type="text" name="tolstenko_block_defaults[too_long][subtitle]" value="<?php echo esc_attr( $too_long['subtitle'] ?? '' ); ?>" style="width:100%" placeholder="Надзаголовок"></div>
+			<div class="row"><textarea name="tolstenko_block_defaults[too_long][title]" rows="2" style="width:100%" placeholder="Заголовок (HTML, span для акцента)"><?php echo esc_textarea( $too_long['title'] ?? '' ); ?></textarea></div>
+			<div class="row"><textarea name="tolstenko_block_defaults[too_long][text]" rows="2" style="width:100%" placeholder="Текст под карточками"><?php echo esc_textarea( $too_long['text'] ?? '' ); ?></textarea></div>
+			<div class="row">
+				<div class="muted"><?php esc_html_e( 'Этапы', 'tolstenko-theme' ); ?></div>
+				<div data-repeater-list="too-long-list">
+					<?php foreach ( (array) ( $too_long['items'] ?? array() ) as $idx => $it ) : ?>
+						<?php $it = is_array( $it ) ? $it : array(); ?>
+						<div class="repeater-item" data-repeater-item>
+							<div class="cols">
+								<input type="text" name="tolstenko_block_defaults[too_long][items][<?php echo (int) $idx; ?>][label]" value="<?php echo esc_attr( $it['label'] ?? '' ); ?>" placeholder="Срок (1-3 месяц)" style="flex:1">
+								<button type="button" class="button move-btn" data-move-up title="Вверх">↑</button>
+								<button type="button" class="button move-btn" data-move-down title="Вниз">↓</button>
+								<button type="button" class="button" data-remove-item><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button>
+							</div>
+							<div class="row"><input type="text" name="tolstenko_block_defaults[too_long][items][<?php echo (int) $idx; ?>][title]" value="<?php echo esc_attr( $it['title'] ?? '' ); ?>" placeholder="Заголовок" style="width:100%"></div>
+							<div class="row"><textarea name="tolstenko_block_defaults[too_long][items][<?php echo (int) $idx; ?>][text]" rows="2" placeholder="Текст"><?php echo esc_textarea( $it['text'] ?? '' ); ?></textarea></div>
+						</div>
+					<?php endforeach; ?>
+				</div>
+				<div class="actions"><button type="button" class="button" data-add-item="too-long-list"><?php esc_html_e( 'Добавить карточку', 'tolstenko-theme' ); ?></button></div>
 			</div>
 		</div>
 
@@ -2518,6 +2567,7 @@ function tolstenko_render_block_defaults_admin_page() {
 			three_steps: 'main',
 			doubts: 'main',
 			familiar: 'main',
+			too_long: 'main',
 			result: 'main',
 			not_the_end: 'main',
 			strategy: 'main',
@@ -2691,6 +2741,8 @@ function tolstenko_render_block_defaults_admin_page() {
 					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[doubts][items][' + idx + '][badge]" placeholder="Бейдж (Цена)"><input type="text" name="tolstenko_block_defaults[doubts][items][' + idx + '][title]" placeholder="Заголовок возражения" style="flex:1"><button type="button" class="button move-btn" data-move-up title="Вверх">↑</button><button type="button" class="button move-btn" data-move-down title="Вниз">↓</button><button type="button" class="button" data-remove-item>Удалить</button></div><div class="row"><textarea name="tolstenko_block_defaults[doubts][items][' + idx + '][text]" rows="3" placeholder="Текст ответа"></textarea></div></div>';
 				} else if (key === 'familiar-list') {
 					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[familiar][items][' + idx + '][title]" placeholder="Заголовок" style="flex:1"><button type="button" class="button move-btn" data-move-up title="Вверх">↑</button><button type="button" class="button move-btn" data-move-down title="Вниз">↓</button><button type="button" class="button" data-remove-item>Удалить</button></div><div class="row"><textarea name="tolstenko_block_defaults[familiar][items][' + idx + '][text]" rows="2" placeholder="Текст"></textarea></div></div>';
+				} else if (key === 'too-long-list') {
+					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[too_long][items][' + idx + '][label]" placeholder="Срок (1-3 месяц)" style="flex:1"><button type="button" class="button move-btn" data-move-up title="Вверх">↑</button><button type="button" class="button move-btn" data-move-down title="Вниз">↓</button><button type="button" class="button" data-remove-item>Удалить</button></div><div class="row"><input type="text" name="tolstenko_block_defaults[too_long][items][' + idx + '][title]" placeholder="Заголовок" style="width:100%"></div><div class="row"><textarea name="tolstenko_block_defaults[too_long][items][' + idx + '][text]" rows="2" placeholder="Текст"></textarea></div></div>';
 				} else if (key === 'promotion-items-list') {
 					html = '<div class="repeater-item" data-repeater-item><div class="cols"><input type="text" name="tolstenko_block_defaults[promotion][items][' + idx + '][title]" placeholder="Заголовок" style="flex:1"><input type="hidden" class="tolstenko-defaults-icon-id" name="tolstenko_block_defaults[promotion][items][' + idx + '][ico]" value="0"><button type="button" class="button tolstenko-defaults-pick-icon">Иконка</button><button type="button" class="button move-btn" data-move-up title="Вверх">↑</button><button type="button" class="button move-btn" data-move-down title="Вниз">↓</button><button type="button" class="button" data-remove-item>Удалить</button></div><div class="icon-preview" style="margin-top:8px;"></div><div class="row"><textarea name="tolstenko_block_defaults[promotion][items][' + idx + '][text]" rows="2" placeholder="Текст"></textarea></div></div>';
 				} else if (key === 'promotion-list') {
@@ -3423,6 +3475,29 @@ function tolstenko_save_block_defaults_from_request() {
 				continue;
 			}
 			$out['familiar']['items'][] = $row;
+		}
+	}
+
+	$out['too_long'] = array(
+		'subtitle' => tolstenko_kses_html( $raw['too_long']['subtitle'] ?? '' ),
+		'title'    => tolstenko_kses_html( $raw['too_long']['title'] ?? '' ),
+		'text'     => tolstenko_kses_html( $raw['too_long']['text'] ?? '' ),
+		'items'    => array(),
+	);
+	if ( isset( $raw['too_long']['items'] ) && is_array( $raw['too_long']['items'] ) ) {
+		foreach ( $raw['too_long']['items'] as $it ) {
+			if ( ! is_array( $it ) ) {
+				continue;
+			}
+			$row = array(
+				'label' => tolstenko_kses_html( $it['label'] ?? '' ),
+				'title' => tolstenko_kses_html( $it['title'] ?? '' ),
+				'text'  => tolstenko_kses_html( $it['text'] ?? '' ),
+			);
+			if ( $row['label'] === '' && $row['title'] === '' && $row['text'] === '' ) {
+				continue;
+			}
+			$out['too_long']['items'][] = $row;
 		}
 	}
 

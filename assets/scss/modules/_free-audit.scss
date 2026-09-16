@@ -16,7 +16,7 @@
     flex-direction: column;
     grid-gap: vw(40px, $mobile);
     padding: vw(20px, $mobile) vw(20px, $mobile) vw(20px, $mobile) vw(30px, $mobile);
-    border: 1px solid var(--gray-15-color);
+    border: 1px solid var(--gray-35-color);
     border-radius: vw(30px, $mobile);
     @media (min-width: $desk) {
       flex-direction: row;

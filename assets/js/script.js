@@ -1397,6 +1397,47 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     })();
 
+    // А это не слишком долго? (.too-long) — слайдер только на мобиле (<992), на ПК сетка.
+    (function() {
+        if (typeof Swiper === 'undefined') return;
+
+        function syncTooLongOverflow(root, swiper) {
+            if (!root || !swiper) return;
+            var mobile = window.matchMedia('(max-width: 991.98px)').matches;
+            root.classList.toggle('is-overflow', mobile && !swiper.isLocked);
+        }
+
+        document.querySelectorAll('.too-long__splide .splide__track.swiper').forEach(function(el) {
+            var root = el.closest('.too-long__splide');
+            if (!root || !el.querySelector('.swiper-slide')) return;
+            if (el.swiper) return;
+
+            var pagEl = root.querySelector('.splide__pagination');
+            new Swiper(el, {
+                slidesPerView: 1,
+                slidesPerGroup: 1,
+                spaceBetween: 20,
+                watchOverflow: true,
+                autoHeight: true,
+                pagination: pagEl ? { el: pagEl, clickable: true } : false,
+                breakpoints: {
+                    992: {
+                        enabled: false,
+                        autoHeight: false
+                    }
+                },
+                on: {
+                    init: function () { syncTooLongOverflow(root, this); },
+                    resize: function () { syncTooLongOverflow(root, this); },
+                    update: function () { syncTooLongOverflow(root, this); },
+                    breakpoint: function () { syncTooLongOverflow(root, this); },
+                    lock: function () { syncTooLongOverflow(root, this); },
+                    unlock: function () { syncTooLongOverflow(root, this); }
+                }
+            });
+        });
+    })();
+
     // Знакомая ситуация (.familiar) — слайдер только на мобиле (<992), на ПК сетка.
     (function() {
         if (typeof Swiper === 'undefined') return;

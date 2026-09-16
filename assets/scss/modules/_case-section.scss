@@ -6,23 +6,15 @@
     grid-gap: vw(15px, $mobile);
     @media (min-width: $desk) {
       grid-gap: vw(15px, $desktop);
-      max-width: vw(600px, $desktop);
       margin: 0 auto;
     }
     @media (min-width: $desk_large) {
       grid-gap: vw(15px, $desktop_large);
-      max-width: vw(600px, $desktop_large);
       margin: 0 auto;
     }
   }
   &__text {
     color: var(--gray-50-color);
-    @media (min-width: $desk) {
-      max-width: vw(255px, $desktop);
-    }
-    @media (min-width: $desk_large) {
-      max-width: vw(255px, $desktop_large);
-    }
   }
   .filter__label {
     padding:  0 vw(20px, $mobile);

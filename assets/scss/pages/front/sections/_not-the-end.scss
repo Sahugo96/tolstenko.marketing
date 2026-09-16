@@ -8,9 +8,6 @@
     padding: vw(22px, $mobile) vw(22px, $mobile);
     border: 1px solid var(--brand-accent-yellow-opacity-two-color);
     border-radius: vw(18px, $mobile);
-    background:
-      radial-gradient(120% 160% at 15% 0%, var(--brand-accent-yellow-opacity-color), transparent 25%),
-      linear-gradient(135deg, #17140c, var(--gray-15-color));
     color: inherit;
     text-decoration: none;
     box-sizing: border-box;
