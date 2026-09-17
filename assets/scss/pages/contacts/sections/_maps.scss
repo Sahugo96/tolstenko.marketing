@@ -24,6 +24,8 @@
       flex-direction: row;
       justify-content: space-between;
       grid-gap: vw(15px, $desktop);
+      max-width: 100%;
+      width: 100%;
     }
     @media (min-width: $desk_large) {
       grid-gap: vw(15px, $desktop_large);
@@ -34,29 +36,28 @@
     padding: vw(5px, $mobile);
     @media (min-width: $desk) {
       text-align: left;
-      padding: vw(35px, $desktop);
+      padding: 0;
       color: var(--brand-accent-yellow-color);
-    }
-    @media (min-width: $desk_large) {
-      padding: vw(35px, $desktop_large);
     }
   }
   &__tabs {
     @media (min-width: $desk) {
       width: auto;
       max-width: vw(700px, $desktop);
+      padding: vw(5px, $desktop);
     }
     @media (min-width: $desk_large) {
       max-width: vw(700px, $desktop_large);
+      padding: vw(5px, $desktop_large);
     }
   }
   &__label {
     
     @media (min-width: $desk) {
-      min-width: vw(249px, $desktop);
+      min-width: vw(149px, $desktop);
     }
     @media (min-width: $desk_large) {
-      min-width: vw(249px, $desktop_large);
+      min-width: vw(149px, $desktop_large);
     }
   }
 

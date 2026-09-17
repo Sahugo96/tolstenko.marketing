@@ -41,23 +41,9 @@ $post_type      = 'vacancy';
 $posts_per_page = -1;
 $card           = 'vacancy';
 
-$all_categories = taxonomy_exists( $taxonomy )
-	? get_terms(
-		array(
-			'taxonomy'   => $taxonomy,
-			'hide_empty' => false,
-		)
-	)
+$categories_with_posts = function_exists( 'tolstenko_get_filter_top_level_terms' )
+	? tolstenko_get_filter_top_level_terms( $taxonomy )
 	: array();
-
-$categories_with_posts = array();
-if ( ! is_wp_error( $all_categories ) && is_array( $all_categories ) ) {
-	foreach ( $all_categories as $cat ) {
-		if ( $cat instanceof WP_Term && (int) $cat->count > 0 ) {
-			$categories_with_posts[] = $cat;
-		}
-	}
-}
 
 $active_term = function_exists( 'tolstenko_get_filter_active_term_slug' )
 	? tolstenko_get_filter_active_term_slug( $taxonomy )
@@ -105,33 +91,36 @@ if ( $title === '' && $text === '' && $items_html === '' && empty( $categories_w
 			<?php endif; ?>
 
 			<?php if ( ! empty( $categories_with_posts ) ) : ?>
-				<div class="vacancies-section__filter filter">
-					<div class="filter__form">
-						<label class="filter__radio">
-							<input
-								type="radio"
-								name="<?php echo esc_attr( $section_id ); ?>_category"
-								value=""
-								data-section-id="<?php echo esc_attr( $section_id ); ?>"
-								class="tolstenko-filter-radio"
-								<?php checked( $active_term, '' ); ?>
-							>
-							<span class="filter__label"><?php esc_html_e( 'Все вакансии', 'tolstenko-theme' ); ?></span>
-						</label>
-						<?php foreach ( $categories_with_posts as $cat ) : ?>
-							<label class="filter__radio">
+				<div class="vacancies-section__filter filter filter--slider">
+					<div class="filter__form swiper">
+						<div class="swiper-wrapper">
+							<label class="filter__radio swiper-slide">
 								<input
 									type="radio"
 									name="<?php echo esc_attr( $section_id ); ?>_category"
-									value="<?php echo esc_attr( $cat->slug ); ?>"
+									value=""
 									data-section-id="<?php echo esc_attr( $section_id ); ?>"
 									class="tolstenko-filter-radio"
-									<?php checked( $active_term, $cat->slug ); ?>
+									<?php checked( $active_term, '' ); ?>
 								>
-								<span class="filter__label"><?php echo esc_html( $cat->name ); ?></span>
+								<span class="filter__label"><?php esc_html_e( 'Все вакансии', 'tolstenko-theme' ); ?></span>
 							</label>
-						<?php endforeach; ?>
+							<?php foreach ( $categories_with_posts as $cat ) : ?>
+								<label class="filter__radio swiper-slide">
+									<input
+										type="radio"
+										name="<?php echo esc_attr( $section_id ); ?>_category"
+										value="<?php echo esc_attr( $cat->slug ); ?>"
+										data-section-id="<?php echo esc_attr( $section_id ); ?>"
+										class="tolstenko-filter-radio"
+										<?php checked( $active_term, $cat->slug ); ?>
+									>
+									<span class="filter__label"><?php echo esc_html( $cat->name ); ?></span>
+								</label>
+							<?php endforeach; ?>
+						</div>
 					</div>
+					<?php get_template_part( 'template-parts/filter-arrows' ); ?>
 				</div>
 			<?php endif; ?>
 

@@ -35,16 +35,15 @@ if ( $title === '' && $btn_text === '' ) {
 if ( $btn_url === '' || $btn_url === '#modal' ) {
 	$btn_url = '#modal';
 }
-$is_modal = ( $btn_url === '#modal' );
 ?>
-<div class="single-blog__content-block single-blog__content-block--seo br-30">
+<div class="article-cta article-cta--seo">
 	<?php if ( $title !== '' ) : ?>
-		<h2 class="single-blog__content-title h2"><?php echo tolstenko_kses_html( $title ); ?></h2>
+		<div class="article-cta__content">
+			<h2 class="article-cta__title"><?php echo tolstenko_kses_html( $title ); ?></h2>
+		</div>
 	<?php endif; ?>
 	<?php if ( $btn_text !== '' ) : ?>
-		<a
-			class="single-blog__content-btn default-btn line-caps-bold-16-15"
-			href="<?php echo esc_url( $btn_url ); ?>"><?php echo esc_html( $btn_text ); ?></a>
+		<a class="article-cta__btn default-btn" href="<?php echo esc_url( $btn_url ); ?>"><?php echo esc_html( $btn_text ); ?></a>
 	<?php endif; ?>
 </div>
 <?php

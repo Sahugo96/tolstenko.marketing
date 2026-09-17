@@ -359,14 +359,14 @@ body {
   }
   &.default-btn--tg {
     color: var(--white-color);
-    background-color: var(--telegram-color);
+    background-color: var(--color-btn, var(--telegram-color));
     svg {
       fill: var(--white-color);
     }
     @media (any-hover: hover) {
       transition: all .3s linear;
       &:hover {
-        background-color: var(--telegram-2-color);
+        background-color: var(--color-hover-btn, var(--telegram-2-color));
       }
     }
   }

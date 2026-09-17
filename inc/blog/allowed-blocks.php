@@ -78,6 +78,7 @@ function tolstenko_get_blog_theme_blocks_catalog() {
 		'tolstenko/blog-blockquote'  => __( 'Цитата', 'tolstenko-theme' ),
 		'tolstenko/blog-number-list' => __( 'Нумерованный список', 'tolstenko-theme' ),
 		'tolstenko/blog-warning'     => __( 'Предупреждения', 'tolstenko-theme' ),
+		'tolstenko/blog-pros-cons'   => __( 'Плюсы и минусы', 'tolstenko-theme' ),
 		'tolstenko/blog-seo'         => __( 'SEO / CTA', 'tolstenko-theme' ),
 		'tolstenko/consultation-whatsapp' => __( 'Забронируйте место', 'tolstenko-theme' ),
 		'tolstenko/consultation-tg'       => __( 'Консультация Telegram', 'tolstenko-theme' ),
@@ -166,6 +167,47 @@ function tolstenko_get_blog_editor_allowed_blocks() {
 }
 
 /**
+ * Типы плашек «Предупреждения».
+ *
+ * @return string[]
+ */
+function tolstenko_blog_warning_allowed_types() {
+	return array( 'warn', 'pin', 'ide', 'err', 'custom' );
+}
+
+/**
+ * Подписи типов в админке.
+ *
+ * @return array<string, string>
+ */
+function tolstenko_blog_warning_admin_labels() {
+	return array(
+		'warn'   => __( 'Внимание', 'tolstenko-theme' ),
+		'pin'    => __( 'Подметить', 'tolstenko-theme' ),
+		'ide'    => __( 'Идея', 'tolstenko-theme' ),
+		'err'    => __( 'Ошибка', 'tolstenko-theme' ),
+		'custom' => __( 'Кастомный (иконка необязательна)', 'tolstenko-theme' ),
+	);
+}
+
+/**
+ * Заголовок карточки на фронте (как на макете).
+ *
+ * @param string $type Type key.
+ * @return string
+ */
+function tolstenko_blog_warning_card_title( $type ) {
+	$type    = sanitize_key( (string) $type );
+	$titles  = array(
+		'warn' => __( 'Важно', 'tolstenko-theme' ),
+		'pin'  => __( 'На заметку', 'tolstenko-theme' ),
+		'ide'  => __( 'Совет', 'tolstenko-theme' ),
+		'err'  => __( 'Частая ошибка', 'tolstenko-theme' ),
+	);
+	return isset( $titles[ $type ] ) ? $titles[ $type ] : '';
+}
+
+/**
  * Схема дефолтов блоков тела статьи.
  *
  * @return array<string, array>
@@ -196,10 +238,33 @@ function tolstenko_blog_content_defaults_schema() {
 		'blog_warning' => array(
 			'items' => array(),
 		),
+		'blog_pros_cons' => array(
+			'pros_title' => 'Плюсы',
+			'cons_title' => 'Минусы',
+			'pros'       => array(),
+			'cons'       => array(),
+		),
 		'blog_seo' => array(
 			'title'   => 'Нужна помощь с продвижением?',
 			'btn'     => 'Получить консультацию',
 			'btn_url' => '',
+		),
+		'article_consultation_whatsapp' => array(
+			'title'       => 'Напишите нам в WhatsApp',
+			'text'        => 'Ответим на вопросы и поможем с расчётом стоимости.',
+			'btn_text'    => 'Написать в WhatsApp',
+			'btn_url'     => '',
+			'color'       => '#25D366',
+			'color_hover' => '#1EBE57',
+		),
+		'article_consultation_tg' => array(
+			'title'       => 'Консультация в Telegram',
+			'text'        => 'Быстрые ответы и удобное общение в мессенджере.',
+			'btn_text'    => 'Написать в Telegram',
+			'btn_url'     => '',
+			'text_btn'    => 'Обычно отвечаем в течение 15 минут',
+			'color'       => '#2AABEE',
+			'color_hover' => '#229ED9',
 		),
 	);
 }
@@ -216,6 +281,32 @@ function tolstenko_get_blog_content_defaults( $key ) {
 		if ( is_array( $saved ) && $saved ) {
 			return array_replace_recursive( $base, $saved );
 		}
+	}
+	return $base;
+}
+
+/**
+ * Дефолты плашки в статье — отдельный ключ, не секция страницы.
+ * Если article-ключ ещё не сохраняли, читаем старый общий ключ (миграция).
+ *
+ * @param string $article_key article_consultation_whatsapp|article_consultation_tg.
+ * @param string $page_key    consultation_whatsapp|consultation_tg.
+ * @return array
+ */
+function tolstenko_get_article_consultation_defaults( $article_key, $page_key ) {
+	$schema = tolstenko_blog_content_defaults_schema();
+	$base   = isset( $schema[ $article_key ] ) && is_array( $schema[ $article_key ] ) ? $schema[ $article_key ] : array();
+	$saved  = get_option( 'tolstenko_block_defaults', array() );
+	if ( ! is_array( $saved ) ) {
+		$saved = array();
+	}
+	if ( ! empty( $saved[ $article_key ] ) && is_array( $saved[ $article_key ] ) ) {
+		return array_replace_recursive( $base, $saved[ $article_key ] );
+	}
+	if ( ! empty( $saved[ $page_key ] ) && is_array( $saved[ $page_key ] ) ) {
+		$page = $saved[ $page_key ];
+		unset( $page['image'] );
+		return array_replace_recursive( $base, $page );
 	}
 	return $base;
 }
@@ -345,16 +436,30 @@ function tolstenko_render_blog_content_defaults_admin_page() {
 	$bq   = $all['blog_blockquote'];
 	$nl   = $all['blog_number_list'];
 	$wn   = $all['blog_warning'];
+	$pc   = $all['blog_pros_cons'];
 	$seo  = $all['blog_seo'];
+	$cw   = function_exists( 'tolstenko_get_article_consultation_defaults' )
+		? tolstenko_get_article_consultation_defaults( 'article_consultation_whatsapp', 'consultation_whatsapp' )
+		: $all['article_consultation_whatsapp'];
+	$ctg  = function_exists( 'tolstenko_get_article_consultation_defaults' )
+		? tolstenko_get_article_consultation_defaults( 'article_consultation_tg', 'consultation_tg' )
+		: $all['article_consultation_tg'];
 
 	$nl_items = ! empty( $nl['items'] ) && is_array( $nl['items'] ) ? $nl['items'] : array( array( 'text' => '' ) );
 	$wn_items = ! empty( $wn['items'] ) && is_array( $wn['items'] ) ? $wn['items'] : array( array( 'type' => 'warn', 'text' => '', 'icon' => 0 ) );
+	$pc_pros  = ! empty( $pc['pros'] ) && is_array( $pc['pros'] ) ? $pc['pros'] : array( '' );
+	$pc_cons  = ! empty( $pc['cons'] ) && is_array( $pc['cons'] ) ? $pc['cons'] : array( '' );
+	if ( ! $pc_pros ) {
+		$pc_pros = array( '' );
+	}
+	if ( ! $pc_cons ) {
+		$pc_cons = array( '' );
+	}
 	?>
 	<div class="wrap">
 		<h1><?php esc_html_e( 'Блоки для статей', 'tolstenko-theme' ); ?></h1>
 		<p class="description">
-			<?php esc_html_e( 'Дефолтное наполнение блоков тела статьи и акции. В редакторе эти блоки доступны только у записей «Статья» и «Акция». Пустые поля в блоке на записи подставляют значения отсюда. WhatsApp / Telegram — во вкладке «Дефолты блоков».', 'tolstenko-theme' ); ?>
-			<a href="<?php echo esc_url( admin_url( 'admin.php?page=tolstenko-site-settings' ) ); ?>"><?php esc_html_e( 'Открыть дефолты блоков', 'tolstenko-theme' ); ?></a>
+			<?php esc_html_e( 'Дефолтное наполнение блоков тела статьи, акции и кейса. Пустые поля в блоке на записи подставляют значения отсюда.', 'tolstenko-theme' ); ?>
 		</p>
 
 		<form method="post" action="" id="tolstenko-blog-content-defaults">
@@ -380,12 +485,15 @@ function tolstenko_render_blog_content_defaults_admin_page() {
 			<div class="tolstenko-bcd-tabs">
 				<?php
 				$tabs = array(
-					'blog_seo'         => __( 'SEO / CTA', 'tolstenko-theme' ),
-					'blog_blockquote'  => __( 'Цитата', 'tolstenko-theme' ),
-					'blog_number_list' => __( 'Список', 'tolstenko-theme' ),
-					'blog_warning'     => __( 'Предупреждения', 'tolstenko-theme' ),
-					'blog_large_img'   => __( 'Крупное фото', 'tolstenko-theme' ),
-					'blog_video'       => __( 'Видео', 'tolstenko-theme' ),
+					'blog_seo'                      => __( 'SEO / CTA', 'tolstenko-theme' ),
+					'article_consultation_whatsapp' => __( 'Забронируйте место', 'tolstenko-theme' ),
+					'article_consultation_tg'       => __( 'Консультация Telegram', 'tolstenko-theme' ),
+					'blog_blockquote'        => __( 'Цитата', 'tolstenko-theme' ),
+					'blog_number_list'       => __( 'Список', 'tolstenko-theme' ),
+					'blog_warning'           => __( 'Предупреждения', 'tolstenko-theme' ),
+					'blog_pros_cons'         => __( 'Плюсы и минусы', 'tolstenko-theme' ),
+					'blog_large_img'         => __( 'Крупное фото', 'tolstenko-theme' ),
+					'blog_video'             => __( 'Видео', 'tolstenko-theme' ),
 				);
 				$first = true;
 				foreach ( $tabs as $key => $label ) :
@@ -402,6 +510,27 @@ function tolstenko_render_blog_content_defaults_admin_page() {
 				<div class="row"><input type="text" name="tolstenko_block_defaults[blog_seo][title]" value="<?php echo esc_attr( (string) ( $seo['title'] ?? '' ) ); ?>" placeholder="<?php esc_attr_e( 'Заголовок', 'tolstenko-theme' ); ?>"></div>
 				<div class="row"><input type="text" name="tolstenko_block_defaults[blog_seo][btn]" value="<?php echo esc_attr( (string) ( $seo['btn'] ?? '' ) ); ?>" placeholder="<?php esc_attr_e( 'Текст кнопки', 'tolstenko-theme' ); ?>"></div>
 				<div class="row"><input type="url" name="tolstenko_block_defaults[blog_seo][btn_url]" value="<?php echo esc_attr( (string) ( $seo['btn_url'] ?? '' ) ); ?>" placeholder="<?php esc_attr_e( 'Ссылка (пусто = #modal)', 'tolstenko-theme' ); ?>"></div>
+			</div>
+
+			<div class="tolstenko-bcd-panel" data-bcd-panel="article_consultation_whatsapp" hidden>
+				<h2><?php esc_html_e( 'Забронируйте место', 'tolstenko-theme' ); ?></h2>
+				<div class="row"><input type="text" name="tolstenko_block_defaults[article_consultation_whatsapp][title]" value="<?php echo esc_attr( (string) ( $cw['title'] ?? '' ) ); ?>" placeholder="<?php esc_attr_e( 'Заголовок', 'tolstenko-theme' ); ?>"></div>
+				<div class="row"><textarea name="tolstenko_block_defaults[article_consultation_whatsapp][text]" rows="3" placeholder="<?php esc_attr_e( 'Текст', 'tolstenko-theme' ); ?>"><?php echo esc_textarea( (string) ( $cw['text'] ?? '' ) ); ?></textarea></div>
+				<div class="row"><input type="text" name="tolstenko_block_defaults[article_consultation_whatsapp][btn_text]" value="<?php echo esc_attr( (string) ( $cw['btn_text'] ?? '' ) ); ?>" placeholder="<?php esc_attr_e( 'Текст кнопки', 'tolstenko-theme' ); ?>"></div>
+				<div class="row"><input type="url" name="tolstenko_block_defaults[article_consultation_whatsapp][btn_url]" value="<?php echo esc_attr( (string) ( $cw['btn_url'] ?? '' ) ); ?>" placeholder="<?php esc_attr_e( 'Ссылка кнопки (https://wa.me/...)', 'tolstenko-theme' ); ?>"></div>
+				<div class="row"><input type="text" name="tolstenko_block_defaults[article_consultation_whatsapp][color]" value="<?php echo esc_attr( (string) ( $cw['color'] ?? '#25D366' ) ); ?>" placeholder="<?php esc_attr_e( 'Цвет кнопки', 'tolstenko-theme' ); ?>"></div>
+				<div class="row"><input type="text" name="tolstenko_block_defaults[article_consultation_whatsapp][color_hover]" value="<?php echo esc_attr( (string) ( $cw['color_hover'] ?? '#1EBE57' ) ); ?>" placeholder="<?php esc_attr_e( 'Цвет hover', 'tolstenko-theme' ); ?>"></div>
+			</div>
+
+			<div class="tolstenko-bcd-panel" data-bcd-panel="article_consultation_tg" hidden>
+				<h2><?php esc_html_e( 'Консультация Telegram', 'tolstenko-theme' ); ?></h2>
+				<div class="row"><input type="text" name="tolstenko_block_defaults[article_consultation_tg][title]" value="<?php echo esc_attr( (string) ( $ctg['title'] ?? '' ) ); ?>" placeholder="<?php esc_attr_e( 'Заголовок', 'tolstenko-theme' ); ?>"></div>
+				<div class="row"><textarea name="tolstenko_block_defaults[article_consultation_tg][text]" rows="3" placeholder="<?php esc_attr_e( 'Текст', 'tolstenko-theme' ); ?>"><?php echo esc_textarea( (string) ( $ctg['text'] ?? '' ) ); ?></textarea></div>
+				<div class="row"><input type="text" name="tolstenko_block_defaults[article_consultation_tg][btn_text]" value="<?php echo esc_attr( (string) ( $ctg['btn_text'] ?? '' ) ); ?>" placeholder="<?php esc_attr_e( 'Текст кнопки', 'tolstenko-theme' ); ?>"></div>
+				<div class="row"><input type="url" name="tolstenko_block_defaults[article_consultation_tg][btn_url]" value="<?php echo esc_attr( (string) ( $ctg['btn_url'] ?? '' ) ); ?>" placeholder="<?php esc_attr_e( 'Ссылка Telegram', 'tolstenko-theme' ); ?>"></div>
+				<div class="row"><input type="text" name="tolstenko_block_defaults[article_consultation_tg][text_btn]" value="<?php echo esc_attr( (string) ( $ctg['text_btn'] ?? '' ) ); ?>" placeholder="<?php esc_attr_e( 'Подпись / описание', 'tolstenko-theme' ); ?>"></div>
+				<div class="row"><input type="text" name="tolstenko_block_defaults[article_consultation_tg][color]" value="<?php echo esc_attr( (string) ( $ctg['color'] ?? '#2AABEE' ) ); ?>" placeholder="<?php esc_attr_e( 'Цвет кнопки', 'tolstenko-theme' ); ?>"></div>
+				<div class="row"><input type="text" name="tolstenko_block_defaults[article_consultation_tg][color_hover]" value="<?php echo esc_attr( (string) ( $ctg['color_hover'] ?? '#229ED9' ) ); ?>" placeholder="<?php esc_attr_e( 'Цвет hover', 'tolstenko-theme' ); ?>"></div>
 			</div>
 
 			<div class="tolstenko-bcd-panel" data-bcd-panel="blog_blockquote" hidden>
@@ -447,17 +576,31 @@ function tolstenko_render_blog_content_defaults_admin_page() {
 					<?php foreach ( $wn_items as $i => $item ) : ?>
 						<?php
 						$type    = is_array( $item ) ? (string) ( $item['type'] ?? 'warn' ) : 'warn';
+						$title   = is_array( $item ) ? (string) ( $item['title'] ?? '' ) : '';
 						$text    = is_array( $item ) ? (string) ( $item['text'] ?? '' ) : (string) $item;
 						$icon    = is_array( $item ) ? (int) ( $item['icon'] ?? 0 ) : 0;
 						$wn_idx  = (string) $i;
+						$wn_ph   = function_exists( 'tolstenko_blog_warning_card_title' )
+							? tolstenko_blog_warning_card_title( $type )
+							: '';
 						?>
 						<div class="tolstenko-bcd-item">
 							<select name="tolstenko_block_defaults[blog_warning][items][<?php echo esc_attr( $wn_idx ); ?>][type]">
-								<option value="warn" <?php selected( $type, 'warn' ); ?>><?php esc_html_e( 'Внимание', 'tolstenko-theme' ); ?></option>
-								<option value="pin" <?php selected( $type, 'pin' ); ?>><?php esc_html_e( 'Подметить', 'tolstenko-theme' ); ?></option>
-								<option value="ide" <?php selected( $type, 'ide' ); ?>><?php esc_html_e( 'Идея', 'tolstenko-theme' ); ?></option>
-								<option value="custom" <?php selected( $type, 'custom' ); ?>><?php esc_html_e( 'Кастомный (иконка необязательна)', 'tolstenko-theme' ); ?></option>
+								<?php
+								$wn_labels = function_exists( 'tolstenko_blog_warning_admin_labels' )
+									? tolstenko_blog_warning_admin_labels()
+									: array();
+								foreach ( $wn_labels as $wn_type => $wn_label ) :
+									?>
+									<option value="<?php echo esc_attr( $wn_type ); ?>" <?php selected( $type, $wn_type ); ?>><?php echo esc_html( $wn_label ); ?></option>
+								<?php endforeach; ?>
 							</select>
+							<p>
+								<label>
+									<?php esc_html_e( 'Заглавие', 'tolstenko-theme' ); ?><br>
+									<input type="text" name="tolstenko_block_defaults[blog_warning][items][<?php echo esc_attr( $wn_idx ); ?>][title]" value="<?php echo esc_attr( $title ); ?>" placeholder="<?php echo esc_attr( $wn_ph ); ?>">
+								</label>
+							</p>
 							<div class="tolstenko-bcd-editor-wrap">
 								<?php tolstenko_blog_warning_item_editor( $text, $wn_idx ); ?>
 							</div>
@@ -467,6 +610,47 @@ function tolstenko_render_blog_content_defaults_admin_page() {
 					<?php endforeach; ?>
 				</div>
 				<p><button type="button" class="button" data-bcd-add="warning"><?php esc_html_e( 'Добавить пункт', 'tolstenko-theme' ); ?></button></p>
+			</div>
+
+			<div class="tolstenko-bcd-panel" data-bcd-panel="blog_pros_cons" hidden>
+				<h2><?php esc_html_e( 'Плюсы и минусы', 'tolstenko-theme' ); ?></h2>
+				<div class="row">
+					<label>
+						<?php esc_html_e( 'Заглавие плюсов', 'tolstenko-theme' ); ?><br>
+						<input type="text" name="tolstenko_block_defaults[blog_pros_cons][pros_title]" value="<?php echo esc_attr( (string) ( $pc['pros_title'] ?? '' ) ); ?>" placeholder="<?php esc_attr_e( 'Плюсы', 'tolstenko-theme' ); ?>">
+					</label>
+				</div>
+				<div data-bcd-list="pros">
+					<?php foreach ( $pc_pros as $i => $line ) : ?>
+						<?php
+						$line_text = is_array( $line ) ? (string) ( $line['text'] ?? '' ) : (string) $line;
+						?>
+						<div class="tolstenko-bcd-item">
+							<input type="text" name="tolstenko_block_defaults[blog_pros_cons][pros][<?php echo esc_attr( (string) $i ); ?>][text]" value="<?php echo esc_attr( $line_text ); ?>" placeholder="<?php esc_attr_e( 'Пункт плюса', 'tolstenko-theme' ); ?>">
+							<p><button type="button" class="button-link-delete" data-bcd-remove><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button></p>
+						</div>
+					<?php endforeach; ?>
+				</div>
+				<p><button type="button" class="button" data-bcd-add="pros"><?php esc_html_e( 'Добавить плюс', 'tolstenko-theme' ); ?></button></p>
+
+				<div class="row" style="margin-top:18px">
+					<label>
+						<?php esc_html_e( 'Заглавие минусов', 'tolstenko-theme' ); ?><br>
+						<input type="text" name="tolstenko_block_defaults[blog_pros_cons][cons_title]" value="<?php echo esc_attr( (string) ( $pc['cons_title'] ?? '' ) ); ?>" placeholder="<?php esc_attr_e( 'Минусы', 'tolstenko-theme' ); ?>">
+					</label>
+				</div>
+				<div data-bcd-list="cons">
+					<?php foreach ( $pc_cons as $i => $line ) : ?>
+						<?php
+						$line_text = is_array( $line ) ? (string) ( $line['text'] ?? '' ) : (string) $line;
+						?>
+						<div class="tolstenko-bcd-item">
+							<input type="text" name="tolstenko_block_defaults[blog_pros_cons][cons][<?php echo esc_attr( (string) $i ); ?>][text]" value="<?php echo esc_attr( $line_text ); ?>" placeholder="<?php esc_attr_e( 'Пункт минуса', 'tolstenko-theme' ); ?>">
+							<p><button type="button" class="button-link-delete" data-bcd-remove><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button></p>
+						</div>
+					<?php endforeach; ?>
+				</div>
+				<p><button type="button" class="button" data-bcd-add="cons"><?php esc_html_e( 'Добавить минус', 'tolstenko-theme' ); ?></button></p>
 			</div>
 
 			<div class="tolstenko-bcd-panel" data-bcd-panel="blog_large_img" hidden>
@@ -591,8 +775,11 @@ function tolstenko_render_blog_content_defaults_admin_page() {
 						+ '<option value="warn"><?php echo esc_js( __( 'Внимание', 'tolstenko-theme' ) ); ?></option>'
 						+ '<option value="pin"><?php echo esc_js( __( 'Подметить', 'tolstenko-theme' ) ); ?></option>'
 						+ '<option value="ide"><?php echo esc_js( __( 'Идея', 'tolstenko-theme' ) ); ?></option>'
+						+ '<option value="err"><?php echo esc_js( __( 'Ошибка', 'tolstenko-theme' ) ); ?></option>'
 						+ '<option value="custom"><?php echo esc_js( __( 'Кастомный (иконка необязательна)', 'tolstenko-theme' ) ); ?></option>'
 						+ '</select>'
+						+ '<p><label><?php echo esc_js( __( 'Заглавие', 'tolstenko-theme' ) ); ?><br>'
+						+ '<input type="text" name="tolstenko_block_defaults[blog_warning][items]['+wIdx+'][title]" value="" placeholder="<?php echo esc_js( __( 'Важно', 'tolstenko-theme' ) ); ?>"></label></p>'
 						+ '<div class="tolstenko-bcd-editor-wrap">'
 						+ '<textarea id="'+wEditorId+'" name="tolstenko_block_defaults[blog_warning][items]['+wIdx+'][text]" rows="8" class="wp-editor-area tolstenko-bcd-wysiwyg"></textarea>'
 						+ '</div>'
@@ -601,6 +788,20 @@ function tolstenko_render_blog_content_defaults_admin_page() {
 						+ '</div>';
 					list.insertAdjacentHTML('beforeend', wHtml);
 					initBcdEditor(wEditorId);
+					return;
+				}
+				if ((kind === 'pros' || kind === 'cons') && list) {
+					var pcIdx = String(Date.now());
+					var pcName = kind === 'pros' ? 'pros' : 'cons';
+					var pcPh = kind === 'pros'
+						? '<?php echo esc_js( __( 'Пункт плюса', 'tolstenko-theme' ) ); ?>'
+						: '<?php echo esc_js( __( 'Пункт минуса', 'tolstenko-theme' ) ); ?>';
+					var pcHtml = ''
+						+ '<div class="tolstenko-bcd-item">'
+						+ '<input type="text" name="tolstenko_block_defaults[blog_pros_cons]['+pcName+']['+pcIdx+'][text]" value="" placeholder="'+pcPh+'">'
+						+ '<p><button type="button" class="button-link-delete" data-bcd-remove><?php echo esc_js( __( 'Удалить', 'tolstenko-theme' ) ); ?></button></p>'
+						+ '</div>';
+					list.insertAdjacentHTML('beforeend', pcHtml);
 					return;
 				}
 				var tpl = root.querySelector('[data-bcd-tpl="'+kind+'"]');
@@ -701,22 +902,75 @@ function tolstenko_save_blog_content_defaults_from_request() {
 			continue;
 		}
 		$type = sanitize_key( (string) ( $row['type'] ?? 'warn' ) );
-		if ( ! in_array( $type, array( 'warn', 'pin', 'ide', 'custom' ), true ) ) {
+		$allowed_wn = function_exists( 'tolstenko_blog_warning_allowed_types' )
+			? tolstenko_blog_warning_allowed_types()
+			: array( 'warn', 'pin', 'ide', 'err', 'custom' );
+		if ( ! in_array( $type, $allowed_wn, true ) ) {
 			$type = 'warn';
 		}
 		$wn_items[] = array(
-			'type' => $type,
-			'text' => function_exists( 'tolstenko_kses_html' ) ? tolstenko_kses_html( $text ) : wp_kses_post( $text ),
-			'icon' => isset( $row['icon'] ) ? (int) $row['icon'] : 0,
+			'type'  => $type,
+			'title' => isset( $row['title'] ) ? sanitize_text_field( (string) $row['title'] ) : '',
+			'text'  => function_exists( 'tolstenko_kses_html' ) ? tolstenko_kses_html( $text ) : wp_kses_post( $text ),
+			'icon'  => isset( $row['icon'] ) ? (int) $row['icon'] : 0,
 		);
 	}
 	$saved['blog_warning'] = array( 'items' => $wn_items );
+
+	$pc_sanitize_lines = static function ( $raw ) {
+		$out = array();
+		if ( ! is_array( $raw ) ) {
+			return $out;
+		}
+		foreach ( $raw as $row ) {
+			$text = is_array( $row ) ? trim( (string) ( $row['text'] ?? '' ) ) : trim( (string) $row );
+			if ( $text === '' ) {
+				continue;
+			}
+			$out[] = array(
+				'text' => function_exists( 'tolstenko_kses_html' ) ? tolstenko_kses_html( $text ) : sanitize_text_field( $text ),
+			);
+		}
+		return $out;
+	};
+	$pc_raw = isset( $raw_all['blog_pros_cons'] ) && is_array( $raw_all['blog_pros_cons'] ) ? $raw_all['blog_pros_cons'] : array();
+	$saved['blog_pros_cons'] = array(
+		'pros_title' => isset( $pc_raw['pros_title'] ) ? sanitize_text_field( (string) $pc_raw['pros_title'] ) : '',
+		'cons_title' => isset( $pc_raw['cons_title'] ) ? sanitize_text_field( (string) $pc_raw['cons_title'] ) : '',
+		'pros'       => $pc_sanitize_lines( $pc_raw['pros'] ?? array() ),
+		'cons'       => $pc_sanitize_lines( $pc_raw['cons'] ?? array() ),
+	);
 
 	$seo = isset( $raw_all['blog_seo'] ) && is_array( $raw_all['blog_seo'] ) ? $raw_all['blog_seo'] : array();
 	$saved['blog_seo'] = array(
 		'title'   => isset( $seo['title'] ) ? ( function_exists( 'tolstenko_kses_html' ) ? tolstenko_kses_html( (string) $seo['title'] ) : sanitize_text_field( (string) $seo['title'] ) ) : '',
 		'btn'     => isset( $seo['btn'] ) ? sanitize_text_field( (string) $seo['btn'] ) : '',
 		'btn_url' => isset( $seo['btn_url'] ) ? esc_url_raw( (string) $seo['btn_url'] ) : '',
+	);
+
+	$cw = isset( $raw_all['article_consultation_whatsapp'] ) && is_array( $raw_all['article_consultation_whatsapp'] )
+		? $raw_all['article_consultation_whatsapp']
+		: array();
+	$saved['article_consultation_whatsapp'] = array(
+		'title'       => isset( $cw['title'] ) ? ( function_exists( 'tolstenko_kses_html' ) ? tolstenko_kses_html( (string) $cw['title'] ) : sanitize_text_field( (string) $cw['title'] ) ) : '',
+		'text'        => isset( $cw['text'] ) ? ( function_exists( 'tolstenko_kses_html' ) ? tolstenko_kses_html( (string) $cw['text'] ) : wp_kses_post( (string) $cw['text'] ) ) : '',
+		'btn_text'    => isset( $cw['btn_text'] ) ? sanitize_text_field( (string) $cw['btn_text'] ) : '',
+		'btn_url'     => isset( $cw['btn_url'] ) ? esc_url_raw( (string) $cw['btn_url'] ) : '',
+		'color'       => sanitize_hex_color( (string) ( $cw['color'] ?? '' ) ) ?: sanitize_text_field( (string) ( $cw['color'] ?? '' ) ),
+		'color_hover' => sanitize_hex_color( (string) ( $cw['color_hover'] ?? '' ) ) ?: sanitize_text_field( (string) ( $cw['color_hover'] ?? '' ) ),
+	);
+
+	$ctg = isset( $raw_all['article_consultation_tg'] ) && is_array( $raw_all['article_consultation_tg'] )
+		? $raw_all['article_consultation_tg']
+		: array();
+	$saved['article_consultation_tg'] = array(
+		'title'       => isset( $ctg['title'] ) ? ( function_exists( 'tolstenko_kses_html' ) ? tolstenko_kses_html( (string) $ctg['title'] ) : sanitize_text_field( (string) $ctg['title'] ) ) : '',
+		'text'        => isset( $ctg['text'] ) ? ( function_exists( 'tolstenko_kses_html' ) ? tolstenko_kses_html( (string) $ctg['text'] ) : wp_kses_post( (string) $ctg['text'] ) ) : '',
+		'btn_text'    => isset( $ctg['btn_text'] ) ? sanitize_text_field( (string) $ctg['btn_text'] ) : '',
+		'btn_url'     => isset( $ctg['btn_url'] ) ? esc_url_raw( (string) $ctg['btn_url'] ) : '',
+		'text_btn'    => isset( $ctg['text_btn'] ) ? ( function_exists( 'tolstenko_kses_html' ) ? tolstenko_kses_html( (string) $ctg['text_btn'] ) : sanitize_text_field( (string) $ctg['text_btn'] ) ) : '',
+		'color'       => sanitize_hex_color( (string) ( $ctg['color'] ?? '' ) ) ?: sanitize_text_field( (string) ( $ctg['color'] ?? '' ) ),
+		'color_hover' => sanitize_hex_color( (string) ( $ctg['color_hover'] ?? '' ) ) ?: sanitize_text_field( (string) ( $ctg['color_hover'] ?? '' ) ),
 	);
 
 	update_option( 'tolstenko_block_defaults', $saved, false );

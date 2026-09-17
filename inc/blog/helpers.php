@@ -99,6 +99,17 @@ function tolstenko_get_blog_comments_count( $post_id = 0 ) {
 }
 
 /**
+ * Email комментатора (на сайте не показывается).
+ *
+ * @param mixed $email Raw email.
+ * @return string
+ */
+function tolstenko_blog_comment_sanitize_email( $email ) {
+	$email = sanitize_email( (string) $email );
+	return is_email( $email ) ? $email : '';
+}
+
+/**
  * Стабильный id комментария (не индекс массива).
  *
  * @return string
@@ -411,6 +422,7 @@ function tolstenko_append_blog_comment( $post_id, array $item, $parent_id = '' )
 		'id'      => (string) ( $item['id'] ?? '' ),
 		'photo'   => (int) ( $item['photo'] ?? 0 ),
 		'name'    => sanitize_text_field( (string) ( $item['name'] ?? '' ) ),
+		'email'   => tolstenko_blog_comment_sanitize_email( $item['email'] ?? '' ),
 		'date'    => sanitize_text_field( (string) ( $item['date'] ?? '' ) ),
 		'time'    => sanitize_text_field( (string) ( $item['time'] ?? '' ) ),
 		'text'    => sanitize_textarea_field( (string) ( $item['text'] ?? '' ) ),
@@ -496,7 +508,7 @@ function tolstenko_append_blog_comment( $post_id, array $item, $parent_id = '' )
 
 	update_post_meta( $post_id, 'blog_comments', $comments );
 
-	return true;
+	return (string) ( $row['id'] ?? '' ) !== '' ? (string) $row['id'] : true;
 }
 
 /**

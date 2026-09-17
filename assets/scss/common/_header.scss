@@ -130,6 +130,16 @@
       }
     }
   }
+  &__menu-list .menu-item:has( + .menu-item-has-children) {
+    // display: flex;
+
+    @media (min-width: $desk) {
+      display: none !important;
+    }
+    @media (min-width: $desk_large) {
+      display: none !important;
+    }
+  }
   &__menu-list .menu-item-has-children{
     // display: flex;
 
@@ -422,10 +432,9 @@
         padding-left: vw(16px, $mobile);
       }
     }
-    .header__menu-list  {
+    .header__menu-list + .header__menu-list  {
       margin-bottom: vw(35px, $mobile);
     }
-
   }
   &__bottom {
     padding: vw(20px, $mobile) vw(16px, $mobile);

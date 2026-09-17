@@ -332,6 +332,9 @@ function tolstenko_blog_render_comment_admin_row( $index, array $item, $depth = 
 			<div class="tolstenko-bc-fields">
 				<label><?php esc_html_e( 'Имя', 'tolstenko-theme' ); ?></label>
 				<input type="text" name="<?php echo esc_attr( $base . '[name]' ); ?>" value="<?php echo esc_attr( (string) ( $item['name'] ?? '' ) ); ?>">
+				<label><?php esc_html_e( 'Email', 'tolstenko-theme' ); ?></label>
+				<input type="email" name="<?php echo esc_attr( $base . '[email]' ); ?>" value="<?php echo esc_attr( (string) ( $item['email'] ?? '' ) ); ?>">
+				<p class="description"><?php esc_html_e( 'Не показывается на сайте. Нужен для писем об ответах.', 'tolstenko-theme' ); ?></p>
 				<label><?php esc_html_e( 'Дата', 'tolstenko-theme' ); ?></label>
 				<input type="text" name="<?php echo esc_attr( $base . '[date]' ); ?>" value="<?php echo esc_attr( (string) ( $item['date'] ?? '' ) ); ?>" placeholder="01.01.2026">
 				<label><?php esc_html_e( 'Время', 'tolstenko-theme' ); ?></label>
@@ -438,6 +441,9 @@ function tolstenko_blog_sanitize_comments( array $rows ) {
 				: sanitize_text_field( (string) ( $row['id'] ?? '' ) ),
 			'photo' => (int) ( $row['photo'] ?? 0 ),
 			'name'  => sanitize_text_field( (string) ( $row['name'] ?? '' ) ),
+			'email' => function_exists( 'tolstenko_blog_comment_sanitize_email' )
+				? tolstenko_blog_comment_sanitize_email( $row['email'] ?? '' )
+				: '',
 			'date'  => sanitize_text_field( (string) ( $row['date'] ?? '' ) ),
 			'time'  => sanitize_text_field( (string) ( $row['time'] ?? '' ) ),
 			'text'  => sanitize_textarea_field( (string) ( $row['text'] ?? '' ) ),
@@ -455,6 +461,9 @@ function tolstenko_blog_sanitize_comments( array $rows ) {
 						: sanitize_text_field( (string) ( $reply['id'] ?? '' ) ),
 					'photo' => (int) ( $reply['photo'] ?? 0 ),
 					'name'  => sanitize_text_field( (string) ( $reply['name'] ?? '' ) ),
+					'email' => function_exists( 'tolstenko_blog_comment_sanitize_email' )
+						? tolstenko_blog_comment_sanitize_email( $reply['email'] ?? '' )
+						: '',
 					'date'  => sanitize_text_field( (string) ( $reply['date'] ?? '' ) ),
 					'time'  => sanitize_text_field( (string) ( $reply['time'] ?? '' ) ),
 					'text'  => sanitize_textarea_field( (string) ( $reply['text'] ?? '' ) ),
@@ -472,6 +481,9 @@ function tolstenko_blog_sanitize_comments( array $rows ) {
 								: sanitize_text_field( (string) ( $nested_item['id'] ?? '' ) ),
 							'photo' => (int) ( $nested_item['photo'] ?? 0 ),
 							'name'  => sanitize_text_field( (string) ( $nested_item['name'] ?? '' ) ),
+							'email' => function_exists( 'tolstenko_blog_comment_sanitize_email' )
+								? tolstenko_blog_comment_sanitize_email( $nested_item['email'] ?? '' )
+								: '',
 							'date'  => sanitize_text_field( (string) ( $nested_item['date'] ?? '' ) ),
 							'time'  => sanitize_text_field( (string) ( $nested_item['time'] ?? '' ) ),
 							'text'  => sanitize_textarea_field( (string) ( $nested_item['text'] ?? '' ) ),

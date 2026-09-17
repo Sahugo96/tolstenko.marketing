@@ -249,3 +249,14 @@
     color: var(--white-color);
   }
 } */
+
+.blog-section__filter.filter--slider .filter__form.swiper .swiper-wrapper {
+  width: max-content;
+  height: auto;
+  max-width: none;
+}
+.blog-section__filter.filter--slider .swiper-slide {
+  width: fit-content;
+  height: auto;
+  max-width: none;
+}

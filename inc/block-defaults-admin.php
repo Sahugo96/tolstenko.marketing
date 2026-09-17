@@ -144,6 +144,12 @@ function tolstenko_block_defaults_schema() {
 		'blog_warning' => array(
 			'items' => array(),
 		),
+		'blog_pros_cons' => array(
+			'pros_title' => 'Плюсы',
+			'cons_title' => 'Минусы',
+			'pros'       => array(),
+			'cons'       => array(),
+		),
 		'blog_seo' => array(
 			'title'   => 'Нужна помощь с продвижением?',
 			'btn'     => 'Получить консультацию',
@@ -158,12 +164,14 @@ function tolstenko_block_defaults_schema() {
 			'color_hover' => '#1EBE57',
 		),
 		'consultation_tg' => array(
-			'title'    => 'Консультация в Telegram',
-			'text'     => 'Быстрые ответы и удобное общение в мессенджере.',
-			'btn_text' => 'Написать в Telegram',
-			'btn_url'  => '',
-			'text_btn' => 'Обычно отвечаем в течение 15 минут',
-			'image'    => 0,
+			'title'       => 'Консультация в Telegram',
+			'text'        => 'Быстрые ответы и удобное общение в мессенджере.',
+			'btn_text'    => 'Написать в Telegram',
+			'btn_url'     => '',
+			'text_btn'    => 'Обычно отвечаем в течение 15 минут',
+			'color'       => '#2AABEE',
+			'color_hover' => '#229ED9',
+			'image'       => 0,
 		),
 		'consultation_tel' => array(
 			'title'             => 'Позвоните нам — расскажем всё по телефону',
@@ -1627,6 +1635,8 @@ function tolstenko_render_block_defaults_admin_page() {
 			<div class="row"><input type="text" name="tolstenko_block_defaults[consultation_tg][btn_text]" value="<?php echo esc_attr( $ctg['btn_text'] ?? '' ); ?>" style="width:100%" placeholder="Текст кнопки"></div>
 			<div class="row"><input type="url" name="tolstenko_block_defaults[consultation_tg][btn_url]" value="<?php echo esc_attr( $ctg['btn_url'] ?? '' ); ?>" style="width:100%" placeholder="Ссылка Telegram"></div>
 			<div class="row"><input type="text" name="tolstenko_block_defaults[consultation_tg][text_btn]" value="<?php echo esc_attr( $ctg['text_btn'] ?? '' ); ?>" style="width:100%" placeholder="Подпись под кнопкой"></div>
+			<div class="row"><input type="text" name="tolstenko_block_defaults[consultation_tg][color]" value="<?php echo esc_attr( $ctg['color'] ?? '#2AABEE' ); ?>" style="width:48%" placeholder="Цвет кнопки"></div>
+			<div class="row"><input type="text" name="tolstenko_block_defaults[consultation_tg][color_hover]" value="<?php echo esc_attr( $ctg['color_hover'] ?? '#229ED9' ); ?>" style="width:48%" placeholder="Цвет hover"></div>
 			<div class="row">
 				<div class="muted"><?php esc_html_e( 'Фото / аватар', 'tolstenko-theme' ); ?></div>
 				<div class="tolstenko-defaults-image-row">
@@ -3129,12 +3139,14 @@ function tolstenko_save_block_defaults_from_request() {
 	);
 
 	$out['consultation_tg'] = array(
-		'title'    => tolstenko_kses_html( $raw['consultation_tg']['title'] ?? ''  ),
-		'text'     => tolstenko_kses_html( $raw['consultation_tg']['text'] ?? ''  ),
-		'btn_text' => sanitize_text_field( $raw['consultation_tg']['btn_text'] ?? '' ),
-		'btn_url'  => esc_url_raw( $raw['consultation_tg']['btn_url'] ?? '' ),
-		'text_btn' => tolstenko_kses_html( $raw['consultation_tg']['text_btn'] ?? ''  ),
-		'image'    => isset( $raw['consultation_tg']['image'] ) ? (int) $raw['consultation_tg']['image'] : 0,
+		'title'       => tolstenko_kses_html( $raw['consultation_tg']['title'] ?? ''  ),
+		'text'        => tolstenko_kses_html( $raw['consultation_tg']['text'] ?? ''  ),
+		'btn_text'    => sanitize_text_field( $raw['consultation_tg']['btn_text'] ?? '' ),
+		'btn_url'     => esc_url_raw( $raw['consultation_tg']['btn_url'] ?? '' ),
+		'text_btn'    => tolstenko_kses_html( $raw['consultation_tg']['text_btn'] ?? ''  ),
+		'color'       => sanitize_hex_color( $raw['consultation_tg']['color'] ?? '' ) ?: sanitize_text_field( $raw['consultation_tg']['color'] ?? '' ),
+		'color_hover' => sanitize_hex_color( $raw['consultation_tg']['color_hover'] ?? '' ) ?: sanitize_text_field( $raw['consultation_tg']['color_hover'] ?? '' ),
+		'image'       => isset( $raw['consultation_tg']['image'] ) ? (int) $raw['consultation_tg']['image'] : 0,
 	);
 
 	$out['consultation_tel'] = array(

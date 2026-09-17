@@ -163,6 +163,30 @@ function tolstenko_comment_queue_cf7_hidden_fields( $hidden ) {
 	return $hidden;
 }
 
+/**
+ * Email из полей CF7 (текущее имя поля: email-826).
+ *
+ * @param array $data Posted data.
+ * @return string
+ */
+function tolstenko_comment_queue_posted_email( array $data ) {
+	$keys = array( 'email-826', 'your-email', 'email' );
+	foreach ( $keys as $key ) {
+		if ( ! isset( $data[ $key ] ) ) {
+			continue;
+		}
+		$raw = $data[ $key ];
+		if ( is_array( $raw ) ) {
+			$raw = reset( $raw );
+		}
+		$email = sanitize_email( (string) $raw );
+		if ( is_email( $email ) ) {
+			return $email;
+		}
+	}
+	return '';
+}
+
 add_action( 'wpcf7_mail_sent', 'tolstenko_comment_queue_capture_cf7' );
 
 /**
@@ -194,7 +218,7 @@ function tolstenko_comment_queue_capture_cf7( $contact_form ) {
 	}
 
 	$name  = sanitize_text_field( (string) ( $data['your-name'] ?? '' ) );
-	$phone = sanitize_text_field( (string) ( $data['your-phone'] ?? '' ) );
+	$email = tolstenko_comment_queue_posted_email( $data );
 	$text  = sanitize_textarea_field( (string) ( $data['textarea-464'] ?? '' ) );
 
 	if ( $name === '' && $text === '' ) {
@@ -246,7 +270,7 @@ function tolstenko_comment_queue_capture_cf7( $contact_form ) {
 
 	update_post_meta( $queue_id, '_tolstenko_target_post_id', $target_id );
 	update_post_meta( $queue_id, '_tolstenko_cmt_name', $name );
-	update_post_meta( $queue_id, '_tolstenko_cmt_phone', $phone );
+	update_post_meta( $queue_id, '_tolstenko_cmt_email', $email );
 	update_post_meta( $queue_id, '_tolstenko_cmt_text', $text );
 	update_post_meta( $queue_id, '_tolstenko_cmt_date', wp_date( 'd.m.Y', $now ) );
 	update_post_meta( $queue_id, '_tolstenko_cmt_time', wp_date( 'H:i', $now ) );
@@ -299,7 +323,11 @@ function tolstenko_comment_queue_render_metabox( $post ) {
 
 	$target      = (int) tolstenko_comment_queue_meta( $post->ID, '_tolstenko_target_post_id', 0 );
 	$name        = (string) tolstenko_comment_queue_meta( $post->ID, '_tolstenko_cmt_name', '' );
-	$phone       = (string) tolstenko_comment_queue_meta( $post->ID, '_tolstenko_cmt_phone', '' );
+	$email       = (string) tolstenko_comment_queue_meta( $post->ID, '_tolstenko_cmt_email', '' );
+	if ( $email === '' ) {
+		$email = (string) tolstenko_comment_queue_meta( $post->ID, '_tolstenko_cmt_phone', '' );
+		$email = is_email( $email ) ? $email : '';
+	}
 	$text        = (string) tolstenko_comment_queue_meta( $post->ID, '_tolstenko_cmt_text', '' );
 	$date        = (string) tolstenko_comment_queue_meta( $post->ID, '_tolstenko_cmt_date', '' );
 	$photo       = (int) tolstenko_comment_queue_meta( $post->ID, '_tolstenko_cmt_photo', 0 );
@@ -346,10 +374,9 @@ function tolstenko_comment_queue_render_metabox( $post ) {
 			<label for="tolstenko_cq_name"><?php esc_html_e( 'Имя', 'tolstenko-theme' ); ?></label>
 			<input type="text" id="tolstenko_cq_name" name="tolstenko_cq_name" value="<?php echo esc_attr( $name ); ?>">
 
-			<p>
-				<strong><?php esc_html_e( 'Телефон', 'tolstenko-theme' ); ?>:</strong>
-				<?php echo $phone !== '' ? esc_html( $phone ) : '—'; ?>
-			</p>
+			<label for="tolstenko_cq_email"><?php esc_html_e( 'Email', 'tolstenko-theme' ); ?></label>
+			<input type="email" id="tolstenko_cq_email" name="tolstenko_cq_email" value="<?php echo esc_attr( $email ); ?>">
+			<p class="description"><?php esc_html_e( 'На сайт не выводится. Сюда уйдёт письмо об публикации и об ответах.', 'tolstenko-theme' ); ?></p>
 
 			<p>
 				<strong><?php esc_html_e( 'Дата', 'tolstenko-theme' ); ?>:</strong>
@@ -471,10 +498,15 @@ function tolstenko_comment_queue_save( $post_id, $post ) {
 	}
 
 	$name  = isset( $_POST['tolstenko_cq_name'] ) ? sanitize_text_field( wp_unslash( $_POST['tolstenko_cq_name'] ) ) : '';
+	$email = isset( $_POST['tolstenko_cq_email'] ) ? sanitize_email( wp_unslash( $_POST['tolstenko_cq_email'] ) ) : '';
+	if ( ! is_email( $email ) ) {
+		$email = '';
+	}
 	$text  = isset( $_POST['tolstenko_cq_text'] ) ? sanitize_textarea_field( wp_unslash( $_POST['tolstenko_cq_text'] ) ) : '';
 	$photo = isset( $_POST['tolstenko_cq_photo'] ) ? (int) $_POST['tolstenko_cq_photo'] : 0;
 
 	update_post_meta( $post_id, '_tolstenko_cmt_name', $name );
+	update_post_meta( $post_id, '_tolstenko_cmt_email', $email );
 	update_post_meta( $post_id, '_tolstenko_cmt_text', $text );
 	update_post_meta( $post_id, '_tolstenko_cmt_photo', $photo );
 
@@ -526,6 +558,7 @@ function tolstenko_comment_queue_approve( $queue_id ) {
 	$item = array(
 		'photo' => (int) get_post_meta( $queue_id, '_tolstenko_cmt_photo', true ),
 		'name'  => (string) get_post_meta( $queue_id, '_tolstenko_cmt_name', true ),
+		'email' => (string) get_post_meta( $queue_id, '_tolstenko_cmt_email', true ),
 		'date'  => (string) get_post_meta( $queue_id, '_tolstenko_cmt_date', true ),
 		'time'  => (string) get_post_meta( $queue_id, '_tolstenko_cmt_time', true ),
 		'text'  => (string) get_post_meta( $queue_id, '_tolstenko_cmt_text', true ),
@@ -563,9 +596,14 @@ function tolstenko_comment_queue_approve( $queue_id ) {
 		}
 	}
 
-	if ( ! function_exists( 'tolstenko_append_blog_comment' ) || ! tolstenko_append_blog_comment( $target, $item, $parent_id ) ) {
+	$appended = function_exists( 'tolstenko_append_blog_comment' )
+		? tolstenko_append_blog_comment( $target, $item, $parent_id )
+		: false;
+	if ( ! $appended ) {
 		return new WP_Error( 'append', __( 'Не удалось добавить комментарий в статью (пустое имя/текст?).', 'tolstenko-theme' ) );
 	}
+
+	$new_id = is_string( $appended ) ? $appended : '';
 
 	update_post_meta( $queue_id, '_tolstenko_published', 1 );
 	wp_update_post(
@@ -575,7 +613,106 @@ function tolstenko_comment_queue_approve( $queue_id ) {
 		)
 	);
 
+	tolstenko_comment_queue_notify_on_approve( $queue_id, $target, $parent_id, $new_id );
+
 	return true;
+}
+
+/**
+ * Письма: автору — комментарий опубликован; автору родителя — появился ответ.
+ *
+ * @param int    $queue_id  Queue post ID.
+ * @param int    $target_id Article ID.
+ * @param string $parent_id Parent comment id.
+ * @param string $new_id    New comment id.
+ */
+function tolstenko_comment_queue_notify_on_approve( $queue_id, $target_id, $parent_id, $new_id ) {
+	$queue_id  = (int) $queue_id;
+	$target_id = (int) $target_id;
+	$permalink = $target_id ? (string) get_permalink( $target_id ) : '';
+	if ( $permalink && $new_id !== '' ) {
+		$permalink .= '#comment-' . rawurlencode( $new_id );
+	}
+	$post_title = $target_id ? wp_strip_all_tags( (string) get_the_title( $target_id ) ) : '';
+	$site       = wp_specialchars_decode( (string) get_bloginfo( 'name' ), ENT_QUOTES );
+	$author     = (string) get_post_meta( $queue_id, '_tolstenko_cmt_name', true );
+	$email      = sanitize_email( (string) get_post_meta( $queue_id, '_tolstenko_cmt_email', true ) );
+	$text       = (string) get_post_meta( $queue_id, '_tolstenko_cmt_text', true );
+	if ( function_exists( 'mb_substr' ) ) {
+		$excerpt = trim( mb_substr( wp_strip_all_tags( $text ), 0, 220 ) );
+	} else {
+		$excerpt = trim( substr( wp_strip_all_tags( $text ), 0, 220 ) );
+	}
+
+	$headers = array( 'Content-Type: text/plain; charset=UTF-8' );
+
+	if ( is_email( $email ) ) {
+		$subject = sprintf(
+			/* translators: 1: site name */
+			__( '[%s] Ваш комментарий опубликован', 'tolstenko-theme' ),
+			$site
+		);
+		$lines = array(
+			$author !== '' ? sprintf( __( 'Здравствуйте, %s!', 'tolstenko-theme' ), $author ) : __( 'Здравствуйте!', 'tolstenko-theme' ),
+			'',
+			$post_title !== ''
+				? sprintf( __( 'Ваш комментарий к материалу «%s» опубликован.', 'tolstenko-theme' ), $post_title )
+				: __( 'Ваш комментарий опубликован.', 'tolstenko-theme' ),
+		);
+		if ( $excerpt !== '' ) {
+			$lines[] = '';
+			$lines[] = $excerpt;
+		}
+		if ( $permalink !== '' ) {
+			$lines[] = '';
+			$lines[] = __( 'Ссылка:', 'tolstenko-theme' );
+			$lines[] = $permalink;
+		}
+		wp_mail( $email, $subject, implode( "\n", $lines ), $headers );
+	}
+
+	$parent_id = (string) $parent_id;
+	if ( $parent_id === '' || ! function_exists( 'tolstenko_blog_get_comment' ) ) {
+		return;
+	}
+
+	$parent = tolstenko_blog_get_comment( $target_id, $parent_id );
+	if ( ! is_array( $parent ) ) {
+		return;
+	}
+	$parent_email = function_exists( 'tolstenko_blog_comment_sanitize_email' )
+		? tolstenko_blog_comment_sanitize_email( $parent['email'] ?? '' )
+		: ( is_email( (string) ( $parent['email'] ?? '' ) ) ? (string) $parent['email'] : '' );
+	if ( $parent_email === '' || ( is_email( $email ) && strcasecmp( $parent_email, $email ) === 0 ) ) {
+		return;
+	}
+
+	$parent_name = trim( (string) ( $parent['name'] ?? '' ) );
+	$subject     = sprintf(
+		/* translators: 1: site name */
+		__( '[%s] Новый ответ на ваш комментарий', 'tolstenko-theme' ),
+		$site
+	);
+	$lines = array(
+		$parent_name !== '' ? sprintf( __( 'Здравствуйте, %s!', 'tolstenko-theme' ), $parent_name ) : __( 'Здравствуйте!', 'tolstenko-theme' ),
+		'',
+		$post_title !== ''
+			? sprintf( __( 'На ваш комментарий к материалу «%s» появился ответ.', 'tolstenko-theme' ), $post_title )
+			: __( 'На ваш комментарий появился ответ.', 'tolstenko-theme' ),
+	);
+	if ( $author !== '' ) {
+		$lines[] = sprintf( __( 'Автор ответа: %s', 'tolstenko-theme' ), $author );
+	}
+	if ( $excerpt !== '' ) {
+		$lines[] = '';
+		$lines[] = $excerpt;
+	}
+	if ( $permalink !== '' ) {
+		$lines[] = '';
+		$lines[] = __( 'Ссылка:', 'tolstenko-theme' );
+		$lines[] = $permalink;
+	}
+	wp_mail( $parent_email, $subject, implode( "\n", $lines ), $headers );
 }
 
 add_action( 'admin_post_tolstenko_approve_blog_comment', 'tolstenko_comment_queue_handle_approve' );
@@ -659,7 +796,7 @@ function tolstenko_comment_queue_columns( $columns ) {
 		if ( $key === 'title' ) {
 			$new['tolstenko_cq_target'] = __( 'Статья', 'tolstenko-theme' );
 			$new['tolstenko_cq_type']    = __( 'Тип', 'tolstenko-theme' );
-			$new['tolstenko_cq_phone']  = __( 'Телефон', 'tolstenko-theme' );
+			$new['tolstenko_cq_email']  = __( 'Email', 'tolstenko-theme' );
 			$new['tolstenko_cq_status'] = __( 'Публикация', 'tolstenko-theme' );
 		}
 	}
@@ -700,9 +837,9 @@ function tolstenko_comment_queue_column_content( $column, $post_id ) {
 		}
 		return;
 	}
-	if ( $column === 'tolstenko_cq_phone' ) {
-		$phone = (string) get_post_meta( $post_id, '_tolstenko_cmt_phone', true );
-		echo $phone !== '' ? esc_html( $phone ) : '—';
+	if ( $column === 'tolstenko_cq_email' ) {
+		$email = (string) get_post_meta( $post_id, '_tolstenko_cmt_email', true );
+		echo $email !== '' ? esc_html( $email ) : '—';
 		return;
 	}
 	if ( $column === 'tolstenko_cq_status' ) {

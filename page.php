@@ -16,8 +16,8 @@ get_header();
 			tolstenko_render_breadcrumb();
 		}
 		?>
-		<?php if ( is_page( 'privacy-policy' ) ) : ?>
-			<div class="container policy-container">
+		<?php if ( is_page( 'politika-konfidenczialnosti' ) || is_page( 'soglasie-na-obrabotku-personalnyh-dannyh' ) ) : ?>
+			<div class="container policy-container redactor">
 		<?php endif; ?>
 		<?php
 		if ( have_posts() ) :
@@ -27,7 +27,7 @@ get_header();
 			endwhile;
 		endif;
 		?>
-		<?php if ( is_page( 'privacy-policy' ) ) : ?>
+		<?php if ( is_page( 'politika-konfidenczialnosti' ) || is_page( 'soglasie-na-obrabotku-personalnyh-dannyh' ) ) : ?>
 			</div>
 		<?php endif; ?>
     </main>

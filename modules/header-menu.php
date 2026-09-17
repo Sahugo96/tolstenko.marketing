@@ -159,7 +159,7 @@ $render_quick_social = static function ( $social, $btn_class = 'header__top-btn'
 		}
 		$mobile_services = wp_nav_menu(
 			array(
-				'theme_location' => 'mobile_services',
+				'theme_location' => 'header_main',
 				'container'      => false,
 				'menu_class'     => 'header__menu-list menu__list',
 				'fallback_cb'    => false,

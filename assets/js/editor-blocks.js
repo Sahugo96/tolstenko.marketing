@@ -171,6 +171,13 @@
     function getDefault(path, fallback) {
         try {
             var parts = String(path || '').split('.');
+            if (blockDefaults.isContentBody && parts.length) {
+                if (parts[0] === 'consultation_whatsapp') {
+                    parts[0] = 'article_consultation_whatsapp';
+                } else if (parts[0] === 'consultation_tg') {
+                    parts[0] = 'article_consultation_tg';
+                }
+            }
             var cur = blockDefaults;
             for (var i = 0; i < parts.length; i++) {
                 if (!cur || typeof cur !== 'object' || !(parts[i] in cur)) return fallback;
@@ -1315,6 +1322,8 @@
             { key: 'block_consultation_tg_btn_text', label: 'Текст кнопки', defaultPath: 'consultation_tg.btn_text' },
             { key: 'block_consultation_tg_btn_url', label: 'Ссылка Telegram', defaultPath: 'consultation_tg.btn_url' },
             { key: 'block_consultation_tg_text_btn', label: 'Подпись под кнопкой', defaultPath: 'consultation_tg.text_btn' },
+            { key: 'block_consultation_tg_color', label: 'Цвет кнопки', defaultPath: 'consultation_tg.color', placeholder: '#2AABEE' },
+            { key: 'block_consultation_tg_color_hover', label: 'Цвет hover', defaultPath: 'consultation_tg.color_hover', placeholder: '#229ED9' },
             { type: 'image', key: 'block_consultation_tg_image', label: 'Фото / аватар' }
         ]
     });
@@ -5324,18 +5333,27 @@
                 items = Array.isArray(defWarn) && defWarn.length ? defWarn.map(function (it) {
                     return {
                         type: (it && it.type) || 'warn',
+                        title: (it && it.title) || '',
                         text: (it && it.text) || '',
                         icon: (it && it.icon) || 0
                     };
-                }) : [{ type: 'warn', text: '', icon: 0 }];
+                }) : [{ type: 'warn', title: '', text: '', icon: 0 }];
             }
             function setItems(next) { set({ block_blog_warning_items: next }); }
             var typeOptions = [
                 { label: 'Внимание', value: 'warn' },
                 { label: 'Подметить', value: 'pin' },
                 { label: 'Идея', value: 'ide' },
+                { label: 'Ошибка', value: 'err' },
                 { label: 'Кастомный (иконка необязательна)', value: 'custom' }
             ];
+            var titlePlaceholders = {
+                warn: 'Важно',
+                pin: 'На заметку',
+                ide: 'Совет',
+                err: 'Частая ошибка',
+                custom: ''
+            };
             return wrapBlock(blockProps, [
                 el('p', { key: 'l', style: { fontWeight: '600', marginBottom: '8px' } }, 'Статья: предупреждения'),
                 renderRepeater({
@@ -5361,6 +5379,17 @@
                                 help: type === 'custom'
                                     ? 'Без иконки — тёмная плашка и текст по центру. С иконкой — слева иконка, справа текст.'
                                     : undefined
+                            }) : null,
+                            TextControl ? el(TextControl, {
+                                key: 'title',
+                                label: 'Заглавие',
+                                value: (item && item.title) || '',
+                                placeholder: titlePlaceholders[type] || '',
+                                onChange: function (v) {
+                                    var next = items.slice();
+                                    next[index] = Object.assign({}, item || {}, { title: v });
+                                    setItems(next);
+                                }
                             }) : null,
                             el('p', {
                                 key: 'txt-l',
@@ -5415,8 +5444,97 @@
                     },
                     label: null,
                     addLabel: 'Добавить пункт',
-                    emptyItem: { type: 'warn', text: '', icon: 0 },
+                    emptyItem: { type: 'warn', title: '', text: '', icon: 0 },
                     keyPrefix: 'warning-items'
+                })
+            ]);
+        },
+        save: function () { return null; }
+    });
+
+    wp.blocks.registerBlockType('tolstenko/blog-pros-cons', {
+        title: 'Статья: плюсы и минусы',
+        category: 'tolstenko-blocks-new',
+        icon: 'plus-alt',
+        edit: function (props) {
+            var attrs = props.attributes || {};
+            var set = props.setAttributes;
+            var blockProps = useBlockProps ? useBlockProps() : {};
+            function mapLines(raw) {
+                if (!Array.isArray(raw) || !raw.length) return [{ text: '' }];
+                return raw.map(function (it) {
+                    return { text: (it && it.text) || String(it || '') };
+                });
+            }
+            var prosTitle = attrs.block_blog_pros_cons_pros_title || '';
+            var consTitle = attrs.block_blog_pros_cons_cons_title || '';
+            var pros = Array.isArray(attrs.block_blog_pros_cons_pros) ? attrs.block_blog_pros_cons_pros.slice() : [];
+            var cons = Array.isArray(attrs.block_blog_pros_cons_cons) ? attrs.block_blog_pros_cons_cons.slice() : [];
+            if (!pros.length && !cons.length && !prosTitle && !consTitle) {
+                var defPc = getDefault('blog_pros_cons', {}) || {};
+                prosTitle = defPc.pros_title || '';
+                consTitle = defPc.cons_title || '';
+                pros = mapLines(defPc.pros);
+                cons = mapLines(defPc.cons);
+            } else {
+                if (!pros.length) pros = [{ text: '' }];
+                if (!cons.length) cons = [{ text: '' }];
+            }
+            return wrapBlock(blockProps, [
+                el('p', { key: 'l', style: { fontWeight: '600', marginBottom: '8px' } }, 'Статья: плюсы и минусы'),
+                TextControl ? el(TextControl, {
+                    key: 'pt',
+                    label: 'Заглавие плюсов',
+                    value: prosTitle,
+                    placeholder: getDefault('blog_pros_cons.pros_title', 'Плюсы'),
+                    onChange: function (v) { set({ block_blog_pros_cons_pros_title: v }); }
+                }) : null,
+                renderRepeater({
+                    items: pros,
+                    onChange: function (next) { set({ block_blog_pros_cons_pros: next }); },
+                    renderItem: function (item, index) {
+                        return TextControl ? el(TextControl, {
+                            key: 'p-' + index,
+                            label: 'Плюс ' + (index + 1),
+                            value: (item && item.text) || '',
+                            onChange: function (v) {
+                                var next = pros.slice();
+                                next[index] = { text: v };
+                                set({ block_blog_pros_cons_pros: next });
+                            }
+                        }) : null;
+                    },
+                    label: null,
+                    addLabel: 'Добавить плюс',
+                    emptyItem: { text: '' },
+                    keyPrefix: 'pros-items'
+                }),
+                TextControl ? el(TextControl, {
+                    key: 'ct',
+                    label: 'Заглавие минусов',
+                    value: consTitle,
+                    placeholder: getDefault('blog_pros_cons.cons_title', 'Минусы'),
+                    onChange: function (v) { set({ block_blog_pros_cons_cons_title: v }); }
+                }) : null,
+                renderRepeater({
+                    items: cons,
+                    onChange: function (next) { set({ block_blog_pros_cons_cons: next }); },
+                    renderItem: function (item, index) {
+                        return TextControl ? el(TextControl, {
+                            key: 'c-' + index,
+                            label: 'Минус ' + (index + 1),
+                            value: (item && item.text) || '',
+                            onChange: function (v) {
+                                var next = cons.slice();
+                                next[index] = { text: v };
+                                set({ block_blog_pros_cons_cons: next });
+                            }
+                        }) : null;
+                    },
+                    label: null,
+                    addLabel: 'Добавить минус',
+                    emptyItem: { text: '' },
+                    keyPrefix: 'cons-items'
                 })
             ]);
         },

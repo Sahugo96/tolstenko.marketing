@@ -77,21 +77,24 @@ $first_key   = ! empty( $tabs ) ? $tabs[0]['key'] : '';
 		</h1>
 
 		<?php if ( $has_results ) : ?>
-			<div class="search-results__filter filter">
-				<div class="filter__form">
-					<?php foreach ( $tabs as $i => $tab ) : ?>
-						<label class="filter__radio">
-							<input
-								type="radio"
-								name="<?php echo esc_attr( $section_id ); ?>_type"
-								value="<?php echo esc_attr( $tab['key'] ); ?>"
-								class="search-results-filter-radio"
-								<?php checked( 0 === $i ); ?>
-							>
-							<span class="filter__label"><?php echo esc_html( $tab['label'] ); ?></span>
-						</label>
-					<?php endforeach; ?>
+			<div class="search-results__filter filter filter--slider">
+				<div class="filter__form swiper">
+					<div class="swiper-wrapper">
+						<?php foreach ( $tabs as $i => $tab ) : ?>
+							<label class="filter__radio swiper-slide">
+								<input
+									type="radio"
+									name="<?php echo esc_attr( $section_id ); ?>_type"
+									value="<?php echo esc_attr( $tab['key'] ); ?>"
+									class="search-results-filter-radio"
+									<?php checked( 0 === $i ); ?>
+								>
+								<span class="filter__label"><?php echo esc_html( $tab['label'] ); ?></span>
+							</label>
+						<?php endforeach; ?>
+					</div>
 				</div>
+				<?php get_template_part( 'template-parts/filter-arrows' ); ?>
 			</div>
 
 			<div class="search-results__content">

@@ -1,0 +1,245 @@
+// Плашки предупреждений в теле статьи / акции.
+
+@mixin article-warnings-cards($ns) {
+  &__warnings-item {
+    --warnings-accent: var(--gray-70-color);
+    --warnings-icon-bg: var(--gray-25-color);
+    --warnings-title: var(--white-color);
+    --warnings-bg: var(--gray-12-color);
+    --warnings-border: var(--gray-25-color);
+
+    display: flex;
+    align-items: flex-start;
+    gap: vw(12px, $mobile);
+    padding: vw(16px, $mobile) vw(16px, $mobile);
+    border: 1px solid var(--warnings-border);
+    border-radius: vw(16px, $mobile);
+    background-color: var(--warnings-bg);
+    color: var(--gray-70-color);
+    @media (min-width: $desk) {
+      align-items: flex-start;
+      gap: vw(14px, $desktop);
+      padding: vw(18px, $desktop) vw(20px, $desktop);
+      border-radius: vw(16px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      gap: vw(14px, $desktop_large);
+      padding: vw(18px, $desktop_large) vw(20px, $desktop_large);
+      border-radius: vw(16px, $desktop_large);
+    }
+
+    &--warn {
+      --warnings-accent: #7EE2A0;
+      --warnings-icon-bg: #7EE2A0;
+      --warnings-title: #7EE2A0;
+      --warnings-bg: #15251A;
+      --warnings-border: #2A4A35;
+    }
+
+    &--pin {
+      --warnings-accent: #E8C84A;
+      --warnings-icon-bg: #E8C84A;
+      --warnings-title: #E8C84A;
+      --warnings-bg: #1C1A12;
+      --warnings-border: #4A3F1A;
+    }
+
+    &--ide {
+      --warnings-accent: #5EC8D4;
+      --warnings-icon-bg: #5EC8D4;
+      --warnings-title: #5EC8D4;
+      --warnings-bg: #121A1C;
+      --warnings-border: #1E4A50;
+    }
+
+    &--err {
+      --warnings-accent: #E88898;
+      --warnings-icon-bg: #E07080;
+      --warnings-title: #E88898;
+      --warnings-bg: #241416;
+      --warnings-border: #5A2A32;
+    }
+
+    &--custom {
+      --warnings-accent: var(--gray-90-color);
+      --warnings-icon-bg: var(--gray-20-color);
+      --warnings-title: var(--gray-90-color);
+      --warnings-bg: var(--gray-15-color);
+      --warnings-border: var(--gray-25-color);
+      color: var(--gray-90-color);
+
+      .#{$ns}__warnings-text,
+      .#{$ns}__warnings-text p,
+      .#{$ns}__warnings-text li,
+      .#{$ns}__warnings-text span,
+      .#{$ns}__warnings-text strong,
+      .#{$ns}__warnings-text b,
+      .#{$ns}__warnings-text em,
+      .#{$ns}__warnings-text i {
+        color: inherit;
+      }
+
+      .#{$ns}__warnings-text a {
+        color: var(--brand-accent-yellow-color);
+      }
+
+      .#{$ns}__warnings-icon {
+        width: vw(32px, $mobile);
+        height: vw(32px, $mobile);
+        background: none;
+        border-radius: 0;
+        color: inherit;
+        @media (min-width: $desk) {
+          width: vw(32px, $desktop);
+          height: vw(32px, $desktop);
+        }
+        @media (min-width: $desk_large) {
+          width: vw(32px, $desktop_large);
+          height: vw(32px, $desktop_large);
+        }
+      }
+
+      .#{$ns}__warnings-icon svg,
+      > svg.custom {
+        fill: unset;
+        max-width: 100%;
+        min-width: 0;
+        opacity: 1;
+        color: inherit;
+      }
+
+      .#{$ns}__warnings-icon img,
+      > img.custom {
+        opacity: 1;
+      }
+    }
+
+    &--no-icon {
+      .#{$ns}__warnings-text {
+        width: 100%;
+        text-align: left;
+      }
+    }
+  }
+
+  &__warnings-icon {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: vw(28px, $mobile);
+    height: vw(28px, $mobile);
+    margin-top: vw(2px, $mobile);
+    border-radius: 50%;
+    background-color: var(--warnings-icon-bg);
+    color: #122016;
+    line-height: 0;
+    @media (min-width: $desk) {
+      width: vw(28px, $desktop);
+      height: vw(28px, $desktop);
+      margin-top: vw(2px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      width: vw(28px, $desktop_large);
+      height: vw(28px, $desktop_large);
+      margin-top: vw(2px, $desktop_large);
+    }
+  }
+
+  &__warnings-item svg,
+  &__warnings-item img {
+    max-width: vw(14px, $mobile);
+    min-width: vw(14px, $mobile);
+    height: auto;
+    aspect-ratio: 1/1;
+    object-fit: contain;
+    flex-shrink: 0;
+    @media (min-width: $desk) {
+      max-width: vw(14px, $desktop);
+      min-width: vw(14px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(14px, $desktop_large);
+      min-width: vw(14px, $desktop_large);
+    }
+  }
+
+  &__warnings-item svg {
+    fill: none;
+    stroke: currentColor;
+    opacity: 1;
+  }
+
+  &__warnings-body {
+    display: flex;
+    flex-direction: column;
+    gap: vw(4px, $mobile);
+    min-width: 0;
+    flex: 1 1 auto;
+    @media (min-width: $desk) {
+      gap: vw(4px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      gap: vw(4px, $desktop_large);
+    }
+  }
+
+  &__warnings-title {
+    margin: 0;
+    font-family: $Montserrat;
+    font-size: vw(15px, $mobile);
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+    color: var(--warnings-title);
+    @media (min-width: $desk) {
+      font-size: vw(16px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      font-size: vw(16px, $desktop_large);
+    }
+  }
+
+  &__warnings-text {
+    color: var(--gray-70-color);
+  }
+
+  &__warnings-text {
+    font-size: vw(14px, $mobile);
+    font-weight: 400;
+    line-height: 1.45;
+    @media (min-width: $desk) {
+      font-size: vw(14px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      font-size: vw(14px, $desktop_large);
+    }
+
+    p {
+      margin: 0;
+    }
+
+    p + p {
+      margin-top: 0.35em;
+    }
+  }
+
+  &__warnings-item--custom {
+    color: var(--gray-90-color);
+
+    .#{$ns}__warnings-text,
+    .#{$ns}__warnings-text p,
+    .#{$ns}__warnings-text li,
+    .#{$ns}__warnings-text span,
+    .#{$ns}__warnings-text strong,
+    .#{$ns}__warnings-text b,
+    .#{$ns}__warnings-text em,
+    .#{$ns}__warnings-text i {
+      color: var(--gray-90-color);
+    }
+
+    .#{$ns}__warnings-text a {
+      color: var(--brand-accent-yellow-color);
+    }
+  }
+}

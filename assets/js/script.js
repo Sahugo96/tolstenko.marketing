@@ -1672,6 +1672,61 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     })();
 
+    // Чип-фильтры: auto-width + стрелки (.filter--slider).
+    (function() {
+        if (typeof Swiper === 'undefined') return;
+
+        function fitFilterSlides(el) {
+            el.querySelectorAll('.swiper-slide').forEach(function(slide) {
+                slide.style.width = 'auto';
+                var chip = slide.querySelector('.filter__label');
+                var w = chip ? chip.getBoundingClientRect().width : slide.scrollWidth;
+                if (w > 0) {
+                    slide.style.width = Math.ceil(w) + 'px';
+                }
+            });
+        }
+
+        document.querySelectorAll('.filter.filter--slider').forEach(function(root) {
+            var el = root.querySelector('.filter__form.swiper');
+            if (!el || el.swiper || !el.querySelector('.swiper-slide')) return;
+
+            fitFilterSlides(el);
+
+            var swiper = new Swiper(el, {
+                slidesPerView: 'auto',
+                spaceBetween: 10,
+                speed: 400,
+                watchOverflow: true,
+                slideToClickedSlide: true,
+                preventClicks: false,
+                preventClicksPropagation: false,
+                observer: true,
+                observeParents: true,
+                setWrapperSize: true,
+                navigation: {
+                    nextEl: root.querySelector('.splide__arrow--next'),
+                    prevEl: root.querySelector('.splide__arrow--prev')
+                },
+                on: {
+                    resize: function() {
+                        fitFilterSlides(el);
+                        this.update();
+                    }
+                }
+            });
+
+            var active = el.querySelector('.tolstenko-filter-radio:checked, .filter__link.active');
+            var slide = active ? active.closest('.swiper-slide') : null;
+            if (!slide) return;
+            var slides = el.querySelectorAll('.swiper-slide');
+            var idx = Array.prototype.indexOf.call(slides, slide);
+            if (idx > 0) {
+                swiper.slideTo(idx, 0);
+            }
+        });
+    })();
+
     (function() {
         document.querySelectorAll('.accordion-top').forEach(function(element) {
             element.addEventListener('click', function(e) {

@@ -71,23 +71,9 @@ if ( function_exists( 'tolstenko_get_cpt_listing_breadcrumb' ) ) {
 	}
 }
 
-$all_categories = taxonomy_exists( $taxonomy )
-	? get_terms(
-		array(
-			'taxonomy'   => $taxonomy,
-			'hide_empty' => false,
-		)
-	)
+$categories_with_posts = function_exists( 'tolstenko_get_filter_top_level_terms' )
+	? tolstenko_get_filter_top_level_terms( $taxonomy )
 	: array();
-
-$categories_with_posts = array();
-if ( ! is_wp_error( $all_categories ) && is_array( $all_categories ) ) {
-	foreach ( $all_categories as $cat ) {
-		if ( $cat instanceof WP_Term && (int) $cat->count > 0 ) {
-			$categories_with_posts[] = $cat;
-		}
-	}
-}
 
 $active_term = function_exists( 'tolstenko_get_filter_active_term_slug' )
 	? tolstenko_get_filter_active_term_slug( $taxonomy )
@@ -148,31 +134,34 @@ if ( $title === '' && $text === '' && $items_html === '' && empty( $categories_w
 		</div>
 
 		<?php if ( ! empty( $categories_with_posts ) ) : ?>
-			<div class="blog-section__filter filter filter--blog">
-				<div class="filter__form">
-					<a
-						class="filter__link<?php echo $active_term === '' ? ' active' : ''; ?>"
-						href="<?php echo esc_url( $all_url ); ?>"
-						data-term=""
-					>
-						<span class="filter__label"><?php esc_html_e( 'Все записи', 'tolstenko-theme' ); ?></span>
-					</a>
-					<?php foreach ( $categories_with_posts as $cat ) : ?>
-						<?php
-						$term_url = get_term_link( $cat );
-						if ( is_wp_error( $term_url ) || ! $term_url ) {
-							continue;
-						}
-						?>
-						<a
-							class="filter__link<?php echo $active_term === $cat->slug ? ' active' : ''; ?>"
-							href="<?php echo esc_url( $term_url ); ?>"
-							data-term="<?php echo esc_attr( $cat->slug ); ?>"
-						>
-							<span class="filter__label"><?php echo esc_html( $cat->name ); ?></span>
-						</a>
-					<?php endforeach; ?>
+			<div class="blog-section__filter filter filter--blog filter--slider">
+				<div class="filter__form swiper">
+					<div class="swiper-wrapper">
+							<a
+								class="filter__link swiper-slide <?php echo $active_term === '' ? ' active' : ''; ?>"
+								href="<?php echo esc_url( $all_url ); ?>"
+								data-term=""
+							>
+								<span class="filter__label"><?php esc_html_e( 'Все записи', 'tolstenko-theme' ); ?></span>
+							</a>
+						<?php foreach ( $categories_with_posts as $cat ) : ?>
+							<?php
+							$term_url = get_term_link( $cat );
+							if ( is_wp_error( $term_url ) || ! $term_url ) {
+								continue;
+							}
+							?>
+								<a
+									class="filter__link swiper-slide<?php echo $active_term === $cat->slug ? ' active' : ''; ?>"
+									href="<?php echo esc_url( $term_url ); ?>"
+									data-term="<?php echo esc_attr( $cat->slug ); ?>"
+								>
+									<span class="filter__label"><?php echo esc_html( $cat->name ); ?></span>
+								</a>
+						<?php endforeach; ?>
+					</div>
 				</div>
+				<?php get_template_part( 'template-parts/filter-arrows' ); ?>
 			</div>
 		<?php endif; ?>
 

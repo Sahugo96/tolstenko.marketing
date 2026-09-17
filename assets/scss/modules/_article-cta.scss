@@ -1,0 +1,109 @@
+// Плашки CTA только в теле статьи / акции / кейса (.redactor).
+// Полноразмерные consultation-whatsapp / consultation-tg не затрагиваются.
+
+.redactor .article-cta {
+  --article-cta-accent: var(--brand-accent-yellow-color);
+
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: vw(20px, $mobile);
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: vw(24px, $mobile) vw(20px, $mobile);
+  border: 1px solid var(--article-cta-accent);
+  border-radius: vw(20px, $mobile);
+  background: var(--gray-10-color);
+  box-shadow: 0 0 vw(24px, $mobile) color-mix(in srgb, var(--article-cta-accent) 28%, transparent);
+  @media (min-width: $desk) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: vw(32px, $desktop);
+    padding: vw(28px, $desktop) vw(32px, $desktop);
+    border-radius: vw(20px, $desktop);
+    box-shadow: 0 0 vw(28px, $desktop) color-mix(in srgb, var(--article-cta-accent) 28%, transparent);
+  }
+  @media (min-width: $desk_large) {
+    gap: vw(32px, $desktop_large);
+    padding: vw(28px, $desktop_large) vw(32px, $desktop_large);
+    border-radius: vw(20px, $desktop_large);
+    box-shadow: 0 0 vw(28px, $desktop_large) color-mix(in srgb, var(--article-cta-accent) 28%, transparent);
+  }
+
+  &--seo {
+    --article-cta-accent: var(--brand-accent-yellow-color);
+  }
+
+  &--whatsapp {
+    --article-cta-accent: var(--whatsapp-color);
+  }
+
+  &--telegram {
+    --article-cta-accent: var(--telegram-color);
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: vw(8px, $mobile);
+    min-width: 0;
+    flex: 1 1 auto;
+    @media (min-width: $desk) {
+      gap: vw(8px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      gap: vw(8px, $desktop_large);
+    }
+  }
+
+  &__title {
+    margin: 0 !important;
+    font-family: $Montserrat;
+    font-size: vw(18px, $mobile) !important;
+    font-weight: 700 !important;
+    line-height: 1.25 !important;
+    letter-spacing: -0.02em !important;
+    text-transform: none !important;
+    color: var(--white-color) !important;
+    @media (min-width: $desk) {
+      font-size: vw(20px, $desktop) !important;
+    }
+    @media (min-width: $desk_large) {
+      font-size: vw(20px, $desktop_large) !important;
+    }
+  }
+
+  &__text {
+    margin: 0;
+    font-family: $Montserrat;
+    font-size: vw(14px, $mobile);
+    font-weight: 400;
+    line-height: 1.4;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--gray-50-color);
+    @media (min-width: $desk) {
+      font-size: vw(14px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      font-size: vw(14px, $desktop_large);
+    }
+  }
+
+  &__btn {
+    flex-shrink: 0;
+    @media (min-width: $desk) {
+      width: auto;
+      min-width: vw(220px, $desktop);
+      padding-left: vw(20px, $desktop);
+      padding-right: vw(20px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      min-width: vw(220px, $desktop_large);
+      padding-left: vw(20px, $desktop_large);
+      padding-right: vw(20px, $desktop_large);
+    }
+  }
+}

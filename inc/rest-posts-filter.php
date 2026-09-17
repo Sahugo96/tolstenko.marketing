@@ -40,8 +40,69 @@ function tolstenko_get_posts_filter_card_renderers() {
 }
 
 /**
+ * Корневой (не дочерний) термин для фильтра: поднимаемся по parent до 0.
+ *
+ * @param string $taxonomy Taxonomy.
+ * @param string $slug     Term slug.
+ * @return string
+ */
+function tolstenko_get_filter_top_level_term_slug( $taxonomy, $slug ) {
+	$taxonomy = sanitize_key( (string) $taxonomy );
+	$slug     = sanitize_title( (string) $slug );
+	if ( $taxonomy === '' || $slug === '' || ! taxonomy_exists( $taxonomy ) ) {
+		return $slug;
+	}
+	$term = get_term_by( 'slug', $slug, $taxonomy );
+	if ( ! ( $term instanceof WP_Term ) ) {
+		return $slug;
+	}
+	$guard = 0;
+	while ( (int) $term->parent > 0 && $guard < 20 ) {
+		$parent = get_term( (int) $term->parent, $taxonomy );
+		if ( ! ( $parent instanceof WP_Term ) || is_wp_error( $parent ) ) {
+			break;
+		}
+		$term = $parent;
+		++$guard;
+	}
+	$root = sanitize_title( (string) $term->slug );
+	return $root !== '' ? $root : $slug;
+}
+
+/**
+ * Рубрики первого порядка для чипов `.filter` (без дочерних).
+ *
+ * @param string $taxonomy Taxonomy.
+ * @return array<int, WP_Term>
+ */
+function tolstenko_get_filter_top_level_terms( $taxonomy ) {
+	$taxonomy = sanitize_key( (string) $taxonomy );
+	if ( $taxonomy === '' || ! taxonomy_exists( $taxonomy ) ) {
+		return array();
+	}
+	$terms = get_terms(
+		array(
+			'taxonomy'   => $taxonomy,
+			'hide_empty' => false,
+			'parent'     => 0,
+			'pad_counts' => true,
+		)
+	);
+	if ( is_wp_error( $terms ) || ! is_array( $terms ) ) {
+		return array();
+	}
+	$out = array();
+	foreach ( $terms as $cat ) {
+		if ( $cat instanceof WP_Term && (int) $cat->count > 0 ) {
+			$out[] = $cat;
+		}
+	}
+	return $out;
+}
+
+/**
  * Активный slug таксономии из текущего URL (для предвыбора фильтра).
- * Пример: /blog/seo/ → «seo» для taxonomy blog_cat.
+ * Для дочерней рубрики берётся корень первого порядка.
  *
  * @param string $taxonomy Taxonomy key.
  * @return string Term slug or empty.
@@ -59,7 +120,10 @@ function tolstenko_get_filter_active_term_slug( $taxonomy ) {
 		return '';
 	}
 	$slug = sanitize_title( (string) $term->slug );
-	return $slug !== '' ? $slug : '';
+	if ( $slug === '' ) {
+		return '';
+	}
+	return tolstenko_get_filter_top_level_term_slug( $taxonomy, $slug );
 }
 
 /**
@@ -82,7 +146,7 @@ function tolstenko_ensure_filter_term_in_categories( $categories, $taxonomy, $ac
 		}
 	}
 	$term = get_term_by( 'slug', $active_slug, sanitize_key( (string) $taxonomy ) );
-	if ( $term instanceof WP_Term ) {
+	if ( $term instanceof WP_Term && (int) $term->parent === 0 ) {
 		$categories[] = $term;
 	}
 	return $categories;

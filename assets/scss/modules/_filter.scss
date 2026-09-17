@@ -2,11 +2,6 @@
   width: 100vw;
   padding: 0 vw(16px, $mobile);
   margin: vw(30px, $mobile) vw(-16px, $mobile);
-  overflow-x: auto;
-  
-  overflow-x: scroll;
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-x;
   @media (min-width: $desk) {
     padding: 0 vw(50px, $desktop);
     margin: vw(50px, $desktop) vw(-50px, $desktop);
@@ -117,5 +112,108 @@
     border-color: var(--brand-accent-yellow-color);
     background-color: var(--brand-accent-yellow-color);
     color: var(--black-color);
+  }
+
+  &__arrows {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    width: auto;
+    justify-content: flex-start;
+    grid-gap: vw(8px, $mobile);
+    @media (min-width: $desk) {
+      grid-gap: vw(10px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(10px, $desktop_large);
+    }
+
+    &:has(.swiper-button-lock) {
+      display: none;
+    }
+
+    .splide__arrow {
+      transform: none;
+      box-shadow: none;
+      background-color: transparent;
+      box-shadow: 0 0 0 vw(2.1px, $mobile) inset var(--brand-accent-yellow-color);
+      @media (min-width: $desk) {
+        box-shadow: 0 0 0 vw(2.1px, $desktop) inset var(--brand-accent-yellow-color);
+      }
+      @media (min-width: $desk_large) {
+        box-shadow: 0 0 0 vw(2.1px, $desktop_large) inset var(--brand-accent-yellow-color);
+      }
+      svg {
+        stroke: var(--brand-accent-yellow-color);
+      }
+
+      &.swiper-button-disabled,
+      &[disabled] {
+        cursor: default;
+        box-shadow: 0 0 0 vw(2.1px, $mobile) inset var(--gray-70-color);
+        @media (min-width: $desk) {
+          box-shadow: 0 0 0 vw(2.1px, $desktop) inset var(--gray-70-color);
+        }
+        @media (min-width: $desk_large) {
+          box-shadow: 0 0 0 vw(2.1px, $desktop_large) inset var(--gray-70-color);
+        }
+  
+        svg {
+          stroke: var(--gray-70-color);
+        }
+      }
+      &:not(.swiper-button-disabled):not([disabled]):hover {
+        background-color: var(--brand-accent-yellow-color);
+        box-shadow: var(--brand-accent-yellow-color);
+        svg {
+          stroke: var(--black-color);
+        }
+      }
+    }
+
+    .splide__arrow--prev,
+    .splide__arrow--next {
+      transform: none;
+    }
+  }
+
+  &--slider {
+    display: flex;
+    align-items: center;
+    grid-gap: vw(10px, $mobile);
+    width: 100%;
+    max-width: 100%;
+    padding: 0;
+    margin-right: 0;
+    margin-left: 0;
+    overflow: visible;
+    @media (min-width: $desk) {
+      grid-gap: vw(10px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      grid-gap: vw(10px, $desktop_large);
+    }
+
+    .filter__form {
+      display: block;
+      flex: 1 1 auto;
+      flex-wrap: unset;
+      min-width: 0;
+      width: auto;
+      overflow: hidden;
+    }
+
+    .swiper-wrapper {
+      align-items: center;
+    }
+
+    .swiper-slide,
+    .filter__radio.swiper-slide,
+    .filter__link.swiper-slide {
+      width: fit-content;
+      height: auto;
+      flex: 0 0 auto;
+      max-width: none;
+    }
   }
 }

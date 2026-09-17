@@ -1,0 +1,179 @@
+// Плюсы / минусы в теле статьи / акции.
+
+@mixin article-pros-cons-cards($ns) {
+  &__pros-cons {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: vw(12px, $mobile);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    @media (min-width: $desk) {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: vw(16px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      gap: vw(16px, $desktop_large);
+    }
+  }
+
+  &__pros-cons-item {
+    --pros-cons-title: var(--white-color);
+    --pros-cons-icon-bg: var(--gray-25-color);
+    --pros-cons-bg: var(--gray-12-color);
+    --pros-cons-border: var(--gray-25-color);
+
+    display: flex;
+    align-items: flex-start;
+    gap: vw(12px, $mobile);
+    min-width: 0;
+    padding: vw(16px, $mobile);
+    border: 1px solid var(--pros-cons-border);
+    border-radius: vw(16px, $mobile);
+    background-color: var(--pros-cons-bg);
+    color: var(--gray-70-color);
+    @media (min-width: $desk) {
+      gap: vw(14px, $desktop);
+      padding: vw(18px, $desktop) vw(20px, $desktop);
+      border-radius: vw(16px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      gap: vw(14px, $desktop_large);
+      padding: vw(18px, $desktop_large) vw(20px, $desktop_large);
+      border-radius: vw(16px, $desktop_large);
+    }
+
+    &--pro {
+      --pros-cons-title: #7EE2A0;
+      --pros-cons-icon-bg: #7EE2A0;
+      --pros-cons-bg: #15251A;
+      --pros-cons-border: #2A4A35;
+    }
+
+    &--con {
+      --pros-cons-title: #E88898;
+      --pros-cons-icon-bg: #E07080;
+      --pros-cons-bg: #241416;
+      --pros-cons-border: #5A2A32;
+    }
+  }
+
+  &__pros-cons-icon {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: vw(28px, $mobile);
+    height: vw(28px, $mobile);
+    margin-top: vw(1px, $mobile);
+    border-radius: 50%;
+    background-color: var(--pros-cons-icon-bg);
+    color: #122016;
+    line-height: 0;
+    @media (min-width: $desk) {
+      width: vw(28px, $desktop);
+      height: vw(28px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      width: vw(28px, $desktop_large);
+      height: vw(28px, $desktop_large);
+    }
+  }
+
+  &__pros-cons-item svg {
+    width: vw(14px, $mobile);
+    height: vw(14px, $mobile);
+    fill: none;
+    stroke: currentColor;
+    @media (min-width: $desk) {
+      width: vw(14px, $desktop);
+      height: vw(14px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      width: vw(14px, $desktop_large);
+      height: vw(14px, $desktop_large);
+    }
+  }
+
+  &__pros-cons-body {
+    display: flex;
+    flex-direction: column;
+    gap: vw(10px, $mobile);
+    min-width: 0;
+    flex: 1 1 auto;
+    @media (min-width: $desk) {
+      gap: vw(12px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      gap: vw(12px, $desktop_large);
+    }
+  }
+
+  &__pros-cons-title {
+    margin: 0;
+    font-family: $Montserrat;
+    font-size: vw(14px, $mobile);
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--pros-cons-title);
+    display: flex;
+    align-items: center;
+    gap: vw(10px, $mobile);
+    @media (min-width: $desk) {
+      gap: vw(12px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      gap: vw(12px, $desktop_large);
+    }
+    @media (min-width: $desk) {
+      font-size: vw(15px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      font-size: vw(15px, $desktop_large);
+    }
+  }
+
+  ul.single-blog__pros-cons-list {
+    display: flex;
+    flex-direction: column;
+    gap: vw(8px, $mobile);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    @media (min-width: $desk) {
+      gap: vw(8px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      gap: vw(8px, $desktop_large);
+    }
+
+    li {
+      margin: 0;
+      padding: 0;
+      font-size: vw(14px, $mobile);
+      font-weight: 400;
+      line-height: 1.45;
+      color: var(--gray-70-color);
+      @media (min-width: $desk) {
+        font-size: vw(14px, $desktop);
+      }
+      @media (min-width: $desk_large) {
+        font-size: vw(14px, $desktop_large);
+      }
+    }
+  }
+
+  & &__pros-cons-list > li::before {
+    content: none;
+    display: none;
+    background: none;
+    box-shadow: none;
+    width: 0;
+    min-width: 0;
+    max-width: 0;
+    height: 0;
+    margin: 0;
+  }
+}
