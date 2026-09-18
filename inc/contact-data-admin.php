@@ -22,6 +22,7 @@ define( 'TOLSTENKO_CONTACT_DATA_OPTION', 'tolstenko_contact_data' );
  *   footer_inn: string,
  *   footer_ogrn: string,
  *   footer_address: string,
+ *   footer_bottom_logo: int,
  *   footer_copyright: string,
  *   footer_links: array<int, array{title: string, url: string}>,
  *   socials: array<int, array{icon: string, link: string, text: string, enabled: int}>,
@@ -37,8 +38,9 @@ function tolstenko_contact_data_defaults() {
 		'footer_name'      => '',
 		'footer_inn'       => '',
 		'footer_ogrn'      => '',
-		'footer_address'   => '',
-		'footer_copyright' => '',
+		'footer_address'     => '',
+		'footer_bottom_logo' => 0,
+		'footer_copyright'   => '',
 		'footer_links'     => array(
 			array( 'title' => '', 'url' => '' ),
 			array( 'title' => '', 'url' => '' ),
@@ -120,8 +122,12 @@ function tolstenko_sanitize_contact_data( $raw ) {
 	$base['footer_name']      = sanitize_text_field( (string) ( $raw['footer_name'] ?? '' ) );
 	$base['footer_inn']       = sanitize_text_field( (string) ( $raw['footer_inn'] ?? '' ) );
 	$base['footer_ogrn']      = sanitize_text_field( (string) ( $raw['footer_ogrn'] ?? '' ) );
-	$base['footer_address']   = sanitize_textarea_field( (string) ( $raw['footer_address'] ?? '' ) );
-	$base['footer_copyright'] = sanitize_text_field( (string) ( $raw['footer_copyright'] ?? '' ) );
+	$base['footer_address']      = sanitize_textarea_field( (string) ( $raw['footer_address'] ?? '' ) );
+	$base['footer_bottom_logo']  = isset( $raw['footer_bottom_logo'] ) ? (int) $raw['footer_bottom_logo'] : 0;
+	if ( $base['footer_bottom_logo'] < 0 ) {
+		$base['footer_bottom_logo'] = 0;
+	}
+	$base['footer_copyright']    = sanitize_text_field( (string) ( $raw['footer_copyright'] ?? '' ) );
 	$base['footer_links']     = tolstenko_sanitize_contact_footer_links( $raw['footer_links'] ?? array() );
 	$base['socials']          = tolstenko_sanitize_contact_social_rows( $raw['socials'] ?? array() );
 	$base['socials_rgb']      = tolstenko_sanitize_contact_social_rows( $raw['socials_rgb'] ?? array() );
@@ -533,6 +539,25 @@ function tolstenko_render_contact_data_admin_page() {
 					<label for="tolstenko-cd-footer-address"><?php esc_html_e( 'Адрес', 'tolstenko-theme' ); ?></label>
 					<textarea id="tolstenko-cd-footer-address" name="tolstenko_contact_data[footer_address]" rows="3"><?php echo esc_textarea( $data['footer_address'] ); ?></textarea>
 				</div>
+				<?php
+				$bottom_logo_id  = (int) ( $data['footer_bottom_logo'] ?? 0 );
+				$bottom_logo_url = $bottom_logo_id ? (string) wp_get_attachment_image_url( $bottom_logo_id, 'medium' ) : '';
+				?>
+				<div class="row">
+					<label><?php esc_html_e( 'Нижний логотип (под адресом)', 'tolstenko-theme' ); ?></label>
+					<div class="tolstenko-cd-image" data-cd-image>
+						<input type="hidden" name="tolstenko_contact_data[footer_bottom_logo]" value="<?php echo (int) $bottom_logo_id; ?>" data-cd-image-id>
+						<div class="tolstenko-cd-image__preview" data-cd-image-preview>
+							<?php if ( $bottom_logo_url !== '' ) : ?>
+								<img src="<?php echo esc_url( $bottom_logo_url ); ?>" alt="" style="max-width:220px;height:auto;display:block;margin:6px 0;">
+							<?php endif; ?>
+						</div>
+						<p>
+							<button type="button" class="button" data-cd-image-pick><?php esc_html_e( 'Выбрать', 'tolstenko-theme' ); ?></button>
+							<button type="button" class="button-link-delete" data-cd-image-clear <?php echo $bottom_logo_id ? '' : 'style="display:none"'; ?>><?php esc_html_e( 'Убрать', 'tolstenko-theme' ); ?></button>
+						</p>
+					</div>
+				</div>
 			</div>
 
 			<div class="tolstenko-cd-card">
@@ -631,6 +656,38 @@ function tolstenko_render_contact_data_admin_page() {
 					if (drow && drow.nextElementSibling) {
 						drow.parentNode.insertBefore(drow.nextElementSibling, drow);
 					}
+					return;
+				}
+				var pickImg = e.target.closest('[data-cd-image-pick]');
+				if (pickImg) {
+					var iwrap = pickImg.closest('[data-cd-image]');
+					if (!iwrap || !window.wp || !wp.media) return;
+					var iid = iwrap.querySelector('[data-cd-image-id]');
+					var iprev = iwrap.querySelector('[data-cd-image-preview]');
+					var iclear = iwrap.querySelector('[data-cd-image-clear]');
+					var iframe = wp.media({ title: 'Нижний логотип футера', multiple: false, library: { type: 'image' } });
+					iframe.on('select', function(){
+						var att = iframe.state().get('selection').first().toJSON();
+						if (!att) return;
+						if (iid) iid.value = String(att.id || 0);
+						if (iprev) {
+							var src = (att.sizes && att.sizes.medium && att.sizes.medium.url) ? att.sizes.medium.url : att.url;
+							iprev.innerHTML = src ? '<img src="'+src+'" alt="" style="max-width:220px;height:auto;display:block;margin:6px 0;">' : '';
+						}
+						if (iclear) iclear.style.display = '';
+					});
+					iframe.open();
+					return;
+				}
+				var clearImg = e.target.closest('[data-cd-image-clear]');
+				if (clearImg) {
+					var cwrap = clearImg.closest('[data-cd-image]');
+					if (!cwrap) return;
+					var cid = cwrap.querySelector('[data-cd-image-id]');
+					var cprev = cwrap.querySelector('[data-cd-image-preview]');
+					if (cid) cid.value = '0';
+					if (cprev) cprev.innerHTML = '';
+					clearImg.style.display = 'none';
 					return;
 				}
 				var pick = e.target.closest('[data-cd-pick-icon]');

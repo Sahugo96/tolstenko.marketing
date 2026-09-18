@@ -129,6 +129,26 @@
       font-size: vw(12px, $desktop_large);
     }
   }
+  &__bottom-logo {
+    width: 100%;
+    height: 100%;
+    max-width: vw(100px, $mobile);
+    max-height: vw(55px, $mobile);
+    @media (min-width: $desk) {
+      max-width: vw(150px, $desktop);
+      max-height: vw(82px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      max-width: vw(150px, $desktop_large);
+      max-height: vw(82px, $desktop_large);
+    }
+    & .logo__img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center center;
+    }
+  }
   &__menu {
     display: flex;
     flex-direction: column;

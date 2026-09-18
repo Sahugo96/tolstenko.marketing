@@ -1,7 +1,7 @@
 <?php
 /**
  * Блоки тела статьи / акции / кейса (flexible content):
- * — в редакторе у CPT blog, actions и case;
+ * — в редакторе у CPT blog и case;
  * — «Настройки сайта → Блоки для статей» = дефолтное наполнение (не выбор видимости).
  */
 
@@ -18,7 +18,7 @@ add_action( 'admin_enqueue_scripts', 'tolstenko_blog_content_defaults_admin_asse
  * @return string[]
  */
 function tolstenko_get_content_body_post_types() {
-	return array( 'blog', 'actions', 'case' );
+	return array( 'blog', 'case' );
 }
 
 /**
@@ -79,6 +79,7 @@ function tolstenko_get_blog_theme_blocks_catalog() {
 		'tolstenko/blog-number-list' => __( 'Нумерованный список', 'tolstenko-theme' ),
 		'tolstenko/blog-warning'     => __( 'Предупреждения', 'tolstenko-theme' ),
 		'tolstenko/blog-pros-cons'   => __( 'Плюсы и минусы', 'tolstenko-theme' ),
+		'tolstenko/blog-definition'  => __( 'Определение', 'tolstenko-theme' ),
 		'tolstenko/blog-seo'         => __( 'SEO / CTA', 'tolstenko-theme' ),
 		'tolstenko/consultation-whatsapp' => __( 'Забронируйте место', 'tolstenko-theme' ),
 		'tolstenko/consultation-tg'       => __( 'Консультация Telegram', 'tolstenko-theme' ),
@@ -243,6 +244,14 @@ function tolstenko_blog_content_defaults_schema() {
 			'cons_title' => 'Минусы',
 			'pros'       => array(),
 			'cons'       => array(),
+		),
+		'blog_definition' => array(
+			'mode'   => 'define',
+			'kicker' => 'Определение',
+			'term'   => 'Продвижение сайта статьями',
+			'suffix' => 'способ SEO-продвижения через публикацию полезного контента.',
+			'title'  => 'Семантическое ядро',
+			'text'   => 'Набор поисковых запросов, по которым пользователи ищут ваш продукт.',
 		),
 		'blog_seo' => array(
 			'title'   => 'Нужна помощь с продвижением?',
@@ -437,6 +446,7 @@ function tolstenko_render_blog_content_defaults_admin_page() {
 	$nl   = $all['blog_number_list'];
 	$wn   = $all['blog_warning'];
 	$pc   = $all['blog_pros_cons'];
+	$dfn  = $all['blog_definition'];
 	$seo  = $all['blog_seo'];
 	$cw   = function_exists( 'tolstenko_get_article_consultation_defaults' )
 		? tolstenko_get_article_consultation_defaults( 'article_consultation_whatsapp', 'consultation_whatsapp' )
@@ -492,6 +502,7 @@ function tolstenko_render_blog_content_defaults_admin_page() {
 					'blog_number_list'       => __( 'Список', 'tolstenko-theme' ),
 					'blog_warning'           => __( 'Предупреждения', 'tolstenko-theme' ),
 					'blog_pros_cons'         => __( 'Плюсы и минусы', 'tolstenko-theme' ),
+					'blog_definition'        => __( 'Определение', 'tolstenko-theme' ),
 					'blog_large_img'         => __( 'Крупное фото', 'tolstenko-theme' ),
 					'blog_video'             => __( 'Видео', 'tolstenko-theme' ),
 				);
@@ -653,6 +664,60 @@ function tolstenko_render_blog_content_defaults_admin_page() {
 				<p><button type="button" class="button" data-bcd-add="cons"><?php esc_html_e( 'Добавить минус', 'tolstenko-theme' ); ?></button></p>
 			</div>
 
+			<?php
+			$dfn_mode = sanitize_key( (string) ( $dfn['mode'] ?? 'define' ) );
+			if ( ! in_array( $dfn_mode, array( 'define', 'card' ), true ) ) {
+				$dfn_mode = 'define';
+			}
+			?>
+			<div class="tolstenko-bcd-panel" data-bcd-panel="blog_definition" hidden>
+				<h2><?php esc_html_e( 'Определение', 'tolstenko-theme' ); ?></h2>
+				<div class="row">
+					<label>
+						<?php esc_html_e( 'Вид', 'tolstenko-theme' ); ?><br>
+						<select name="tolstenko_block_defaults[blog_definition][mode]" data-bcd-define-mode>
+							<option value="define" <?php selected( $dfn_mode, 'define' ); ?>><?php esc_html_e( 'Определение (с меткой и термином)', 'tolstenko-theme' ); ?></option>
+							<option value="card" <?php selected( $dfn_mode, 'card' ); ?>><?php esc_html_e( 'Термин (заголовок и текст)', 'tolstenko-theme' ); ?></option>
+						</select>
+					</label>
+				</div>
+				<div data-bcd-define-view="define" <?php echo $dfn_mode === 'define' ? '' : 'hidden'; ?>>
+					<div class="row">
+						<label>
+							<?php esc_html_e( 'Метка', 'tolstenko-theme' ); ?><br>
+							<input type="text" name="tolstenko_block_defaults[blog_definition][kicker]" value="<?php echo esc_attr( (string) ( $dfn['kicker'] ?? '' ) ); ?>" placeholder="<?php esc_attr_e( 'Определение', 'tolstenko-theme' ); ?>">
+						</label>
+					</div>
+					<div class="row">
+						<label>
+							<?php esc_html_e( 'Термин', 'tolstenko-theme' ); ?><br>
+							<input type="text" name="tolstenko_block_defaults[blog_definition][term]" value="<?php echo esc_attr( (string) ( $dfn['term'] ?? '' ) ); ?>" placeholder="<?php esc_attr_e( 'Продвижение сайта статьями', 'tolstenko-theme' ); ?>">
+						</label>
+					</div>
+					<div class="row">
+						<label>
+							<?php esc_html_e( 'Текст после тире', 'tolstenko-theme' ); ?><br>
+							<textarea name="tolstenko_block_defaults[blog_definition][suffix]" rows="3" placeholder="<?php esc_attr_e( 'способ SEO-продвижения через публикацию полезного контента.', 'tolstenko-theme' ); ?>"><?php echo esc_textarea( (string) ( $dfn['suffix'] ?? '' ) ); ?></textarea>
+						</label>
+						<p class="description"><?php esc_html_e( 'Тире перед этим текстом подставляется само, вводить его не нужно.', 'tolstenko-theme' ); ?></p>
+					</div>
+				</div>
+				<div data-bcd-define-view="card" <?php echo $dfn_mode === 'card' ? '' : 'hidden'; ?>>
+					<div class="row">
+						<label>
+							<?php esc_html_e( 'Заголовок', 'tolstenko-theme' ); ?><br>
+							<input type="text" name="tolstenko_block_defaults[blog_definition][title]" value="<?php echo esc_attr( (string) ( $dfn['title'] ?? '' ) ); ?>" placeholder="<?php esc_attr_e( 'Семантическое ядро', 'tolstenko-theme' ); ?>">
+						</label>
+					</div>
+					<div class="row">
+						<label>
+							<?php esc_html_e( 'Текст', 'tolstenko-theme' ); ?><br>
+							<textarea name="tolstenko_block_defaults[blog_definition][text]" rows="3" placeholder="<?php esc_attr_e( 'Набор поисковых запросов…', 'tolstenko-theme' ); ?>"><?php echo esc_textarea( (string) ( $dfn['text'] ?? '' ) ); ?></textarea>
+						</label>
+					</div>
+				</div>
+			</div>
+
 			<div class="tolstenko-bcd-panel" data-bcd-panel="blog_large_img" hidden>
 				<h2><?php esc_html_e( 'Крупное фото', 'tolstenko-theme' ); ?></h2>
 				<?php tolstenko_blog_content_defaults_image_field( 'tolstenko_block_defaults[blog_large_img][image]', (int) ( $li['image'] ?? 0 ), __( 'Изображение по умолчанию', 'tolstenko-theme' ) ); ?>
@@ -738,6 +803,15 @@ function tolstenko_render_blog_content_defaults_admin_page() {
 		root.querySelectorAll('[data-bcd-tab]').forEach(function(btn){
 			btn.addEventListener('click', function(){
 				activateBcdTab(btn.getAttribute('data-bcd-tab'));
+			});
+		});
+
+		root.querySelectorAll('[data-bcd-define-mode]').forEach(function(sel){
+			sel.addEventListener('change', function(){
+				var mode = sel.value;
+				root.querySelectorAll('[data-bcd-define-view]').forEach(function(box){
+					box.hidden = box.getAttribute('data-bcd-define-view') !== mode;
+				});
 			});
 		});
 
@@ -939,6 +1013,20 @@ function tolstenko_save_blog_content_defaults_from_request() {
 		'cons_title' => isset( $pc_raw['cons_title'] ) ? sanitize_text_field( (string) $pc_raw['cons_title'] ) : '',
 		'pros'       => $pc_sanitize_lines( $pc_raw['pros'] ?? array() ),
 		'cons'       => $pc_sanitize_lines( $pc_raw['cons'] ?? array() ),
+	);
+
+	$dfn_raw  = isset( $raw_all['blog_definition'] ) && is_array( $raw_all['blog_definition'] ) ? $raw_all['blog_definition'] : array();
+	$dfn_mode = sanitize_key( (string) ( $dfn_raw['mode'] ?? 'define' ) );
+	if ( ! in_array( $dfn_mode, array( 'define', 'card' ), true ) ) {
+		$dfn_mode = 'define';
+	}
+	$saved['blog_definition'] = array(
+		'mode'   => $dfn_mode,
+		'kicker' => isset( $dfn_raw['kicker'] ) ? sanitize_text_field( (string) $dfn_raw['kicker'] ) : '',
+		'term'   => isset( $dfn_raw['term'] ) ? sanitize_text_field( (string) $dfn_raw['term'] ) : '',
+		'suffix' => isset( $dfn_raw['suffix'] ) ? sanitize_textarea_field( (string) $dfn_raw['suffix'] ) : '',
+		'title'  => isset( $dfn_raw['title'] ) ? sanitize_text_field( (string) $dfn_raw['title'] ) : '',
+		'text'   => isset( $dfn_raw['text'] ) ? sanitize_textarea_field( (string) $dfn_raw['text'] ) : '',
 	);
 
 	$seo = isset( $raw_all['blog_seo'] ) && is_array( $raw_all['blog_seo'] ) ? $raw_all['blog_seo'] : array();

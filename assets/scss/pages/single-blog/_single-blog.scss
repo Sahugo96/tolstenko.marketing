@@ -542,6 +542,7 @@
   }
   @include article-warnings-cards('single-blog');
   @include article-pros-cons-cards('single-blog');
+  @include article-define-cards('single-blog');
   &__content-blockquote {
     display: flex;
     flex-direction: column;

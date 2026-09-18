@@ -58,6 +58,9 @@ $footer_ogrn      = trim( (string) ( $contact['footer_ogrn'] ?? '' ) );
 $footer_address   = trim( (string) ( $contact['footer_address'] ?? '' ) );
 $footer_copyright = trim( (string) ( $contact['footer_copyright'] ?? '' ) );
 
+$footer_bottom_logo_id = isset( $contact['footer_bottom_logo'] ) ? (int) $contact['footer_bottom_logo'] : 0;
+$footer_bottom_logo    = $footer_bottom_logo_id ? (string) wp_get_attachment_image_url( $footer_bottom_logo_id, 'full' ) : '';
+
 $footer_links = array();
 if ( ! empty( $contact['footer_links'] ) && is_array( $contact['footer_links'] ) ) {
 	foreach ( $contact['footer_links'] as $link ) {
@@ -167,6 +170,12 @@ $about_menu = wp_nav_menu(
 
 				<?php if ( $footer_address !== '' ) : ?>
 					<address class="footer__address"><?php echo esc_html( $footer_address ); ?></address>
+				<?php endif; ?>
+
+				<?php if ( $footer_bottom_logo !== '' ) : ?>
+					<a class="footer__bottom-logo logo" href="<?php echo esc_url( home_url( '/' ) ); ?>">
+						<img class="logo__img" src="<?php echo esc_url( $footer_bottom_logo ); ?>" alt="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>">
+					</a>
 				<?php endif; ?>
 			</div>
 

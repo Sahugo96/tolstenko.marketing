@@ -486,6 +486,7 @@
   }
   @include article-warnings-cards('single-actions');
   @include article-pros-cons-cards('single-actions');
+  @include article-define-cards('single-actions');
   &__content-blockquote {
     display: flex;
     flex-direction: column;

@@ -84,7 +84,7 @@ function tolstenko_filter_allowed_blocks_by_post_type( $allowed, $editor_context
         return array_merge( $vacancy_blocks, array( 'tolstenko/consultation-free' ) );
     }
 
-    // Статья / Акция: текст Gutenberg + блоки гибкого содержимого тела.
+    // Статья / кейс: текст Gutenberg + блоки гибкого содержимого тела.
     $body_types = function_exists( 'tolstenko_get_content_body_post_types' )
         ? tolstenko_get_content_body_post_types()
         : array( 'blog', 'actions' );
@@ -120,13 +120,17 @@ function tolstenko_filter_allowed_blocks_by_post_type( $allowed, $editor_context
         'tolstenko/three-steps', 'tolstenko/faq', 'tolstenko/doubts', 'tolstenko/familiar', 'tolstenko/too-long', 'tolstenko/result', 'tolstenko/promotion', 'tolstenko/pricing', 'tolstenko/seo-section', 'tolstenko/hidden-seo',
     );
 
-    if ( $post_type === 'service' ) {
+    if ( in_array( $post_type, array( 'service', 'actions' ), true ) ) {
+        $hide = $vacancy_blocks;
+        if ( $post_type === 'service' ) {
+            $hide = array_merge( $vacancy_blocks, $content_only );
+        }
         if ( $allowed === true ) {
             $registry = WP_Block_Type_Registry::get_instance()->get_all_registered();
-            return array_values( array_diff( array_keys( $registry ), array_merge( $vacancy_blocks, $content_only ) ) );
+            return array_values( array_diff( array_keys( $registry ), $hide ) );
         }
         if ( is_array( $allowed ) ) {
-            return array_values( array_diff( array_merge( $allowed, $tolstenko_service ), array_merge( $vacancy_blocks, $content_only ) ) );
+            return array_values( array_diff( array_merge( $allowed, $tolstenko_service ), $hide ) );
         }
         return $tolstenko_service;
     }
@@ -236,6 +240,7 @@ function tolstenko_enqueue_editor_blocks() {
                 'blog_number_list'  => function_exists( 'tolstenko_get_blog_content_defaults' ) ? tolstenko_get_blog_content_defaults( 'blog_number_list' ) : tolstenko_get_block_defaults( 'blog_number_list' ),
                 'blog_warning'      => function_exists( 'tolstenko_get_blog_content_defaults' ) ? tolstenko_get_blog_content_defaults( 'blog_warning' ) : tolstenko_get_block_defaults( 'blog_warning' ),
                 'blog_pros_cons'    => function_exists( 'tolstenko_get_blog_content_defaults' ) ? tolstenko_get_blog_content_defaults( 'blog_pros_cons' ) : tolstenko_get_block_defaults( 'blog_pros_cons' ),
+                'blog_definition'   => function_exists( 'tolstenko_get_blog_content_defaults' ) ? tolstenko_get_blog_content_defaults( 'blog_definition' ) : tolstenko_get_block_defaults( 'blog_definition' ),
                 'blog_seo'          => function_exists( 'tolstenko_get_blog_content_defaults' ) ? tolstenko_get_blog_content_defaults( 'blog_seo' ) : tolstenko_get_block_defaults( 'blog_seo' ),
                 'consultation_whatsapp' => tolstenko_get_block_defaults( 'consultation_whatsapp' ),
                 'consultation_tg'       => tolstenko_get_block_defaults( 'consultation_tg' ),
@@ -796,6 +801,14 @@ function tolstenko_get_theme_block_attributes() {
                 'default' => array(),
             ),
         ),
+        'blog-definition' => array(
+            'block_blog_definition_mode'   => array( 'type' => 'string', 'default' => '' ),
+            'block_blog_definition_kicker' => array( 'type' => 'string', 'default' => '' ),
+            'block_blog_definition_term'   => array( 'type' => 'string', 'default' => '' ),
+            'block_blog_definition_suffix' => array( 'type' => 'string', 'default' => '' ),
+            'block_blog_definition_title'  => array( 'type' => 'string', 'default' => '' ),
+            'block_blog_definition_text'   => array( 'type' => 'string', 'default' => '' ),
+        ),
         'blog-seo' => array(
             'block_blog_seo_title'   => array( 'type' => 'string', 'default' => '' ),
             'block_blog_seo_btn'     => array( 'type' => 'string', 'default' => '' ),
@@ -839,6 +852,7 @@ function tolstenko_register_theme_blocks() {
         array( 'name' => 'blog-number-list', 'title' => __( 'Статья: нумерованный список', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'blog-warning', 'title' => __( 'Статья: предупреждения', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'blog-pros-cons', 'title' => __( 'Статья: плюсы и минусы', 'tolstenko-theme' ), 'category' => $cat_new ),
+        array( 'name' => 'blog-definition', 'title' => __( 'Статья: определение', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'blog-seo', 'title' => __( 'Статья: SEO / CTA', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'consultation-whatsapp', 'title' => __( 'Забронируйте место', 'tolstenko-theme' ), 'category' => $cat_new ),
         array( 'name' => 'consultation-tg', 'title' => __( 'Консультация Telegram', 'tolstenko-theme' ), 'category' => $cat_new ),
@@ -929,7 +943,7 @@ function tolstenko_render_theme_block( $attributes, $content, $block ) {
     // В теле статьи/акции — компактная вёрстка без section/container.
     $blog_inline = function_exists( 'tolstenko_is_content_body_singular' )
         ? tolstenko_is_content_body_singular()
-        : is_singular( array( 'blog', 'actions' ) );
+        : is_singular( array( 'blog' ) );
     $bem         = function_exists( 'tolstenko_get_single_content_bem' )
         ? tolstenko_get_single_content_bem()
         : 'single-blog';

@@ -1,0 +1,141 @@
+// Определение / термин в теле статьи.
+
+@mixin article-define-cards($ns) {
+  &__define {
+    --define-title: #E8C84A;
+    --define-border: var(--gray-25-color);
+    --define-bg: var(--gray-12-color);
+
+    display: flex;
+    flex-direction: column;
+    gap: vw(10px, $mobile);
+    margin: 0;
+    padding: vw(16px, $mobile);
+    border: 1px solid var(--define-border);
+    border-radius: vw(16px, $mobile);
+    background-color: var(--define-bg);
+    @media (min-width: $desk) {
+      gap: vw(12px, $desktop);
+      padding: vw(18px, $desktop) vw(20px, $desktop);
+      border-radius: vw(16px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      gap: vw(12px, $desktop_large);
+      padding: vw(18px, $desktop_large) vw(20px, $desktop_large);
+      border-radius: vw(16px, $desktop_large);
+    }
+
+    &--term {
+      --define-border: #C9A227;
+      --define-bg: #1A160E;
+    }
+
+    &--note {
+      --define-border: #2A2A2A;
+      --define-bg: #161616;
+    }
+  }
+
+  &__define-kicker {
+    display: flex;
+    align-items: center;
+    gap: vw(8px, $mobile);
+    margin: 0;
+    font-family: $Montserrat;
+    font-size: vw(12px, $mobile);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--define-title);
+    @media (min-width: $desk) {
+      gap: vw(8px, $desktop);
+      font-size: vw(13px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      font-size: vw(13px, $desktop_large);
+    }
+  }
+
+  &__define-kicker-icon {
+    position: relative;
+    flex-shrink: 0;
+    width: vw(14px, $mobile);
+    height: vw(14px, $mobile);
+    border: 1.5px solid var(--define-title);
+    border-radius: 50%;
+    position: relative;
+    @media (min-width: $desk) {
+      width: vw(14px, $desktop);
+      height: vw(14px, $desktop);
+    }
+
+    &::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 1px;
+      height: 1px;
+      box-shadow: 0 0 0 2px var(--define-title);
+      border-radius: 50%;
+    }
+  }
+
+  &__define-lead,
+  &__define-title,
+  &__define-text {
+    margin: 0;
+  }
+
+  &__define-lead {
+    font-size: vw(15px, $mobile);
+    font-weight: 400;
+    line-height: 1.45;
+    color: var(--gray-70-color);
+    @media (min-width: $desk) {
+      font-size: vw(16px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      font-size: vw(16px, $desktop_large);
+    }
+  }
+
+  &__define-term {
+    font-weight: 700;
+    color: var(--gray-90-color, #f2f2f2);
+  }
+
+  &__define-fixed {
+    font-weight: 400;
+    color: var(--gray-70-color);
+  }
+
+  &__define-title {
+    font-family: $Montserrat;
+    font-size: vw(16px, $mobile);
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--define-title);
+    @media (min-width: $desk) {
+      font-size: vw(16px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      font-size: vw(16px, $desktop_large);
+    }
+  }
+
+  &__define-text {
+    font-size: vw(14px, $mobile);
+    font-weight: 400;
+    line-height: 1.45;
+    color: var(--gray-70-color);
+    @media (min-width: $desk) {
+      font-size: vw(14px, $desktop);
+    }
+    @media (min-width: $desk_large) {
+      font-size: vw(14px, $desktop_large);
+    }
+  }
+}

@@ -557,7 +557,7 @@ function tolstenko_get_root_page_class() {
     }
 
     // Карточка услуги (service.html) — CPT service
-    if ( is_singular( 'service' ) ) {
+    if ( is_singular( array( 'service', 'actions' ) ) ) {
         return 'service-page';
     }
 
@@ -606,7 +606,7 @@ function tolstenko_is_service_single_page() {
     if ( ! empty( $GLOBALS['tolstenko_service_single_render'] ) ) {
         return true;
     }
-    return is_singular( 'service' );
+    return is_singular( array( 'service', 'actions' ) );
 }
 
 /**
@@ -830,8 +830,8 @@ function tolstenko_register_cpts() {
             'show_in_nav_menus' => true,
             'menu_position'     => 25,
             'menu_icon'         => 'dashicons-megaphone',
-            // Как у статьи: редактор + комментарии; без таксономий; уникальные meta action_*.
-            'supports'          => array( 'title', 'editor', 'thumbnail', 'comments', 'custom-fields' ),
+            // Как у услуги: Gutenberg-страница из блоков темы; плитка — meta action_*.
+            'supports'          => array( 'title', 'editor', 'thumbnail', 'custom-fields' ),
             'has_archive'       => false,
             'rewrite'           => array(
                 'slug'       => 'actions',
@@ -2404,6 +2404,7 @@ require_once get_template_directory() . '/inc/acf-service-fields.php';
 require_once get_template_directory() . '/inc/service-category-extra-blocks.php';
 require_once get_template_directory() . '/inc/service-category-article-sections.php';
 require_once get_template_directory() . '/inc/service-category-admin-hero-fields.php';
+require_once get_template_directory() . '/inc/service-category-admin-seo-fields.php';
 
 /**
  * ACF: поля для категорий услуг (страница подкатегории — баннер и т.д.)

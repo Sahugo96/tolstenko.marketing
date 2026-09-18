@@ -93,6 +93,7 @@ function tolstenko_get_blog_content_block_slugs() {
 		'blog-number-list',
 		'blog-warning',
 		'blog-pros-cons',
+		'blog-definition',
 		'blog-seo',
 	);
 }

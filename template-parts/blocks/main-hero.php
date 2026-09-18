@@ -18,6 +18,7 @@ if ( $category_term instanceof WP_Term && function_exists( 'tolstenko_sc_resolve
 		$block_attrs,
 		tolstenko_sc_resolve_category_block_attributes( 'main_hero', $category_term, '_tolstenko_sc_main_hero' )
 	);
+	$block_attrs['block_main_hero_title_tag'] = 'h2';
 }
 
 $defaults = function_exists( 'tolstenko_get_block_defaults' ) ? tolstenko_get_block_defaults( 'main_hero' ) : array();

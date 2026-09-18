@@ -18,9 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 function tolstenko_sc_get_service_category_block_slugs() {
 	return array(
 		'main-hero',
-		'reviews',
-		'article',
-		'contacts',
+		'seo-section',
 	);
 }
 
@@ -58,6 +56,15 @@ function tolstenko_sc_get_default_block_attributes_for_category( $which ) {
 				'block_main_hero_person_name'     => isset( $d['person_name'] ) ? (string) $d['person_name'] : '',
 				'block_main_hero_person_position' => isset( $d['person_position'] ) ? (string) $d['person_position'] : '',
 				'block_main_hero_image'           => isset( $d['image'] ) ? (int) $d['image'] : 0,
+			);
+		case 'seo_section':
+			$d = tolstenko_get_block_defaults( 'seo_section' );
+			return array(
+				'block_seo_section_title'     => isset( $d['title'] ) ? (string) $d['title'] : '',
+				'block_seo_section_title_tag' => 'h2',
+				'block_seo_section_subtitle'  => isset( $d['subtitle'] ) ? (string) $d['subtitle'] : '',
+				'block_seo_section_more_text' => isset( $d['more_text'] ) ? (string) $d['more_text'] : '',
+				'block_seo_section_blocks'    => isset( $d['blocks'] ) && is_array( $d['blocks'] ) ? $d['blocks'] : array(),
 			);
 		default:
 			return array();
@@ -133,11 +140,27 @@ function tolstenko_sc_resolve_category_block_attributes( $which, $term, $meta_ke
 	$has = false;
 	if ( $which === 'main_hero' ) {
 		$has = tolstenko_sc_main_hero_has_custom_content( $saved );
+	} elseif ( $which === 'seo_section' ) {
+		$has = tolstenko_sc_seo_section_has_custom_content( $saved );
 	}
 	if ( ! $has || ! is_array( $saved ) ) {
 		return $base;
 	}
 	$out = $base;
+	if ( $which === 'seo_section' ) {
+		foreach ( array( 'block_seo_section_title', 'block_seo_section_subtitle', 'block_seo_section_more_text' ) as $k ) {
+			if ( isset( $saved[ $k ] ) && trim( (string) $saved[ $k ] ) !== '' ) {
+				$out[ $k ] = $saved[ $k ];
+			}
+		}
+		if ( ! empty( $saved['block_seo_section_title_tag'] ) ) {
+			$out['block_seo_section_title_tag'] = (string) $saved['block_seo_section_title_tag'];
+		}
+		if ( ! empty( $saved['block_seo_section_blocks'] ) && is_array( $saved['block_seo_section_blocks'] ) ) {
+			$out['block_seo_section_blocks'] = $saved['block_seo_section_blocks'];
+		}
+		return $out;
+	}
 	if ( $which === 'main_hero' ) {
 		foreach ( array( 'block_main_hero_title', 'block_main_hero_text', 'block_main_hero_btn_text', 'block_main_hero_promo_text', 'block_main_hero_person_name', 'block_main_hero_person_position' ) as $k ) {
 			if ( isset( $saved[ $k ] ) && trim( (string) $saved[ $k ] ) !== '' ) {
@@ -210,4 +233,46 @@ function tolstenko_sc_main_hero_has_custom_content( $saved ) {
 		}
 	}
 	return false;
+}
+
+/**
+ * @param mixed $saved Raw meta array.
+ */
+function tolstenko_sc_seo_section_has_custom_content( $saved ) {
+	if ( ! is_array( $saved ) ) {
+		return false;
+	}
+	foreach ( array( 'block_seo_section_title', 'block_seo_section_subtitle', 'block_seo_section_more_text' ) as $k ) {
+		if ( ! empty( $saved[ $k ] ) && trim( (string) $saved[ $k ] ) !== '' ) {
+			return true;
+		}
+	}
+	if ( ! empty( $saved['block_seo_section_blocks'] ) && is_array( $saved['block_seo_section_blocks'] ) ) {
+		foreach ( $saved['block_seo_section_blocks'] as $row ) {
+			if ( is_array( $row ) && function_exists( 'tolstenko_normalize_seo_section_row' ) ) {
+				$normalized = tolstenko_normalize_seo_section_row( $row );
+				if ( $normalized && function_exists( 'tolstenko_is_seo_section_row_empty' ) && ! tolstenko_is_seo_section_row_empty( $normalized ) ) {
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+}
+
+/**
+ * Скрытый H1 категории услуг.
+ *
+ * @param WP_Term $term Term.
+ * @return string
+ */
+function tolstenko_sc_get_hidden_h1( $term ) {
+	if ( ! ( $term instanceof WP_Term ) ) {
+		return '';
+	}
+	$h1 = trim( (string) get_term_meta( $term->term_id, '_tolstenko_sc_h1', true ) );
+	if ( $h1 === '' ) {
+		$h1 = trim( (string) $term->name );
+	}
+	return $h1;
 }

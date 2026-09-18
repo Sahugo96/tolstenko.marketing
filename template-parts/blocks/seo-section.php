@@ -12,6 +12,22 @@ $block_attrs = get_query_var( 'tolstenko_block_attributes', array() );
 if ( ! is_array( $block_attrs ) ) {
 	$block_attrs = array();
 }
+
+$category_term = get_query_var( 'tolstenko_service_category_term' );
+if ( $category_term instanceof WP_Term && function_exists( 'tolstenko_sc_resolve_category_block_attributes' ) ) {
+	$term_attrs = tolstenko_sc_resolve_category_block_attributes( 'seo_section', $category_term, '_tolstenko_sc_seo_section' );
+	if ( is_array( $term_attrs ) && $term_attrs ) {
+		foreach ( array( 'block_seo_section_title', 'block_seo_section_subtitle', 'block_seo_section_more_text', 'block_seo_section_title_tag' ) as $k ) {
+			if ( isset( $term_attrs[ $k ] ) && trim( (string) $term_attrs[ $k ] ) !== '' ) {
+				$block_attrs[ $k ] = $term_attrs[ $k ];
+			}
+		}
+		$raw_saved = get_term_meta( $category_term->term_id, '_tolstenko_sc_seo_section', true );
+		if ( is_array( $raw_saved ) && ! empty( $raw_saved['block_seo_section_blocks'] ) && is_array( $raw_saved['block_seo_section_blocks'] ) ) {
+			$block_attrs['block_seo_section_blocks'] = $raw_saved['block_seo_section_blocks'];
+		}
+	}
+}
 $defaults = function_exists( 'tolstenko_get_block_defaults' ) ? tolstenko_get_block_defaults( 'seo_section' ) : array();
 if ( ! is_array( $defaults ) ) {
 	$defaults = array();

@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 $post_id = (int) get_the_ID();
 $pt      = $post_id ? (string) get_post_type( $post_id ) : '';
 // Кейсы без комментариев, даже если CPT в content body.
-$ok_pt = in_array( $pt, array( 'blog', 'actions' ), true );
+$ok_pt = in_array( $pt, array( 'blog' ), true );
 if ( ! $post_id || ! $ok_pt ) {
 	return;
 }

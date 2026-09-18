@@ -5541,6 +5541,86 @@
         save: function () { return null; }
     });
 
+    wp.blocks.registerBlockType('tolstenko/blog-definition', {
+        title: 'Статья: определение',
+        category: 'tolstenko-blocks-new',
+        icon: 'editor-quote',
+        edit: function (props) {
+            var attrs = props.attributes || {};
+            var set = props.setAttributes;
+            var blockProps = useBlockProps ? useBlockProps() : {};
+            var mode = attrs.block_blog_definition_mode || getDefault('blog_definition.mode', 'define') || 'define';
+            if (mode !== 'define' && mode !== 'card') {
+                mode = 'define';
+            }
+            var kicker = attrs.block_blog_definition_kicker || '';
+            var term = attrs.block_blog_definition_term || '';
+            var suffix = attrs.block_blog_definition_suffix || '';
+            var title = attrs.block_blog_definition_title || '';
+            var text = attrs.block_blog_definition_text || '';
+            var fields = [
+                el('p', { key: 'l', style: { fontWeight: '600', marginBottom: '8px' } }, 'Статья: определение'),
+                SelectControl ? el(SelectControl, {
+                    key: 'mode',
+                    label: 'Вид',
+                    value: mode,
+                    options: [
+                        { label: 'Определение (метка + термин)', value: 'define' },
+                        { label: 'Термин (заголовок + текст)', value: 'card' }
+                    ],
+                    onChange: function (v) { set({ block_blog_definition_mode: v }); }
+                }) : null
+            ];
+            if (mode === 'define') {
+                fields.push(
+                    TextControl ? el(TextControl, {
+                        key: 'kicker',
+                        label: 'Метка',
+                        value: kicker,
+                        placeholder: getDefault('blog_definition.kicker', 'Определение'),
+                        onChange: function (v) { set({ block_blog_definition_kicker: v }); }
+                    }) : null,
+                    TextControl ? el(TextControl, {
+                        key: 'term',
+                        label: 'Термин',
+                        value: term,
+                        placeholder: getDefault('blog_definition.term', 'Продвижение сайта статьями'),
+                        onChange: function (v) { set({ block_blog_definition_term: v }); }
+                    }) : null,
+                    TextareaControl ? el(TextareaControl, {
+                        key: 'suffix',
+                        label: 'Текст после тире',
+                        help: 'Тире перед этим текстом подставляется само.',
+                        value: suffix,
+                        placeholder: getDefault('blog_definition.suffix', 'способ SEO-продвижения через публикацию полезного контента.'),
+                        onChange: function (v) { set({ block_blog_definition_suffix: v }); },
+                        rows: 3
+                    }) : null
+                );
+            } else {
+                fields.push(
+                    TextControl ? el(TextControl, {
+                        key: 'title',
+                        label: 'Заголовок',
+                        value: title,
+                        placeholder: getDefault('blog_definition.title', 'Семантическое ядро'),
+                        onChange: function (v) { set({ block_blog_definition_title: v }); }
+                    }) : null,
+                    TextareaControl ? el(TextareaControl, {
+                        key: 'text',
+                        label: 'Текст',
+                        value: text,
+                        placeholder: getDefault('blog_definition.text', ''),
+                        onChange: function (v) { set({ block_blog_definition_text: v }); },
+                        rows: 3
+                    }) : null
+                );
+            }
+            return wrapBlock(blockProps, fields);
+        },
+        save: function () { return null; }
+    });
+
     wp.blocks.registerBlockType('tolstenko/blog-seo', {
         title: 'Статья: SEO / CTA',
         category: 'tolstenko-blocks-new',

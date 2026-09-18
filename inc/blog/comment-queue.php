@@ -45,7 +45,7 @@ function tolstenko_comment_queue_is_valid_target( $post_id ) {
 	}
 	$pt = get_post_type( $post_id );
 	// Кейсы без комментариев.
-	return in_array( (string) $pt, array( 'blog', 'actions' ), true );
+	return in_array( (string) $pt, array( 'blog' ), true );
 }
 
 /**
