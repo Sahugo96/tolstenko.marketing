@@ -2466,6 +2466,7 @@ require_once get_template_directory() . '/inc/rest-posts-filter.php';
  */
 require_once get_template_directory() . '/inc/contact-data-admin.php';
 require_once get_template_directory() . '/inc/contacts-page-admin.php';
+require_once get_template_directory() . '/inc/site-variables-admin.php';
 
 /**
  * Данные шапки и подвала (телефон, соцсети) из «Контактных данных».
