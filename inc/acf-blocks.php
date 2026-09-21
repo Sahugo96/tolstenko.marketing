@@ -335,6 +335,7 @@ function tolstenko_get_theme_block_attributes() {
             'block_thanks_description' => array( 'type' => 'string', 'default' => '' ),
         ),
         'reviews' => array(
+            'block_reviews_subtitle' => array( 'type' => 'string', 'default' => '' ),
             'block_reviews_title'      => array( 'type' => 'string', 'default' => '' ),
             'block_reviews_title_tag'  => array( 'type' => 'string', 'default' => 'h2' ),
             'block_reviews_text'       => array( 'type' => 'string', 'default' => '' ),
@@ -346,12 +347,14 @@ function tolstenko_get_theme_block_attributes() {
             ),
         ),
         'certificates' => array(
+            'block_certificates_subtitle' => array( 'type' => 'string', 'default' => '' ),
             'block_certificates_title'     => array( 'type' => 'string', 'default' => '' ),
             'block_certificates_title_tag' => array( 'type' => 'string', 'default' => 'h2' ),
             'block_certificates_text'      => array( 'type' => 'string', 'default' => '' ),
             'block_certificates_items'     => array( 'type' => 'array', 'default' => array() ),
         ),
         'actions' => array(
+            'block_actions_subtitle' => array( 'type' => 'string', 'default' => '' ),
             'block_actions_title'     => array( 'type' => 'string', 'default' => '' ),
             'block_actions_title_tag' => array( 'type' => 'string', 'default' => 'h2' ),
             'block_actions_items'     => array( 'type' => 'array', 'default' => array() ),
@@ -362,6 +365,7 @@ function tolstenko_get_theme_block_attributes() {
             'block_actions_section_text'      => array( 'type' => 'string', 'default' => '' ),
         ),
         'city' => array(
+            'block_city_subtitle' => array( 'type' => 'string', 'default' => '' ),
             'block_city_title'     => array( 'type' => 'string', 'default' => '' ),
             'block_city_title_tag' => array( 'type' => 'string', 'default' => 'h2' ),
             'block_city_text'      => array( 'type' => 'string', 'default' => '' ),
@@ -373,17 +377,20 @@ function tolstenko_get_theme_block_attributes() {
             'block_vacancies_banner_image'     => array( 'type' => 'integer', 'default' => 0 ),
         ),
         'vacancies-section' => array(
+            'block_vacancies_section_subtitle' => array( 'type' => 'string', 'default' => '' ),
             'block_vacancies_section_title'     => array( 'type' => 'string', 'default' => '' ),
             'block_vacancies_section_title_tag' => array( 'type' => 'string', 'default' => 'h2' ),
             'block_vacancies_section_text'      => array( 'type' => 'string', 'default' => '' ),
         ),
         'case-section' => array(
+            'block_case_section_subtitle' => array( 'type' => 'string', 'default' => '' ),
             'block_case_section_title'           => array( 'type' => 'string', 'default' => '' ),
             'block_case_section_title_tag'       => array( 'type' => 'string', 'default' => 'h2' ),
             'block_case_section_text'            => array( 'type' => 'string', 'default' => '' ),
             'block_case_section_posts_per_page'  => array( 'type' => 'number', 'default' => 4 ),
         ),
         'service-section' => array(
+            'block_service_section_subtitle' => array( 'type' => 'string', 'default' => '' ),
             'block_service_section_title'           => array( 'type' => 'string', 'default' => '' ),
             'block_service_section_title_tag'       => array( 'type' => 'string', 'default' => 'h2' ),
             'block_service_section_text'            => array( 'type' => 'string', 'default' => '' ),
@@ -395,6 +402,7 @@ function tolstenko_get_theme_block_attributes() {
             ),
         ),
         'service-section-simple' => array(
+            'block_service_section_subtitle' => array( 'type' => 'string', 'default' => '' ),
             'block_service_section_title'           => array( 'type' => 'string', 'default' => '' ),
             'block_service_section_title_tag'       => array( 'type' => 'string', 'default' => 'h2' ),
             'block_service_section_text'            => array( 'type' => 'string', 'default' => '' ),
@@ -406,6 +414,7 @@ function tolstenko_get_theme_block_attributes() {
             ),
         ),
         'blog-section-simple' => array(
+            'block_blog_section_subtitle' => array( 'type' => 'string', 'default' => '' ),
             'block_blog_section_title'           => array( 'type' => 'string', 'default' => '' ),
             'block_blog_section_title_tag'       => array( 'type' => 'string', 'default' => 'h2' ),
             'block_blog_section_text'            => array( 'type' => 'string', 'default' => '' ),
@@ -444,6 +453,7 @@ function tolstenko_get_theme_block_attributes() {
             ),
         ),
         'service-section-tile' => array(
+            'block_service_section_subtitle' => array( 'type' => 'string', 'default' => '' ),
             'block_service_section_title'     => array( 'type' => 'string', 'default' => '' ),
             'block_service_section_title_tag' => array( 'type' => 'string', 'default' => 'h2' ),
             'block_service_section_text'      => array( 'type' => 'string', 'default' => '' ),
@@ -499,6 +509,7 @@ function tolstenko_get_theme_block_attributes() {
             'block_free_audit_btn_url'  => array( 'type' => 'string', 'default' => '' ),
         ),
         'solution' => array(
+            'block_solution_subtitle' => array( 'type' => 'string', 'default' => '' ),
             'block_solution_title'         => array( 'type' => 'string', 'default' => '' ),
             'block_solution_title_tag'     => array( 'type' => 'string', 'default' => 'h2' ),
             'block_solution_text'          => array( 'type' => 'string', 'default' => '' ),
@@ -546,12 +557,14 @@ function tolstenko_get_theme_block_attributes() {
             'block_different_experiences_modal_url' => array( 'type' => 'string', 'default' => '' ),
         ),
         'partners' => array(
+            'block_partners_subtitle' => array( 'type' => 'string', 'default' => '' ),
             'block_partners_title'     => array( 'type' => 'string', 'default' => '' ),
             'block_partners_title_tag' => array( 'type' => 'string', 'default' => 'h2' ),
             'block_partners_text'      => array( 'type' => 'string', 'default' => '' ),
             'block_partners_items'     => array( 'type' => 'array', 'default' => array() ),
         ),
         'strategy' => array(
+            'block_strategy_section_subtitle' => array( 'type' => 'string', 'default' => '' ),
             'block_strategy_title'          => array( 'type' => 'string', 'default' => '' ),
             'block_strategy_title_tag'      => array( 'type' => 'string', 'default' => 'h2' ),
             'block_strategy_subtitle'       => array( 'type' => 'string', 'default' => '' ),
@@ -569,6 +582,7 @@ function tolstenko_get_theme_block_attributes() {
             'block_strategy_image_mob'      => array( 'type' => 'integer', 'default' => 0 ),
         ),
         'team-cards' => array(
+            'block_team_cards_subtitle' => array( 'type' => 'string', 'default' => '' ),
             'block_team_cards_title'     => array( 'type' => 'string', 'default' => '' ),
             'block_team_cards_title_tag' => array( 'type' => 'string', 'default' => 'h2' ),
             'block_team_cards_text'      => array( 'type' => 'string', 'default' => '' ),
@@ -641,6 +655,7 @@ function tolstenko_get_theme_block_attributes() {
             'block_not_the_end_btn_url'  => array( 'type' => 'string', 'default' => '' ),
         ),
         'faq' => array(
+            'block_faq_subtitle' => array( 'type' => 'string', 'default' => '' ),
             'block_faq_title'        => array( 'type' => 'string', 'default' => '' ),
             'block_faq_title_tag'    => array( 'type' => 'string', 'default' => 'h2' ),
             'block_faq_text'         => array( 'type' => 'string', 'default' => '' ),
@@ -661,6 +676,7 @@ function tolstenko_get_theme_block_attributes() {
         ),
         'hidden-seo'  => array(),
         'we-can' => array(
+            'block_we_can_subtitle' => array( 'type' => 'string', 'default' => '' ),
             'block_we_can_title'      => array( 'type' => 'string', 'default' => '' ),
             'block_we_can_title_tag'  => array( 'type' => 'string', 'default' => 'h2' ),
             'block_we_can_items'      => array( 'type' => 'array', 'default' => array() ),
@@ -670,6 +686,7 @@ function tolstenko_get_theme_block_attributes() {
             'block_we_can_form_text'  => array( 'type' => 'string', 'default' => '' ),
         ),
         'recomendation' => array(
+            'block_recomendation_subtitle' => array( 'type' => 'string', 'default' => '' ),
             'block_recomendation_title'      => array( 'type' => 'string', 'default' => '' ),
             'block_recomendation_title_tag'  => array( 'type' => 'string', 'default' => 'h2' ),
             'block_recomendation_text'       => array( 'type' => 'string', 'default' => '' ),
@@ -680,6 +697,7 @@ function tolstenko_get_theme_block_attributes() {
             'block_recomendation_btn_url'    => array( 'type' => 'string', 'default' => '' ),
         ),
         'referal' => array(
+            'block_referal_subtitle' => array( 'type' => 'string', 'default' => '' ),
             'block_referal_title'      => array( 'type' => 'string', 'default' => '' ),
             'block_referal_title_tag'  => array( 'type' => 'string', 'default' => 'h2' ),
             'block_referal_items'      => array( 'type' => 'array', 'default' => array() ),
@@ -689,23 +707,27 @@ function tolstenko_get_theme_block_attributes() {
             'block_referal_btn_url'    => array( 'type' => 'string', 'default' => '' ),
         ),
         'commission' => array(
+            'block_commission_subtitle' => array( 'type' => 'string', 'default' => '' ),
             'block_commission_title'     => array( 'type' => 'string', 'default' => '' ),
             'block_commission_title_tag' => array( 'type' => 'string', 'default' => 'h2' ),
             'block_commission_text'      => array( 'type' => 'string', 'default' => '' ),
             'block_commission_items'     => array( 'type' => 'array', 'default' => array() ),
         ),
         'benefits-cooperation' => array(
+            'block_benefits_cooperation_subtitle' => array( 'type' => 'string', 'default' => '' ),
             'block_benefits_cooperation_title'     => array( 'type' => 'string', 'default' => '' ),
             'block_benefits_cooperation_title_tag' => array( 'type' => 'string', 'default' => 'h2' ),
             'block_benefits_cooperation_items'     => array( 'type' => 'array', 'default' => array() ),
         ),
         'aducation' => array(
+            'block_aducation_subtitle' => array( 'type' => 'string', 'default' => '' ),
             'block_aducation_title'     => array( 'type' => 'string', 'default' => '' ),
             'block_aducation_title_tag' => array( 'type' => 'string', 'default' => 'h2' ),
             'block_aducation_items'     => array( 'type' => 'array', 'default' => array() ),
             'block_aducation_images'    => array( 'type' => 'array', 'default' => array() ),
         ),
         'clients' => array(
+            'block_clients_section_subtitle' => array( 'type' => 'string', 'default' => '' ),
             'block_clients_title'         => array( 'type' => 'string', 'default' => '' ),
             'block_clients_title_tag'     => array( 'type' => 'string', 'default' => 'h2' ),
             'block_clients_text'          => array( 'type' => 'string', 'default' => '' ),

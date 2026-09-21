@@ -66,11 +66,11 @@ if ( $title === '' && $subtitle === '' && empty( $blocks ) ) {
 		<div class="seo-section__body">
 			<?php if ( $title !== '' || $subtitle !== '' ) : ?>
 				<div class="seo-section__head section-top">
+					<?php if ( $subtitle !== '' ) : ?>
+						<p class="section-subtitle"><?php echo tolstenko_kses_html( $subtitle ); ?></p>
+					<?php endif; ?>
 					<?php if ( $title !== '' ) : ?>
 						<<?php echo esc_attr( $title_tag ); ?> class="seo-section__title h2"><?php echo tolstenko_kses_html( $title ); ?></<?php echo esc_attr( $title_tag ); ?>>
-					<?php endif; ?>
-					<?php if ( $subtitle !== '' ) : ?>
-						<div class="seo-section__subtitle paragraph-15-25"><?php echo tolstenko_kses_html( $subtitle ); ?></div>
 					<?php endif; ?>
 				</div>
 			<?php endif; ?>

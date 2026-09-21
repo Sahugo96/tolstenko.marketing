@@ -15,6 +15,11 @@ if ( ! is_array( $defaults ) ) {
 	$defaults = array();
 }
 
+$subtitle = function_exists( 'tolstenko_block_section_subtitle' )
+	? tolstenko_block_section_subtitle( $block_attrs, $defaults, 'block_aducation_subtitle', 'subtitle' )
+	: '';
+
+
 $title = ! empty( $block_attrs['block_aducation_title'] )
 	? (string) $block_attrs['block_aducation_title']
 	: (string) ( $defaults['title'] ?? '' );
@@ -75,6 +80,9 @@ if ( $title === '' && empty( $items ) ) {
 	<div class="container">
 		<div class="aducation__inner br-30">
 			<div class="aducation__top section-top">
+			<?php if ( $subtitle !== '' ) : ?>
+				<p class="section-subtitle"><?php echo tolstenko_kses_html( $subtitle ); ?></p>
+			<?php endif; ?>
 				<?php if ( $title !== '' ) : ?>
 					<<?php echo esc_attr( $title_tag ); ?> class="aducation__title h2"><?php echo tolstenko_kses_html( $title ); ?></<?php echo esc_attr( $title_tag ); ?>>
 				<?php endif; ?>

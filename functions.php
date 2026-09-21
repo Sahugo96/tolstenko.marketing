@@ -355,6 +355,24 @@ function tolstenko_kses_html( $html ) {
 }
 
 /**
+ * Подзаголовок секции: атрибут Gutenberg, иначе дефолт.
+ *
+ * @param array  $attrs       Block attributes.
+ * @param array  $defaults    Defaults.
+ * @param string $attr_key    Attribute name.
+ * @param string $default_key Defaults key.
+ * @return string
+ */
+function tolstenko_block_section_subtitle( $attrs, $defaults, $attr_key, $default_key = 'subtitle' ) {
+	$attrs    = is_array( $attrs ) ? $attrs : array();
+	$defaults = is_array( $defaults ) ? $defaults : array();
+	if ( isset( $attrs[ $attr_key ] ) && trim( (string) $attrs[ $attr_key ] ) !== '' ) {
+		return (string) $attrs[ $attr_key ];
+	}
+	return (string) ( $defaults[ $default_key ] ?? '' );
+}
+
+/**
  * Allowed tags for inline SVG icons in blocks.
  *
  * @return array<string, array<string, bool>>

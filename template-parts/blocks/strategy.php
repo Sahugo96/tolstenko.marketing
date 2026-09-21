@@ -20,6 +20,9 @@ $site = function_exists( 'tolstenko_get_site_header_footer_data' ) ? tolstenko_g
 
 $title = ! empty( $block_attrs['block_strategy_title'] ) ? (string) $block_attrs['block_strategy_title'] : (string) ( $defaults['title'] ?? '' );
 $subtitle = ! empty( $block_attrs['block_strategy_subtitle'] ) ? (string) $block_attrs['block_strategy_subtitle'] : (string) ( $defaults['subtitle'] ?? '' );
+$section_subtitle = function_exists( 'tolstenko_block_section_subtitle' )
+	? tolstenko_block_section_subtitle( $block_attrs, $defaults, 'block_strategy_section_subtitle', 'section_subtitle' )
+	: '';
 $text = isset( $block_attrs['block_strategy_text'] ) && trim( (string) $block_attrs['block_strategy_text'] ) !== ''
 	? (string) $block_attrs['block_strategy_text']
 	: (string) ( $defaults['text'] ?? '' );
@@ -75,8 +78,11 @@ if ( $title === '' && empty( $items ) && $text === '' ) {
 ?>
 <section class="strategy section" aria-label="<?php esc_attr_e( 'Стратегия', 'tolstenko-theme' ); ?>">
 	<div class="container">
-		<?php if ( $title !== '' ) : ?>
+		<?php if ( $title !== '' || $section_subtitle !== '' ) : ?>
 			<div class="section-top">
+			<?php if ( $section_subtitle !== '' ) : ?>
+				<p class="section-subtitle"><?php echo tolstenko_kses_html( $section_subtitle ); ?></p>
+			<?php endif; ?>
 				<<?php echo esc_attr( $title_tag ); ?> class="section-title strategy__title h2"><?php echo tolstenko_kses_html( $title ); ?></<?php echo esc_attr( $title_tag ); ?>>
 			</div>
 		<?php endif; ?>

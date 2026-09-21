@@ -1164,6 +1164,13 @@
                     key: 'h',
                     style: { marginTop: 0, marginBottom: '12px', opacity: 0.7, fontSize: '12px' }
                 }, 'Пустые поля и список отзывов — из дефолтов «Отзывы». Если отзывы не выбраны — показываются все. Контент каждого отзыва задаётся в CPT «Отзывы».'),
+                TextControl ? el(TextControl, {
+                    key: 'subtitle',
+                    label: 'Подзаголовок',
+                    value: attrs.block_reviews_subtitle || '',
+                    placeholder: getDefault('reviews.subtitle', ''),
+                    onChange: function (v) { set({ block_reviews_subtitle: v }); }
+                }) : null,
                 TextareaControl ? el(TextareaControl, {
                     key: 't',
                     label: 'Заголовок (HTML)',
@@ -1437,6 +1444,13 @@
 
             return wrapBlock(blockProps, [
                 el('p', { key: 'l', style: { marginBottom: '8px', fontWeight: '600' } }, 'Решение'),
+                TextControl ? el(TextControl, {
+                    key: 'subtitle',
+                    label: 'Подзаголовок',
+                    value: attrs.block_solution_subtitle || '',
+                    placeholder: getDefault('solution.subtitle', ''),
+                    onChange: function (v) { set({ block_solution_subtitle: v }); }
+                }) : null,
                 TextareaControl ? el(TextareaControl, {
                     key: 'title',
                     label: 'Заголовок (HTML)',
@@ -2002,6 +2016,13 @@
             return wrapBlock(blockProps, [
                 el('p', { key: 'l', style: { marginBottom: '8px', fontWeight: '600' } }, 'Партнёры'),
                 TextControl ? el(TextControl, {
+                    key: 'subtitle',
+                    label: 'Подзаголовок',
+                    value: attrs.block_partners_subtitle || '',
+                    placeholder: getDefault('partners.subtitle', ''),
+                    onChange: function (v) { set({ block_partners_subtitle: v }); }
+                }) : null,
+                TextControl ? el(TextControl, {
                     key: 'title',
                     label: 'Заголовок',
                     value: attrs.block_partners_title || '',
@@ -2138,6 +2159,7 @@
         itemsKey: 'block_strategy_items',
         simpleItems: true,
         fields: [
+            { key: 'block_strategy_section_subtitle', label: 'Подзаголовок секции', defaultPath: 'strategy.section_subtitle' },
             { key: 'block_strategy_title', label: 'Заголовок', defaultPath: 'strategy.title' },
             { type: 'headingTag', key: 'block_strategy_title_tag', label: 'Тег заголовка' },
             { key: 'block_strategy_subtitle', label: 'Подзаголовок', defaultPath: 'strategy.subtitle' },
@@ -2157,6 +2179,7 @@
         icon: 'groups',
         note: 'Карточки редактируются в «Дефолты блоков → Команда». Существующий блок «Команда» берёт людей из CPT.',
         fields: [
+            { key: 'block_team_cards_subtitle', label: 'Подзаголовок', defaultPath: 'team_cards.subtitle' },
             { key: 'block_team_cards_title', label: 'Заголовок', defaultPath: 'team_cards.title' },
             { type: 'headingTag', key: 'block_team_cards_title_tag', label: 'Тег заголовка' },
             { type: 'textarea', key: 'block_team_cards_text', label: 'Текст', defaultPath: 'team_cards.text' }
@@ -2951,6 +2974,13 @@
                 el('p', { key: 'l', style: { marginBottom: '8px', fontWeight: '600' } }, 'FAQ'),
                 el('p', { key: 'hint', style: { marginTop: 0, marginBottom: '8px', fontSize: '12px', color: '#757575' } }, 'Пустые поля подставятся из «Настройки сайта → Дефолты блоков».'),
                 TextControl ? el(TextControl, {
+                    key: 'subtitle',
+                    label: 'Подзаголовок',
+                    value: attrs.block_faq_subtitle || '',
+                    placeholder: getDefault('faq.subtitle', ''),
+                    onChange: function (v) { set({ block_faq_subtitle: v }); }
+                }) : null,
+                TextControl ? el(TextControl, {
                     key: 'title',
                     label: 'Заголовок',
                     value: attrs.block_faq_title || '',
@@ -3383,6 +3413,13 @@
                 el('p', { key: 'l', style: { marginBottom: '8px', fontWeight: '600' } }, 'SEO продвижение'),
                 el('p', { key: 'hint', style: { marginTop: 0, marginBottom: '8px', fontSize: '12px', color: '#757575' } }, 'Пустые поля подставятся из «Настройки сайта → Дефолты блоков». Тело секции на фронте свёрнуто, раскрывает кнопка «Читать далее».'),
                 TextControl ? el(TextControl, {
+                    key: 'subtitle',
+                    label: 'Подзаголовок',
+                    value: attrs.block_seo_section_subtitle || '',
+                    placeholder: getDefault('seo_section.subtitle', ''),
+                    onChange: function (v) { set({ block_seo_section_subtitle: v }); }
+                }) : null,
+                TextControl ? el(TextControl, {
                     key: 'title',
                     label: 'Заголовок',
                     value: attrs.block_seo_section_title || '',
@@ -3390,13 +3427,6 @@
                     onChange: function (v) { set({ block_seo_section_title: v }); }
                 }) : null,
                 renderHeadingTagSelect(attrs, set, 'block_seo_section_title_tag', 'Тег заголовка', 'h2'),
-                TextareaControl ? el(TextareaControl, {
-                    key: 'subtitle',
-                    label: 'Подзаголовок',
-                    value: attrs.block_seo_section_subtitle || '',
-                    placeholder: getDefault('seo_section.subtitle', ''),
-                    onChange: function (v) { set({ block_seo_section_subtitle: v }); }
-                }) : null,
                 TextControl ? el(TextControl, {
                     key: 'more',
                     label: 'Текст кнопки раскрытия',
@@ -3504,6 +3534,13 @@
                 el('p', { key: 'l', style: { marginBottom: '8px', fontWeight: '600' } }, 'Мы можем'),
                 el('p', { key: 'hint', style: { marginTop: 0, marginBottom: '8px', fontSize: '12px', color: '#757575' } }, 'Пустые поля и списки подставятся из «Дефолты блоков → Партнёры блоки».'),
                 TextControl ? el(TextControl, {
+                    key: 'subtitle',
+                    label: 'Подзаголовок',
+                    value: attrs.block_we_can_subtitle || '',
+                    placeholder: getDefault('we_can.subtitle', ''),
+                    onChange: function (v) { set({ block_we_can_subtitle: v }); }
+                }) : null,
+                TextControl ? el(TextControl, {
                     key: 'title',
                     label: 'Заголовок',
                     value: attrs.block_we_can_title || '',
@@ -3596,6 +3633,13 @@
                 el('p', { key: 'l', style: { marginBottom: '8px', fontWeight: '600' } }, 'Рефералка'),
                 el('p', { key: 'hint', style: { marginTop: 0, marginBottom: '8px', fontSize: '12px', color: '#757575' } }, 'Пустые поля и списки подставятся из «Дефолты блоков → Партнёры блоки».'),
                 TextControl ? el(TextControl, {
+                    key: 'subtitle',
+                    label: 'Подзаголовок',
+                    value: attrs.block_referal_subtitle || '',
+                    placeholder: getDefault('referal.subtitle', ''),
+                    onChange: function (v) { set({ block_referal_subtitle: v }); }
+                }) : null,
+                TextControl ? el(TextControl, {
                     key: 'title',
                     label: 'Заголовок',
                     value: attrs.block_referal_title || '',
@@ -3668,6 +3712,13 @@
             var fields = [
                 el('p', { key: 'l', style: { marginBottom: '8px', fontWeight: '600' } }, 'Вознаграждение'),
                 el('p', { key: 'hint', style: { marginTop: 0, marginBottom: '8px', fontSize: '12px', color: '#757575' } }, 'Пустые поля подставятся из «Дефолты блоков → Партнёры блоки».'),
+                TextControl ? el(TextControl, {
+                    key: 'subtitle',
+                    label: 'Подзаголовок',
+                    value: attrs.block_commission_subtitle || '',
+                    placeholder: getDefault('commission.subtitle', ''),
+                    onChange: function (v) { set({ block_commission_subtitle: v }); }
+                }) : null,
                 TextControl ? el(TextControl, {
                     key: 'title',
                     label: 'Заголовок',
@@ -3766,6 +3817,13 @@
             var fields = [
                 el('p', { key: 'l', style: { marginBottom: '8px', fontWeight: '600' } }, 'Преимущества'),
                 el('p', { key: 'hint', style: { marginTop: 0, marginBottom: '8px', fontSize: '12px', color: '#757575' } }, 'Пустые поля подставятся из «Дефолты блоков → Партнёры блоки».'),
+                TextControl ? el(TextControl, {
+                    key: 'subtitle',
+                    label: 'Подзаголовок',
+                    value: attrs.block_benefits_cooperation_subtitle || '',
+                    placeholder: getDefault('benefits_cooperation.subtitle', ''),
+                    onChange: function (v) { set({ block_benefits_cooperation_subtitle: v }); }
+                }) : null,
                 TextControl ? el(TextControl, {
                     key: 'title',
                     label: 'Заголовок',
@@ -3894,6 +3952,13 @@
             var fields = [
                 el('p', { key: 'l', style: { marginBottom: '8px', fontWeight: '600' } }, 'Образование'),
                 el('p', { key: 'h', style: { marginTop: 0, marginBottom: '8px', fontSize: '12px', color: '#757575' } }, 'Пустые поля — из «Дефолты блоков → Пресс-портрет».'),
+                TextControl ? el(TextControl, {
+                    key: 'subtitle',
+                    label: 'Подзаголовок',
+                    value: attrs.block_aducation_subtitle || '',
+                    placeholder: getDefault('aducation.subtitle', ''),
+                    onChange: function (v) { set({ block_aducation_subtitle: v }); }
+                }) : null,
                 TextControl ? el(TextControl, {
                     key: 'title', label: 'Заголовок',
                     value: attrs.block_aducation_title || '',
@@ -4036,6 +4101,13 @@
                     onChange: function (v) { set({ block_clients_show_top: !!v }); }
                 }) : null,
                 showTop ? el('div', { key: 'top' }, [
+                    TextControl ? el(TextControl, {
+                        key: 'section-subtitle',
+                        label: 'Подзаголовок',
+                        value: attrs.block_clients_section_subtitle || '',
+                        placeholder: getDefault('clients.section_subtitle', ''),
+                        onChange: function (v) { set({ block_clients_section_subtitle: v }); }
+                    }) : null,
                     TextControl ? el(TextControl, {
                         key: 'title', label: 'Заголовок',
                         value: attrs.block_clients_title || '',
@@ -4273,6 +4345,13 @@
                 el('p', { key: 'l', style: { marginBottom: '8px', fontWeight: '600' } }, 'Рекомендации'),
                 el('p', { key: 'hint', style: { marginTop: 0, marginBottom: '8px', fontSize: '12px', color: '#757575' } }, 'Пустые поля и списки подставятся из «Дефолты блоков → Партнёры блоки».'),
                 TextControl ? el(TextControl, {
+                    key: 'subtitle',
+                    label: 'Подзаголовок',
+                    value: attrs.block_recomendation_subtitle || '',
+                    placeholder: getDefault('recomendation.subtitle', ''),
+                    onChange: function (v) { set({ block_recomendation_subtitle: v }); }
+                }) : null,
+                TextControl ? el(TextControl, {
                     key: 'title',
                     label: 'Заголовок',
                     value: attrs.block_recomendation_title || '',
@@ -4421,6 +4500,13 @@
                 el('p', { key: 'l', style: { marginBottom: '8px', fontWeight: '600' } }, 'Акции, бонусы, подарки'),
                 el('p', { key: 'h', style: { marginTop: 0, marginBottom: '12px', opacity: 0.7, fontSize: '12px' } }, 'Карточки свои (до 4). Запись «Акции» — только ссылка на страницу.'),
                 TextControl ? el(TextControl, {
+                    key: 'subtitle',
+                    label: 'Подзаголовок',
+                    value: attrs.block_actions_subtitle || '',
+                    placeholder: getDefault('actions.subtitle', ''),
+                    onChange: function (v) { set({ block_actions_subtitle: v }); }
+                }) : null,
+                TextControl ? el(TextControl, {
                     key: 't',
                     label: 'Заголовок',
                     value: attrs.block_actions_title || '',
@@ -4526,6 +4612,13 @@
                 el('p', { key: 'l', style: { marginBottom: '8px', fontWeight: '600' } }, 'Города'),
                 el('p', { key: 'h', style: { marginTop: 0, marginBottom: '12px', opacity: 0.7, fontSize: '12px' } }, 'Пустые поля = дефолты. Список — из записей «Город».'),
                 TextControl ? el(TextControl, {
+                    key: 'subtitle',
+                    label: 'Подзаголовок',
+                    value: attrs.block_city_subtitle || '',
+                    placeholder: getDefault('city.subtitle', ''),
+                    onChange: function (v) { set({ block_city_subtitle: v }); }
+                }) : null,
+                TextControl ? el(TextControl, {
                     key: 't',
                     label: 'Заголовок',
                     value: attrs.block_city_title || '',
@@ -4617,6 +4710,13 @@
                 el('p', { key: 'l', style: { marginBottom: '8px', fontWeight: '600' } }, 'Секция вакансий'),
                 el('p', { key: 'h', style: { marginTop: 0, marginBottom: '12px', opacity: 0.7, fontSize: '12px' } }, 'Карточки и фильтр — из CPT «Вакансии» / vacancy_cat.'),
                 TextControl ? el(TextControl, {
+                    key: 'subtitle',
+                    label: 'Подзаголовок',
+                    value: attrs.block_vacancies_section_subtitle || '',
+                    placeholder: getDefault('vacancies_section.subtitle', ''),
+                    onChange: function (v) { set({ block_vacancies_section_subtitle: v }); }
+                }) : null,
+                TextControl ? el(TextControl, {
                     key: 't',
                     label: 'Заголовок',
                     value: attrs.block_vacancies_section_title || '',
@@ -4693,6 +4793,13 @@
                 el('p', { key: 'l', style: { marginBottom: '8px', fontWeight: '600' } }, 'Кейсы'),
                 el('p', { key: 'h', style: { marginTop: 0, marginBottom: '12px', opacity: 0.7, fontSize: '12px' } }, 
                     'Пустые поля и фильтр — из дефолтов. Если кейсы не выбраны — показываются все. Карточки и фильтр — из CPT «Кейсы» / case_cat. Изображение карточки — миниатюра записи.'),
+                TextControl ? el(TextControl, {
+                    key: 'subtitle',
+                    label: 'Подзаголовок',
+                    value: attrs.block_case_section_subtitle || '',
+                    placeholder: getDefault('case_section.subtitle', ''),
+                    onChange: function (v) { set({ block_case_section_subtitle: v }); }
+                }) : null,
                 TextareaControl ? el(TextareaControl, {
                     key: 't',
                     label: 'Заголовок (HTML)',
@@ -4805,6 +4912,13 @@
                     }, withFilters
                         ? 'Пустые поля и список услуг — из дефолтов «Слайдер услуг (фильтры)». Если услуги не выбраны ни в блоке, ни в дефолтах — N новых. Фильтр категорий сужает выборку.'
                         : 'Пустые поля и список услуг — из дефолтов «Слайдер услуг». Если услуги не выбраны ни в блоке, ни в дефолтах — N новых.'),
+                    TextControl ? el(TextControl, {
+                        key: 'subtitle',
+                        label: 'Подзаголовок',
+                        value: attrs.block_service_section_subtitle || '',
+                        placeholder: getDefault(withFilters ? 'service_section_filters.subtitle' : 'service_section.subtitle', ''),
+                        onChange: function (v) { set({ block_service_section_subtitle: v }); }
+                    }) : null,
                     TextareaControl ? el(TextareaControl, {
                         key: 't',
                         label: 'Заголовок (HTML)',
@@ -4913,6 +5027,13 @@
                     key: 'h',
                     style: { marginTop: 0, marginBottom: '12px', opacity: 0.7, fontSize: '12px' }
                 }, 'Пустые поля — из дефолтов «Слайдер статей». Выбранные статьи идут первыми; до 12 добиваем свежими. Без выбора — 12 последних. На single текущая статья исключается.'),
+                TextControl ? el(TextControl, {
+                    key: 'subtitle',
+                    label: 'Подзаголовок',
+                    value: attrs.block_blog_section_subtitle || '',
+                    placeholder: getDefault('blog_section.subtitle', ''),
+                    onChange: function (v) { set({ block_blog_section_subtitle: v }); }
+                }) : null,
                 TextareaControl ? el(TextareaControl, {
                     key: 't',
                     label: 'Заголовок (HTML)',
@@ -5676,6 +5797,13 @@
                     key: 'h',
                     style: { marginTop: 0, marginBottom: '12px', opacity: 0.7, fontSize: '12px' }
                 }, 'Сетка услуг; табы — ссылки на /services/ и /services/{cat}/. «Показать ещё» после 6 карточек. Пустые поля — из дефолтов «Услуги (плитка)».'),
+                TextControl ? el(TextControl, {
+                    key: 'subtitle',
+                    label: 'Подзаголовок',
+                    value: attrs.block_service_section_subtitle || '',
+                    placeholder: getDefault('service_section_tile.subtitle', ''),
+                    onChange: function (v) { set({ block_service_section_subtitle: v }); }
+                }) : null,
                 TextareaControl ? el(TextareaControl, {
                     key: 't',
                     label: 'Заголовок (HTML)',
@@ -5752,6 +5880,13 @@
             return wrapBlock(blockProps, [
                 el('p', { key: 'l', style: { marginBottom: '8px', fontWeight: '600' } }, 'Сертификаты'),
                 el('p', { key: 'hint', style: { marginTop: 0, marginBottom: '8px', fontSize: '12px', color: '#757575' } }, 'Пустые поля подставятся из «Настройки сайта → Дефолты блоков».'),
+                TextControl ? el(TextControl, {
+                    key: 'subtitle',
+                    label: 'Подзаголовок',
+                    value: attrs.block_certificates_subtitle || '',
+                    placeholder: getDefault('certificates.subtitle', ''),
+                    onChange: function (v) { set({ block_certificates_subtitle: v }); }
+                }) : null,
                 TextControl ? el(TextControl, {
                     key: 'title',
                     label: 'Заголовок',

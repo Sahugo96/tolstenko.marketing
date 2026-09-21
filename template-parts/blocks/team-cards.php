@@ -15,6 +15,11 @@ if ( ! is_array( $defaults ) ) {
 	$defaults = array();
 }
 
+$subtitle = function_exists( 'tolstenko_block_section_subtitle' )
+	? tolstenko_block_section_subtitle( $block_attrs, $defaults, 'block_team_cards_subtitle', 'subtitle' )
+	: '';
+
+
 $title = ! empty( $block_attrs['block_team_cards_title'] ) ? (string) $block_attrs['block_team_cards_title'] : (string) ( $defaults['title'] ?? '' );
 $text  = isset( $block_attrs['block_team_cards_text'] ) && trim( (string) $block_attrs['block_team_cards_text'] ) !== ''
 	? (string) $block_attrs['block_team_cards_text']
@@ -64,6 +69,9 @@ if ( $title === '' && empty( $items ) ) {
 		<div class="team__inner">
 			<?php if ( $title !== '' || $text !== '' ) : ?>
 				<div class="team__top section-top">
+			<?php if ( $subtitle !== '' ) : ?>
+				<p class="section-subtitle"><?php echo tolstenko_kses_html( $subtitle ); ?></p>
+			<?php endif; ?>
 					<?php if ( $title !== '' ) : ?>
 						<<?php echo esc_attr( $title_tag ); ?> class="team__title h2"><?php echo tolstenko_kses_html( $title ); ?></<?php echo esc_attr( $title_tag ); ?>>
 					<?php endif; ?>

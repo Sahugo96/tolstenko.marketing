@@ -15,6 +15,11 @@ if ( ! is_array( $defaults ) ) {
 	$defaults = array();
 }
 
+$subtitle = function_exists( 'tolstenko_block_section_subtitle' )
+	? tolstenko_block_section_subtitle( $block_attrs, $defaults, 'block_commission_subtitle', 'subtitle' )
+	: '';
+
+
 $title = ! empty( $block_attrs['block_commission_title'] )
 	? (string) $block_attrs['block_commission_title']
 	: (string) ( $defaults['title'] ?? '' );
@@ -75,6 +80,9 @@ $render_ico = static function ( $attachment_id ) {
 	<div class="container">
 		<div class="commission__inner">
 			<div class="section-top">
+			<?php if ( $subtitle !== '' ) : ?>
+				<p class="section-subtitle"><?php echo tolstenko_kses_html( $subtitle ); ?></p>
+			<?php endif; ?>
 				<?php if ( $title !== '' ) : ?>
 					<<?php echo esc_attr( $title_tag ); ?> class="cases__title h2"><?php echo tolstenko_kses_html( $title ); ?></<?php echo esc_attr( $title_tag ); ?>>
 				<?php endif; ?>

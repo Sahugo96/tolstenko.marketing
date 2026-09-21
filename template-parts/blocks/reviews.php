@@ -16,6 +16,11 @@ if ( ! is_array( $defaults ) ) {
 	$defaults = array();
 }
 
+$subtitle = function_exists( 'tolstenko_block_section_subtitle' )
+	? tolstenko_block_section_subtitle( $block_attrs, $defaults, 'block_reviews_subtitle', 'subtitle' )
+	: '';
+
+
 $block_title = '';
 if ( ! empty( $block_attrs['block_reviews_title'] ) ) {
 	$block_title = (string) $block_attrs['block_reviews_title'];
@@ -257,6 +262,9 @@ $checked = 'checked';
 	<div class="container">
 		<div class="reviews__inner br-30">
 			<div class="reviews__top section-top">
+			<?php if ( $subtitle !== '' ) : ?>
+				<p class="section-subtitle"><?php echo tolstenko_kses_html( $subtitle ); ?></p>
+			<?php endif; ?>
 				<<?php echo esc_attr( $title_tag ); ?> class="reviews__title h2"><?php echo tolstenko_kses_html( $block_title ); ?></<?php echo esc_attr( $title_tag ); ?>>
 				<?php if ( $block_text !== '' ) : ?>
 					<p class="reviews__text paragraph-15-15"><?php echo tolstenko_kses_html( $block_text ); ?></p>

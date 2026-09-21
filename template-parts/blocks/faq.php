@@ -16,6 +16,11 @@ $defaults = function_exists( 'tolstenko_get_block_defaults' ) ? tolstenko_get_bl
 if ( ! is_array( $defaults ) ) {
 	$defaults = array();
 }
+
+$subtitle = function_exists( 'tolstenko_block_section_subtitle' )
+	? tolstenko_block_section_subtitle( $block_attrs, $defaults, 'block_faq_subtitle', 'subtitle' )
+	: '';
+
 $site = function_exists( 'tolstenko_get_site_header_footer_data' ) ? tolstenko_get_site_header_footer_data() : array();
 
 $title = ! empty( $block_attrs['block_faq_title'] )
@@ -87,6 +92,9 @@ if ( $title === '' && $text === '' && empty( $items ) ) {
 <section class="faq section" id="faq">
 	<div class="container">
 		<div class="faq__top section-top">
+			<?php if ( $subtitle !== '' ) : ?>
+				<p class="section-subtitle"><?php echo tolstenko_kses_html( $subtitle ); ?></p>
+			<?php endif; ?>
 			<?php if ( $title !== '' ) : ?>
 				<<?php echo esc_attr( $title_tag ); ?> class="faq__title <?php echo esc_attr( $title_tag ); ?>"><?php echo tolstenko_kses_html( $title ); ?></<?php echo esc_attr( $title_tag ); ?>>
 			<?php endif; ?>

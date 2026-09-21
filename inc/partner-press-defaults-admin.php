@@ -295,6 +295,7 @@ function tolstenko_sanitize_partner_press_defaults_from_raw( $raw ) {
 	$patch = array();
 
 	$patch['we_can'] = array(
+		'subtitle'   => tolstenko_kses_html( $raw['we_can']['subtitle'] ?? '' ),
 		'title'      => tolstenko_kses_html( $raw['we_can']['title'] ?? '' ),
 		'list_title' => tolstenko_kses_html( $raw['we_can']['list_title'] ?? '' ),
 		'form_title' => tolstenko_kses_html( $raw['we_can']['form_title'] ?? '' ),
@@ -320,6 +321,7 @@ function tolstenko_sanitize_partner_press_defaults_from_raw( $raw ) {
 	}
 
 	$patch['recomendation'] = array(
+		'subtitle'   => tolstenko_kses_html( $raw['recomendation']['subtitle'] ?? '' ),
 		'title'      => tolstenko_kses_html( $raw['recomendation']['title'] ?? '' ),
 		'text'       => tolstenko_kses_html( $raw['recomendation']['text'] ?? '' ),
 		'list_title' => tolstenko_kses_html( $raw['recomendation']['list_title'] ?? '' ),
@@ -356,6 +358,7 @@ function tolstenko_sanitize_partner_press_defaults_from_raw( $raw ) {
 	}
 
 	$patch['referal'] = array(
+		'subtitle'   => tolstenko_kses_html( $raw['referal']['subtitle'] ?? '' ),
 		'title'      => tolstenko_kses_html( $raw['referal']['title'] ?? '' ),
 		'list_title' => tolstenko_kses_html( $raw['referal']['list_title'] ?? '' ),
 		'btn_text'   => sanitize_text_field( $raw['referal']['btn_text'] ?? '' ),
@@ -381,6 +384,7 @@ function tolstenko_sanitize_partner_press_defaults_from_raw( $raw ) {
 	}
 
 	$patch['commission'] = array(
+		'subtitle' => tolstenko_kses_html( $raw['commission']['subtitle'] ?? '' ),
 		'title' => tolstenko_kses_html( $raw['commission']['title'] ?? '' ),
 		'text'  => tolstenko_kses_html( $raw['commission']['text'] ?? '' ),
 		'items' => array(),
@@ -406,6 +410,7 @@ function tolstenko_sanitize_partner_press_defaults_from_raw( $raw ) {
 	}
 
 	$patch['benefits_cooperation'] = array(
+		'subtitle' => tolstenko_kses_html( $raw['benefits_cooperation']['subtitle'] ?? '' ),
 		'title' => tolstenko_kses_html( $raw['benefits_cooperation']['title'] ?? '' ),
 		'items' => array(),
 	);
@@ -443,6 +448,7 @@ function tolstenko_sanitize_partner_press_defaults_from_raw( $raw ) {
 	}
 
 	$patch['aducation'] = array(
+		'subtitle' => tolstenko_kses_html( $raw['aducation']['subtitle'] ?? '' ),
 		'title'  => tolstenko_kses_html( $raw['aducation']['title'] ?? '' ),
 		'items'  => array(),
 		'images' => array(),
@@ -474,6 +480,7 @@ function tolstenko_sanitize_partner_press_defaults_from_raw( $raw ) {
 	}
 
 	$patch['clients'] = array(
+		'section_subtitle' => tolstenko_kses_html( $raw['clients']['section_subtitle'] ?? '' ),
 		'title'       => tolstenko_kses_html( $raw['clients']['title'] ?? '' ),
 		'text'        => tolstenko_kses_html( $raw['clients']['text'] ?? '' ),
 		'show_top'    => ! empty( $raw['clients']['show_top'] ),
@@ -584,6 +591,7 @@ function tolstenko_render_partner_defaults_panels( $all ) {
 	$bc  = $all['benefits_cooperation'] ?? array();
 	?>
 		<div class="tolstenko-df-panel" data-panel="referal" data-group="partner">
+			<div class="row"><input type="text" name="tolstenko_block_defaults[referal][subtitle]" value="<?php echo esc_attr( $ref['subtitle'] ?? '' ); ?>" style="width:100%" placeholder="Подзаголовок"></div>
 			<div class="row"><input type="text" name="tolstenko_block_defaults[referal][title]" value="<?php echo esc_attr( $ref['title'] ?? '' ); ?>" style="width:100%" placeholder="Заголовок"></div>
 			<div class="row">
 				<div class="muted"><?php esc_html_e( 'Пункты слева', 'tolstenko-theme' ); ?></div>
@@ -620,6 +628,7 @@ function tolstenko_render_partner_defaults_panels( $all ) {
 		</div>
 
 		<div class="tolstenko-df-panel" data-panel="we_can" data-group="partner">
+			<div class="row"><input type="text" name="tolstenko_block_defaults[we_can][subtitle]" value="<?php echo esc_attr( $wc['subtitle'] ?? '' ); ?>" style="width:100%" placeholder="Подзаголовок"></div>
 			<div class="row"><input type="text" name="tolstenko_block_defaults[we_can][title]" value="<?php echo esc_attr( $wc['title'] ?? '' ); ?>" style="width:100%" placeholder="Заголовок"></div>
 			<div class="row">
 				<div class="muted"><?php esc_html_e( 'Пункты («мы можем»)', 'tolstenko-theme' ); ?></div>
@@ -657,6 +666,7 @@ function tolstenko_render_partner_defaults_panels( $all ) {
 		</div>
 
 		<div class="tolstenko-df-panel" data-panel="recomendation" data-group="partner">
+			<div class="row"><input type="text" name="tolstenko_block_defaults[recomendation][subtitle]" value="<?php echo esc_attr( $rec['subtitle'] ?? '' ); ?>" style="width:100%" placeholder="Подзаголовок"></div>
 			<div class="row"><input type="text" name="tolstenko_block_defaults[recomendation][title]" value="<?php echo esc_attr( $rec['title'] ?? '' ); ?>" style="width:100%" placeholder="Заголовок"></div>
 			<div class="row"><textarea name="tolstenko_block_defaults[recomendation][text]" rows="3" placeholder="Текст под заголовком"><?php echo esc_textarea( $rec['text'] ?? '' ); ?></textarea></div>
 			<div class="row">
@@ -703,6 +713,7 @@ function tolstenko_render_partner_defaults_panels( $all ) {
 		</div>
 
 		<div class="tolstenko-df-panel" data-panel="commission" data-group="partner">
+			<div class="row"><input type="text" name="tolstenko_block_defaults[commission][subtitle]" value="<?php echo esc_attr( $cm['subtitle'] ?? '' ); ?>" style="width:100%" placeholder="Подзаголовок"></div>
 			<div class="row"><input type="text" name="tolstenko_block_defaults[commission][title]" value="<?php echo esc_attr( $cm['title'] ?? '' ); ?>" style="width:100%" placeholder="Заголовок"></div>
 			<div class="row"><textarea name="tolstenko_block_defaults[commission][text]" rows="3" placeholder="Текст под заголовком"><?php echo esc_textarea( $cm['text'] ?? '' ); ?></textarea></div>
 			<div class="row">
@@ -738,6 +749,7 @@ function tolstenko_render_partner_defaults_panels( $all ) {
 		</div>
 
 		<div class="tolstenko-df-panel" data-panel="benefits_cooperation" data-group="partner">
+			<div class="row"><input type="text" name="tolstenko_block_defaults[benefits_cooperation][subtitle]" value="<?php echo esc_attr( $bc['subtitle'] ?? '' ); ?>" style="width:100%" placeholder="Подзаголовок"></div>
 			<div class="row"><input type="text" name="tolstenko_block_defaults[benefits_cooperation][title]" value="<?php echo esc_attr( $bc['title'] ?? '' ); ?>" style="width:100%" placeholder="Заголовок"></div>
 			<div class="row">
 				<div class="muted"><?php esc_html_e( 'Колонки преимуществ', 'tolstenko-theme' ); ?></div>
@@ -789,6 +801,7 @@ function tolstenko_render_press_defaults_panels( $all ) {
 	$co_img_url = $co_img_id ? wp_get_attachment_image_url( $co_img_id, 'medium' ) : '';
 	?>
 		<div class="tolstenko-df-panel" data-panel="aducation" data-group="press">
+			<div class="row"><input type="text" name="tolstenko_block_defaults[aducation][subtitle]" value="<?php echo esc_attr( $ad['subtitle'] ?? '' ); ?>" style="width:100%" placeholder="Подзаголовок"></div>
 			<div class="row"><input type="text" name="tolstenko_block_defaults[aducation][title]" value="<?php echo esc_attr( $ad['title'] ?? '' ); ?>" style="width:100%" placeholder="Заголовок"></div>
 			<div class="row">
 				<div class="muted"><?php esc_html_e( 'Этапы', 'tolstenko-theme' ); ?></div>
@@ -838,6 +851,7 @@ function tolstenko_render_press_defaults_panels( $all ) {
 					<?php esc_html_e( 'Показывать верхний блок', 'tolstenko-theme' ); ?>
 				</label>
 			</div>
+			<div class="row"><input type="text" name="tolstenko_block_defaults[clients][section_subtitle]" value="<?php echo esc_attr( $cl['section_subtitle'] ?? '' ); ?>" style="width:100%" placeholder="Подзаголовок секции"></div>
 			<div class="row"><input type="text" name="tolstenko_block_defaults[clients][title]" value="<?php echo esc_attr( $cl['title'] ?? '' ); ?>" style="width:100%" placeholder="Заголовок"></div>
 			<div class="row"><textarea name="tolstenko_block_defaults[clients][text]" rows="2" placeholder="Текст"><?php echo esc_textarea( $cl['text'] ?? '' ); ?></textarea></div>
 			<div class="row">

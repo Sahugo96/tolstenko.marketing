@@ -16,6 +16,11 @@ if ( ! is_array( $defaults ) ) {
 	$defaults = array();
 }
 
+$subtitle = function_exists( 'tolstenko_block_section_subtitle' )
+	? tolstenko_block_section_subtitle( $block_attrs, $defaults, 'block_certificates_subtitle', 'subtitle' )
+	: '';
+
+
 $title = '';
 if ( ! empty( $block_attrs['block_certificates_title'] ) ) {
 	$title = (string) $block_attrs['block_certificates_title'];
@@ -84,6 +89,9 @@ if ( empty( $items ) && $title === '' && $text === '' ) {
 		<div class="certificates__inner br-30">
 			<?php if ( $title !== '' || $text !== '' ) : ?>
 				<div class="certificates__top section-top">
+			<?php if ( $subtitle !== '' ) : ?>
+				<p class="section-subtitle"><?php echo tolstenko_kses_html( $subtitle ); ?></p>
+			<?php endif; ?>
 					<?php if ( $title !== '' ) : ?>
 						<<?php echo esc_attr( $title_tag ); ?> class="certificates__title h2"><?php echo tolstenko_kses_html( $title ); ?></<?php echo esc_attr( $title_tag ); ?>>
 					<?php endif; ?>

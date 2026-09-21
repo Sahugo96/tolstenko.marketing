@@ -15,6 +15,11 @@ if ( ! is_array( $defaults ) ) {
 	$defaults = array();
 }
 
+$section_subtitle = function_exists( 'tolstenko_block_section_subtitle' )
+	? tolstenko_block_section_subtitle( $block_attrs, $defaults, 'block_clients_section_subtitle', 'section_subtitle' )
+	: '';
+
+
 $title = ! empty( $block_attrs['block_clients_title'] )
 	? (string) $block_attrs['block_clients_title']
 	: (string) ( $defaults['title'] ?? '' );
@@ -140,8 +145,11 @@ $render_splide = static function ( $root_class, $list_class, $item_class, $rows,
 	<div class="container">
 		<div class="clients__inner br-30">
 			<?php if ( $show_top ) : ?>
-				<?php if ( $title !== '' || $text !== '' ) : ?>
+				<?php if ( $title !== '' || $text !== '' || $section_subtitle !== '' ) : ?>
 					<div class="clients__top section-top">
+			<?php if ( $section_subtitle !== '' ) : ?>
+				<p class="section-subtitle"><?php echo tolstenko_kses_html( $section_subtitle ); ?></p>
+			<?php endif; ?>
 						<?php if ( $title !== '' ) : ?>
 							<<?php echo esc_attr( $title_tag ); ?> class="clients__title h2"><?php echo tolstenko_kses_html( $title ); ?></<?php echo esc_attr( $title_tag ); ?>>
 						<?php endif; ?>
