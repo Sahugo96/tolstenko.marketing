@@ -255,7 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
     })();
     // search end
     
-    // После успешной отправки CF7 — редирект на страницу «Спасибо» через 5 секунд
+    // После успешной отправки CF7 — сразу открываем страницу «Спасибо» (без задержки и всплывашки).
     // (без устаревшего on_sent_ok; поиск — нативная GET-форма, в обработчик не попадает).
     document.addEventListener('wpcf7mailsent', function(ev) {
         if (!ev.detail || !ev.detail.contactFormId) return;
@@ -278,16 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (!thanksUrl) return;
 
-        // Модалка заявки: показываем экран «спасибо» внутри модалки до редиректа
-        if (form.closest && form.closest('.modal')) {
-            var modalEl = form.closest('.modal');
-            modalEl.classList.add('active', 'success');
-            document.body.classList.add('lock');
-        }
-
-        window.setTimeout(function() {
-            window.location.href = thanksUrl;
-        }, 5000);
+        window.location.href = thanksUrl;
     }, false);
 
     // Gutenberg gallery → Fancybox (группа на каждую .wp-block-gallery)

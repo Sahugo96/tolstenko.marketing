@@ -483,6 +483,8 @@ function tolstenko_render_blog_content_defaults_admin_page() {
 				.tolstenko-bcd-panel input[type=url],
 				.tolstenko-bcd-panel textarea{width:100%;max-width:720px}
 				.tolstenko-bcd-item{border:1px solid #dcdcde;background:#f6f7f7;padding:10px;margin:0 0 8px;max-width:720px}
+				.tolstenko-bcd-item-actions{display:flex;align-items:center;gap:8px;margin:8px 0 0}
+				.tolstenko-bcd-item-actions .move-btn{min-width:34px;padding:0 8px}
 				.tolstenko-bcd-editor-wrap{margin:8px 0;max-width:720px}
 				.tolstenko-bcd-editor-wrap .wp-editor-wrap{width:100%;max-width:720px}
 				.tolstenko-bcd-editor-wrap .wp-editor-area{width:100%}
@@ -638,7 +640,11 @@ function tolstenko_render_blog_content_defaults_admin_page() {
 						?>
 						<div class="tolstenko-bcd-item">
 							<input type="text" name="tolstenko_block_defaults[blog_pros_cons][pros][<?php echo esc_attr( (string) $i ); ?>][text]" value="<?php echo esc_attr( $line_text ); ?>" placeholder="<?php esc_attr_e( 'Пункт плюса', 'tolstenko-theme' ); ?>">
-							<p><button type="button" class="button-link-delete" data-bcd-remove><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button></p>
+							<p class="tolstenko-bcd-item-actions">
+								<button type="button" class="button move-btn" data-bcd-move="up" title="<?php esc_attr_e( 'Вверх', 'tolstenko-theme' ); ?>" aria-label="<?php esc_attr_e( 'Вверх', 'tolstenko-theme' ); ?>">↑</button>
+								<button type="button" class="button move-btn" data-bcd-move="down" title="<?php esc_attr_e( 'Вниз', 'tolstenko-theme' ); ?>" aria-label="<?php esc_attr_e( 'Вниз', 'tolstenko-theme' ); ?>">↓</button>
+								<button type="button" class="button-link-delete" data-bcd-remove><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button>
+							</p>
 						</div>
 					<?php endforeach; ?>
 				</div>
@@ -657,7 +663,11 @@ function tolstenko_render_blog_content_defaults_admin_page() {
 						?>
 						<div class="tolstenko-bcd-item">
 							<input type="text" name="tolstenko_block_defaults[blog_pros_cons][cons][<?php echo esc_attr( (string) $i ); ?>][text]" value="<?php echo esc_attr( $line_text ); ?>" placeholder="<?php esc_attr_e( 'Пункт минуса', 'tolstenko-theme' ); ?>">
-							<p><button type="button" class="button-link-delete" data-bcd-remove><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button></p>
+							<p class="tolstenko-bcd-item-actions">
+								<button type="button" class="button move-btn" data-bcd-move="up" title="<?php esc_attr_e( 'Вверх', 'tolstenko-theme' ); ?>" aria-label="<?php esc_attr_e( 'Вверх', 'tolstenko-theme' ); ?>">↑</button>
+								<button type="button" class="button move-btn" data-bcd-move="down" title="<?php esc_attr_e( 'Вниз', 'tolstenko-theme' ); ?>" aria-label="<?php esc_attr_e( 'Вниз', 'tolstenko-theme' ); ?>">↓</button>
+								<button type="button" class="button-link-delete" data-bcd-remove><?php esc_html_e( 'Удалить', 'tolstenko-theme' ); ?></button>
+							</p>
 						</div>
 					<?php endforeach; ?>
 				</div>
@@ -821,6 +831,41 @@ function tolstenko_render_blog_content_defaults_admin_page() {
 			activateBcdTab(activeTab.getAttribute('data-bcd-tab'));
 		}
 
+// Перестановка пунктов «Плюсов» и «Минусов» стрелками ↑/↓.
+		// После перемещения имена полей переиндексируются: PHP собирает массив
+		// из POST по индексам, поэтому без переиндексации порядок не сохранится.
+		function reindexBcdList(list) {
+			var kind = list.getAttribute('data-bcd-list');
+			if (!kind) return;
+			var re = new RegExp('^tolstenko_block_defaults\\[blog_pros_cons\\]\\[' + kind + '\\]\\[\\d+\\]');
+			Array.prototype.forEach.call(list.querySelectorAll('.tolstenko-bcd-item'), function(item, idx) {
+				Array.prototype.forEach.call(item.querySelectorAll('[name]'), function(input) {
+					var name = input.getAttribute('name');
+					if (re.test(name)) {
+						input.setAttribute('name', name.replace(re, 'tolstenko_block_defaults[blog_pros_cons][' + kind + '][' + idx + ']'));
+					}
+				});
+			});
+		}
+
+		root.addEventListener('click', function(e) {
+			var moveBtn = e.target.closest('[data-bcd-move]');
+			if (!moveBtn) return;
+			e.preventDefault();
+			var item = moveBtn.closest('.tolstenko-bcd-item');
+			var list = item ? item.parentElement : null;
+			if (!item || !list) return;
+			var items = Array.prototype.slice.call(list.querySelectorAll('.tolstenko-bcd-item'));
+			var index = items.indexOf(item);
+			var newIndex = ('up' === moveBtn.getAttribute('data-bcd-move')) ? index - 1 : index + 1;
+			if (newIndex < 0 || newIndex >= items.length) return;
+			if (newIndex > index) {
+				list.insertBefore(item, items[newIndex].nextSibling);
+			} else {
+				list.insertBefore(item, items[newIndex]);
+			}
+			reindexBcdList(list);
+		});
 		root.addEventListener('click', function(e){
 			var add = e.target.closest('[data-bcd-add]');
 			if (add) {
@@ -873,7 +918,11 @@ function tolstenko_render_blog_content_defaults_admin_page() {
 					var pcHtml = ''
 						+ '<div class="tolstenko-bcd-item">'
 						+ '<input type="text" name="tolstenko_block_defaults[blog_pros_cons]['+pcName+']['+pcIdx+'][text]" value="" placeholder="'+pcPh+'">'
-						+ '<p><button type="button" class="button-link-delete" data-bcd-remove><?php echo esc_js( __( 'Удалить', 'tolstenko-theme' ) ); ?></button></p>'
+						+ '<p class="tolstenko-bcd-item-actions">'
+						+ '<button type="button" class="button move-btn" data-bcd-move="up" title="<?php echo esc_js( __( 'Вверх', 'tolstenko-theme' ) ); ?>">↑</button>'
+						+ '<button type="button" class="button move-btn" data-bcd-move="down" title="<?php echo esc_js( __( 'Вниз', 'tolstenko-theme' ) ); ?>">↓</button>'
+						+ '<button type="button" class="button-link-delete" data-bcd-remove><?php echo esc_js( __( 'Удалить', 'tolstenko-theme' ) ); ?></button>'
+						+ '</p>'
 						+ '</div>';
 					list.insertAdjacentHTML('beforeend', pcHtml);
 					return;
