@@ -6123,8 +6123,7 @@ body:has(> #wpadminbar) .header {
   border: 1px solid var(--article-cta-accent);
   border-radius: 5.168vw;
   background: var(--gray-10-color);
-  -webkit-box-shadow: 0 0 6.202vw color-mix(in srgb, var(--article-cta-accent) 28%, transparent);
-          box-shadow: 0 0 6.202vw color-mix(in srgb, var(--article-cta-accent) 28%, transparent);
+  background: color-mix(in srgb, var(--article-cta-accent) 3.5%, transparent);
 }
 @media (min-width: 992px) {
   .redactor .article-cta {
@@ -6141,8 +6140,6 @@ body:has(> #wpadminbar) .header {
     gap: 2.5vw;
     padding: 2.188vw 2.5vw;
     border-radius: 1.563vw;
-    -webkit-box-shadow: 0 0 2.188vw color-mix(in srgb, var(--article-cta-accent) 28%, transparent);
-            box-shadow: 0 0 2.188vw color-mix(in srgb, var(--article-cta-accent) 28%, transparent);
   }
 }
 @media (min-width: 1440px) {
@@ -6150,8 +6147,6 @@ body:has(> #wpadminbar) .header {
     gap: 1.72vw;
     padding: 1.505vw 1.72vw;
     border-radius: 1.075vw;
-    -webkit-box-shadow: 0 0 1.505vw color-mix(in srgb, var(--article-cta-accent) 28%, transparent);
-            box-shadow: 0 0 1.505vw color-mix(in srgb, var(--article-cta-accent) 28%, transparent);
   }
 }
 .redactor .article-cta--seo {

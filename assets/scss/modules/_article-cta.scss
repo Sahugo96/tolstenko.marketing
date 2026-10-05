@@ -15,7 +15,8 @@
   border: 1px solid var(--article-cta-accent);
   border-radius: vw(20px, $mobile);
   background: var(--gray-10-color);
-  box-shadow: 0 0 vw(24px, $mobile) color-mix(in srgb, var(--article-cta-accent) 28%, transparent);
+  background: color-mix(in srgb, var(--article-cta-accent) 3.5%, transparent);
+  // box-shadow: 0 0 vw(24px, $mobile) color-mix(in srgb, var(--article-cta-accent) 28%, transparent);
   @media (min-width: $desk) {
     flex-direction: row;
     align-items: center;
@@ -23,13 +24,13 @@
     gap: vw(32px, $desktop);
     padding: vw(28px, $desktop) vw(32px, $desktop);
     border-radius: vw(20px, $desktop);
-    box-shadow: 0 0 vw(28px, $desktop) color-mix(in srgb, var(--article-cta-accent) 28%, transparent);
+    // box-shadow: 0 0 vw(28px, $desktop) color-mix(in srgb, var(--article-cta-accent) 28%, transparent);
   }
   @media (min-width: $desk_large) {
     gap: vw(32px, $desktop_large);
     padding: vw(28px, $desktop_large) vw(32px, $desktop_large);
     border-radius: vw(20px, $desktop_large);
-    box-shadow: 0 0 vw(28px, $desktop_large) color-mix(in srgb, var(--article-cta-accent) 28%, transparent);
+    // box-shadow: 0 0 vw(28px, $desktop_large) color-mix(in srgb, var(--article-cta-accent) 28%, transparent);
   }
 
   &--seo {

@@ -16,6 +16,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * Максимум чипов в фильтре (.filter) — верхнеуровневые рубрики с записями.
+ */
+const TOLSTENKO_FILTER_MAX_CHIPS = 30;
+
+/**
  * Зарегистрированные рендереры карточек для фильтра.
  *
  * @return array<string, callable>
@@ -97,7 +102,9 @@ function tolstenko_get_filter_top_level_terms( $taxonomy ) {
 			$out[] = $cat;
 		}
 	}
-	return $out;
+	// Ограничение количества чипов. Активный термин добавится после обрезки
+	// в tolstenko_ensure_filter_term_in_categories(), поэтому не потеряется.
+	return array_slice( $out, 0, TOLSTENKO_FILTER_MAX_CHIPS );
 }
 
 /**
