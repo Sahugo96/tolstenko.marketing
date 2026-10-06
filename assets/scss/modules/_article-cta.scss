@@ -97,11 +97,13 @@
     flex-shrink: 0;
     @media (min-width: $desk) {
       width: auto;
+      max-width: vw(300px, $desktop);
       min-width: vw(220px, $desktop);
       padding-left: vw(20px, $desktop);
       padding-right: vw(20px, $desktop);
     }
     @media (min-width: $desk_large) {
+      max-width: vw(300px, $desktop_large);
       min-width: vw(220px, $desktop_large);
       padding-left: vw(20px, $desktop_large);
       padding-right: vw(20px, $desktop_large);

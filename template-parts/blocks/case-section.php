@@ -47,6 +47,22 @@ if ( $posts_per_page === 0 ) {
 	$posts_per_page = 4;
 }
 
+// Выбранные в редакторе кейсы (пусто = все по фильтру/лимиту).
+$post_ids = array();
+if ( ! empty( $block_attrs['block_case_section_ids'] ) && is_array( $block_attrs['block_case_section_ids'] ) ) {
+	foreach ( $block_attrs['block_case_section_ids'] as $id ) {
+		$id = (int) $id;
+		if ( $id > 0 ) {
+			$post_ids[] = $id;
+		}
+	}
+	$post_ids = array_values( array_unique( $post_ids ) );
+} elseif ( ! empty( $defaults['ids'] ) ) {
+	$post_ids = function_exists( 'tolstenko_sanitize_ids' )
+		? tolstenko_sanitize_ids( $defaults['ids'] )
+		: array_values( array_unique( array_filter( array_map( 'intval', (array) $defaults['ids'] ) ) ) );
+}
+
 $section_id = 'cases_' . wp_unique_id();
 $taxonomy   = 'case_cat';
 $post_type  = 'case';
@@ -71,6 +87,7 @@ $items_html = function_exists( 'tolstenko_render_filtered_posts_html' )
 			'term'           => $active_term,
 			'posts_per_page' => $posts_per_page,
 			'card'           => $card,
+			'post_ids'       => $post_ids,
 		)
 	)
 	: '';
@@ -87,6 +104,7 @@ if ( $title === '' && $text === '' && $items_html === '' && empty( $categories_w
 	data-post-type="<?php echo esc_attr( $post_type ); ?>"
 	data-posts-per-page="<?php echo esc_attr( (string) $posts_per_page ); ?>"
 	data-card="<?php echo esc_attr( $card ); ?>"
+	data-post-ids="<?php echo esc_attr( implode( ',', $post_ids ) ); ?>"
 >
 	<div class="container">
 		<div class="case-section__top section-top">

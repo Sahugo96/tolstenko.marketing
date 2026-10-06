@@ -388,6 +388,11 @@ function tolstenko_get_theme_block_attributes() {
             'block_case_section_title_tag'       => array( 'type' => 'string', 'default' => 'h2' ),
             'block_case_section_text'            => array( 'type' => 'string', 'default' => '' ),
             'block_case_section_posts_per_page'  => array( 'type' => 'number', 'default' => 4 ),
+            'block_case_section_ids'             => array(
+                'type'    => 'array',
+                'items'   => array( 'type' => 'number' ),
+                'default' => array(),
+            ),
         ),
         'service-section' => array(
             'block_service_section_subtitle' => array( 'type' => 'string', 'default' => '' ),
